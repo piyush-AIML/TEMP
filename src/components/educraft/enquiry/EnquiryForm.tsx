@@ -83,7 +83,7 @@ export default function EnquiryForm({ mode, courseSlug }: EnquiryFormProps) {
     return (
       <div className='text-center py-8'>
         <CheckCircle2 className='w-12 h-12 text-ec-teal mx-auto mb-4' />
-        <h3 className='font-[family-name:var(--font-sora)] font-bold text-xl text-ec-indigo mb-2'>
+        <h3 className='font-[family-name:var(--font-sora)] font-bold text-xl text-ec-indigo dark:text-white mb-2'>
           Thank you!
         </h3>
         <p className='text-ec-slate'>
@@ -94,13 +94,13 @@ export default function EnquiryForm({ mode, courseSlug }: EnquiryFormProps) {
   }
 
   const inputClass = (field: string) =>
-    `w-full px-4 py-3 rounded-2xl border ${errors[field] ? 'border-red-400' : 'border-ec-border'} bg-white text-ec-ink font-[family-name:var(--font-manrope)] text-sm placeholder:text-ec-slate/60 focus:outline-none focus:ring-2 focus:ring-ec-indigo/20 focus:border-ec-indigo transition-colors`;
+    `w-full px-4 py-3 rounded-2xl border ${errors[field] ? 'border-red-400' : 'border-ec-border'} bg-card text-ec-ink font-[family-name:var(--font-manrope)] text-sm placeholder:text-ec-slate/60 focus:outline-none focus:ring-2 focus:ring-ec-indigo/20 focus:border-ec-indigo transition-colors`;
 
   return (
     <form onSubmit={handleSubmit} noValidate className='space-y-4'>
       {/* Locked course display */}
       {mode === 'locked' && lockedCourse && (
-        <div className='bg-ec-sky rounded-2xl px-4 py-3 text-sm text-ec-indigo font-medium'>
+        <div className='bg-ec-sky rounded-2xl px-4 py-3 text-sm text-ec-indigo dark:text-white font-medium'>
           Enquiring about: <strong>{lockedCourse.name}</strong>
           <input type='hidden' name='course' value={lockedCourse.slug} />
         </div>

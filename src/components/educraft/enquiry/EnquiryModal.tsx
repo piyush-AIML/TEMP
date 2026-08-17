@@ -78,12 +78,12 @@ export default function EnquiryModal() {
     >
       <div
         ref={modalRef}
-        className='bg-white rounded-3xl shadow-[0_8px_30px_rgba(30,42,120,0.08)] w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 md:p-8 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300'
+        className='bg-card rounded-3xl shadow-[0_8px_30px_rgba(30,42,120,0.08)] w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 md:p-8 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300'
       >
         {/* Header */}
         <div className='flex items-center justify-between mb-6'>
           <div>
-            <h2 className='font-[family-name:var(--font-sora)] font-bold text-xl text-ec-indigo'>
+            <h2 className='font-[family-name:var(--font-sora)] font-bold text-xl text-ec-indigo dark:text-white'>
               {lockedCourseSlug ? 'Course Enquiry' : 'Get in Touch'}
             </h2>
             <p className='text-ec-slate text-sm mt-1'>
@@ -95,7 +95,7 @@ export default function EnquiryModal() {
           <button
             ref={closeBtnRef}
             onClick={closeModal}
-            className='p-2 rounded-xl hover:bg-ec-sky transition-colors text-ec-slate hover:text-ec-indigo'
+            className='p-2 rounded-xl hover:bg-ec-sky transition-colors text-ec-slate hover:text-ec-indigo dark:hover:text-white'
             aria-label='Close enquiry form'
           >
             <X className='w-5 h-5' />

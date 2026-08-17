@@ -14,13 +14,13 @@ export default function TrustStrip() {
   const { ref, revealed } = useReveal();
 
   return (
-    <section ref={ref} className='py-12 md:py-16 bg-white border-b border-ec-border'>
+    <section ref={ref} className='py-12 md:py-16 bg-background border-b border-ec-border'>
       <div className={`max-w-[1200px] mx-auto px-6 reveal-on-scroll ${revealed ? 'revealed' : ''}`}>
         <div className='grid grid-cols-2 md:grid-cols-4 gap-8'>
           {signals.map(({ icon: Icon, label, sub }) => (
             <div key={label} className='text-center'>
               <Icon className='w-6 h-6 text-ec-teal mx-auto mb-2' />
-              <div className='font-[family-name:var(--font-sora)] font-bold text-xl md:text-2xl text-ec-indigo'>
+              <div className='font-[family-name:var(--font-sora)] font-bold text-xl md:text-2xl text-ec-indigo dark:text-white'>
                 {label}
               </div>
               <div className='text-ec-slate text-sm mt-0.5'>{sub}</div>

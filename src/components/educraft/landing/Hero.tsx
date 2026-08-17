@@ -15,7 +15,7 @@ export default function Hero() {
     <section
       id='hero'
       ref={ref}
-      className='relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-ec-sky via-white to-white'
+      className='relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-ec-sky via-background to-background'
     >
       {/* 3D Background */}
       <div className='absolute inset-0 md:inset-0 pointer-events-none hidden md:block'>
@@ -33,7 +33,7 @@ export default function Hero() {
 
         {/* Headline */}
         <h1
-          className='font-[family-name:var(--font-sora)] font-bold text-ec-indigo leading-[1.1] mb-6'
+          className='font-[family-name:var(--font-sora)] font-bold text-ec-indigo dark:text-white leading-[1.1] mb-6'
           style={{ fontSize: 'clamp(2.25rem, 4vw, 3.5rem)' }}
         >
           Empowering Schools,
@@ -60,7 +60,7 @@ export default function Hero() {
       </div>
 
       {/* Bottom fade to white */}
-      <div className='absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent z-[5]' />
+      <div className='absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-[5]' />
     </section>
   );
 }

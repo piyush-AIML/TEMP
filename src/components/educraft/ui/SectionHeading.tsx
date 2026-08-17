@@ -21,7 +21,7 @@ export default function SectionHeading({ eyebrow, title, subtext, className = ''
         {eyebrow}
       </span>
       <h2
-        className='font-[family-name:var(--font-sora)] font-bold text-ec-indigo leading-tight'
+        className='font-[family-name:var(--font-sora)] font-bold text-ec-indigo dark:text-white leading-tight'
         style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)' }}
       >
         {title}

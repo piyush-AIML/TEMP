@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Sora, Manrope } from "next/font/google";
+import ThemeProvider from "@/components/theme/ThemeProvider";
 import "./globals.css";
 
 const sora = Sora({
@@ -23,6 +24,10 @@ export const metadata: Metadata = {
   icons: {
     icon: "/logo.svg",
   },
+  other: {
+    // Tell the browser the page supports both schemes so it never auto-inverts it
+    "color-scheme": "light dark",
+  },
   openGraph: {
     title: "Educraft — Empowering Schools, Empowering Students",
     description:
@@ -39,9 +44,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${sora.variable} ${manrope.variable} antialiased bg-white text-ec-ink font-[family-name:var(--font-manrope)]`}
+        className={`${sora.variable} ${manrope.variable} antialiased bg-background text-foreground font-[family-name:var(--font-manrope)]`}
       >
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

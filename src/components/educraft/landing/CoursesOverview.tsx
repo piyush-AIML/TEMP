@@ -40,7 +40,7 @@ export default function CoursesOverview() {
                   <button
                     key={course.slug}
                     onClick={() => setSelectedCourse(course)}
-                    className='w-full text-left bg-white rounded-2xl p-5 border border-ec-border hover:shadow-[0_8px_30px_rgba(30,42,120,0.08)] hover:-translate-y-1 transition-all duration-150 group'
+                    className='w-full text-left bg-card rounded-2xl p-5 border border-ec-border hover:shadow-[0_8px_30px_rgba(30,42,120,0.08)] hover:-translate-y-1 transition-all duration-150 group'
                   >
                     <div className='flex items-start gap-4'>
                       <div className='w-11 h-11 rounded-xl bg-ec-sky flex items-center justify-center flex-shrink-0 group-hover:bg-ec-teal/10 transition-colors'>
@@ -52,7 +52,7 @@ export default function CoursesOverview() {
                             {course.pillar}
                           </span>
                         </div>
-                        <h3 className='font-[family-name:var(--font-sora)] font-bold text-base text-ec-indigo mb-1'>
+                        <h3 className='font-[family-name:var(--font-sora)] font-bold text-base text-ec-indigo dark:text-white mb-1'>
                           {course.name}
                         </h3>
                         <p className='text-ec-slate text-sm leading-relaxed line-clamp-2'>
@@ -103,7 +103,7 @@ function CourseDetailOverlay({
       aria-modal='true'
       aria-label={`${course.name} details`}
     >
-      <div className='bg-white rounded-3xl shadow-[0_8px_30px_rgba(30,42,120,0.08)] w-full max-w-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 overflow-hidden'>
+      <div className='bg-card rounded-3xl shadow-[0_8px_30px_rgba(30,42,120,0.08)] w-full max-w-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 overflow-hidden'>
         {/* Hero band */}
         <div className='bg-gradient-to-r from-ec-indigo to-ec-indigo-light px-6 md:px-10 py-8 md:py-10 relative'>
           <button
@@ -133,7 +133,7 @@ function CourseDetailOverlay({
           </p>
 
           {/* Highlights */}
-          <h3 className='font-[family-name:var(--font-sora)] font-bold text-lg text-ec-indigo mb-4'>
+          <h3 className='font-[family-name:var(--font-sora)] font-bold text-lg text-ec-indigo dark:text-white mb-4'>
             Programme Highlights
           </h3>
           <ul className='space-y-3 mb-8'>
@@ -147,7 +147,7 @@ function CourseDetailOverlay({
 
           {/* Inline enquiry form */}
           <div className='border-t border-ec-border pt-8'>
-            <h3 className='font-[family-name:var(--font-sora)] font-bold text-lg text-ec-indigo mb-4'>
+            <h3 className='font-[family-name:var(--font-sora)] font-bold text-lg text-ec-indigo dark:text-white mb-4'>
               Enquire about {course.name}
             </h3>
             <EnquiryForm mode='locked' courseSlug={course.slug} />

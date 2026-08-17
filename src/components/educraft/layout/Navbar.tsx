@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Menu, X, ChevronDown, GraduationCap } from 'lucide-react';
+import { Menu, X, ChevronDown, GraduationCap, Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { courses } from '@/data/courses';
 import Button from '../ui/Button';
 
@@ -13,8 +14,18 @@ export default function Navbar({ onEnquire }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dropdownBtnRef = useRef<HTMLButtonElement>(null);
+  const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  }, [theme, setTheme]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -61,7 +72,7 @@ export default function Navbar({ onEnquire }: NavbarProps) {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/90 backdrop-blur-md shadow-[0_2px_20px_rgba(30,42,120,0.06)]'
+          ? 'bg-background/90 backdrop-blur-md shadow-[0_2px_20px_rgba(30,42,120,0.06)]'
           : 'bg-transparent'
       }`}
     >
@@ -71,7 +82,7 @@ export default function Navbar({ onEnquire }: NavbarProps) {
           <div className='w-9 h-9 rounded-xl bg-ec-indigo flex items-center justify-center group-hover:bg-ec-indigo-light transition-colors'>
             <GraduationCap className='w-5 h-5 text-white' />
           </div>
-          <span className='font-[family-name:var(--font-sora)] font-bold text-xl text-ec-indigo'>
+          <span className='font-[family-name:var(--font-sora)] font-bold text-xl text-ec-indigo dark:text-white'>
             Edu<span className='text-ec-teal'>craft</span>
           </span>
         </a>
@@ -99,7 +110,7 @@ export default function Navbar({ onEnquire }: NavbarProps) {
                 </button>
                 {dropdownOpen && (
                   <div
-                    className='absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-white rounded-2xl shadow-[0_8px_30px_rgba(30,42,120,0.12)] border border-ec-border py-2 animate-in fade-in slide-in-from-top-2 duration-200'
+                    className='absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-card rounded-2xl shadow-[0_8px_30px_rgba(30,42,120,0.12)] border border-ec-border py-2 animate-in fade-in slide-in-from-top-2 duration-200'
                     role='menu'
                   >
                     {courses.map((course) => {
@@ -135,25 +146,29 @@ export default function Navbar({ onEnquire }: NavbarProps) {
               </a>
             )
           )}
+          <ThemeToggleButton mounted={mounted} theme={theme} onToggle={toggleTheme} />
           <Button size='sm' onClick={onEnquire}>
             Enquire Now
           </Button>
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          className='md:hidden p-2 text-ec-indigo'
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={mobileOpen}
-        >
-          {mobileOpen ? <X className='w-6 h-6' /> : <Menu className='w-6 h-6' />}
-        </button>
+        {/* Mobile controls */}
+        <div className='md:hidden flex items-center gap-1'>
+          <ThemeToggleButton mounted={mounted} theme={theme} onToggle={toggleTheme} />
+          <button
+            className='p-2 text-ec-indigo dark:text-white'
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X className='w-6 h-6' /> : <Menu className='w-6 h-6' />}
+          </button>
+        </div>
       </nav>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className='md:hidden fixed inset-0 top-16 bg-white z-40 overflow-y-auto'>
+        <div className='md:hidden fixed inset-0 top-16 bg-background z-40 overflow-y-auto'>
           <div className='px-6 py-6 space-y-1'>
             {navLinks.map((link) => (
               <a
@@ -193,5 +208,30 @@ export default function Navbar({ onEnquire }: NavbarProps) {
         </div>
       )}
     </header>
+  );
+}
+
+function ThemeToggleButton({
+  mounted,
+  theme,
+  onToggle,
+}: {
+  mounted: boolean;
+  theme?: string;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      onClick={onToggle}
+      className='p-2 rounded-xl text-ec-ink hover:bg-ec-sky transition-colors'
+      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {mounted && theme === 'dark' ? (
+        <Sun className='w-5 h-5' />
+      ) : (
+        <Moon className='w-5 h-5' />
+      )}
+    </button>
   );
 }

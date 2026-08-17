@@ -16,7 +16,7 @@ export default function PillarsSection() {
   const { ref, revealed } = useReveal();
 
   return (
-    <section id='pillars' ref={ref} className='py-14 md:py-24 bg-white'>
+    <section id='pillars' ref={ref} className='py-14 md:py-24 bg-background'>
       <div className='max-w-[1200px] mx-auto px-6'>
         <SectionHeading
           eyebrow='Our Pillars'
@@ -30,7 +30,7 @@ export default function PillarsSection() {
             return (
               <div
                 key={course.slug}
-                className='group relative bg-white border border-ec-border rounded-2xl p-6 hover:shadow-[0_8px_30px_rgba(30,42,120,0.08)] hover:-translate-y-1 transition-all duration-150'
+                className='group relative bg-card border border-ec-border rounded-2xl p-6 hover:shadow-[0_8px_30px_rgba(30,42,120,0.08)] hover:-translate-y-1 transition-all duration-150'
                 style={{ transitionDelay: `${i * 60}ms` }}
               >
                 <div className='w-10 h-10 rounded-xl bg-ec-sky flex items-center justify-center mb-3 group-hover:bg-ec-teal/10 transition-colors'>
@@ -39,7 +39,7 @@ export default function PillarsSection() {
                 <span className='inline-block text-xs font-semibold uppercase tracking-[0.08em] text-ec-gold mb-1'>
                   {course.pillar}
                 </span>
-                <h3 className='font-[family-name:var(--font-sora)] font-bold text-base text-ec-indigo mb-2'>
+                <h3 className='font-[family-name:var(--font-sora)] font-bold text-base text-ec-indigo dark:text-white mb-2'>
                   {course.name}
                 </h3>
                 <p className='text-ec-slate text-sm leading-relaxed'>
