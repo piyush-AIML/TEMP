@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   description:
     "A global digital education platform unifying linguistics, inclusive education, psychological counseling, AI & digital technologies, and NEET/JEE preparation under one trust umbrella.",
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.svg",
   },
   openGraph: {
     title: "Educraft — Empowering Schools, Empowering Students",
