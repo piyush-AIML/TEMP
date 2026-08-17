@@ -1,0 +1,148 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sora);
+  --font-body: var(--font-manrope);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Educraft brand tokens */
+  --color-ec-indigo: #1E2A78;
+  --color-ec-indigo-dark: #141D57;
+  --color-ec-indigo-light: #3B4896;
+  --color-ec-teal: #00B3B8;
+  --color-ec-teal-dark: #00898D;
+  --color-ec-teal-light: #3FCBCF;
+  --color-ec-gold: #F4B942;
+  --color-ec-gold-dark: #D89F2B;
+  --color-ec-gold-light: #F8CD73;
+  --color-ec-sky: #EAF6FF;
+  --color-ec-ink: #12172E;
+  --color-ec-slate: #5B6478;
+  --color-ec-border: #E4E9F2;
+}
+
+:root {
+  --radius: 1rem;
+  --background: #FFFFFF;
+  --foreground: #12172E;
+  --card: #FFFFFF;
+  --card-foreground: #12172E;
+  --popover: #FFFFFF;
+  --popover-foreground: #12172E;
+  --primary: #1E2A78;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EAF6FF;
+  --secondary-foreground: #1E2A78;
+  --muted: #EAF6FF;
+  --muted-foreground: #5B6478;
+  --accent: #00B3B8;
+  --accent-foreground: #FFFFFF;
+  --destructive: #EF4444;
+  --border: #E4E9F2;
+  --input: #E4E9F2;
+  --ring: #1E2A78;
+  --chart-1: #1E2A78;
+  --chart-2: #00B3B8;
+  --chart-3: #F4B942;
+  --chart-4: #3B4896;
+  --chart-5: #00898D;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #E4E9F2;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5B6478;
+}
+
+/* Reveal animation */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-scroll {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Focus visible states */
+:focus-visible {
+  outline: 2px solid #1E2A78;
+  outline-offset: 2px;
+}
+
+/* Canvas container */
+.canvas-container canvas {
+  pointer-events: auto;
+}

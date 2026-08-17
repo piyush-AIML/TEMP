@@ -1,0 +1,461 @@
+     1→     1→# Educraft Website — Master Build Guide & Multi-Stage Prompt
+     2→     2→
+     3→     3→**Purpose of this document:** this is a single, self-contained prompt file. Feed it, or one stage at a time, to an AI coding agent (Claude Code, Cursor, etc.) or use it as a build spec for a human dev. It contains the brand analysis, the design system, the content, and a 7-stage implementation sequence — in that order, so nothing downstream needs to be re-explained.
+     4→     4→
+     5→     5→---
+     6→     6→
+     7→     7→## 0. How to use this document (read first)
+     8→     8→
+     9→     9→1. **Feed stages sequentially, not all at once.** Each stage in Section 6 is a ready-to-paste prompt block. Run Stage 0 first, let the agent finish, verify the "Definition of Done," then move to Stage 1. This is the token-efficiency strategy: design tokens, content, and architecture are defined **once** (Sections 1–5) and every stage prompt *references* them instead of re-stating them.
+    10→    10→2. **Don't let the agent re-derive the design system.** Sections 1–4 are ground truth. If a stage prompt says "use the palette from Section 2," that's a literal instruction — copy the hex values, don't reinterpret them.
+    11→    11→3. **Content is already written.** Section 3.3 has real, on-brand copy for all 5 courses. The agent should use it verbatim in Stage 0/4, not generate placeholder lorem ipsum. This is the single biggest quality lever for a client demo — nothing reads more "unfinished" than filler text.
+    12→    12→4. **Quality floor, every stage:** responsive to 375px, visible keyboard focus states, `prefers-reduced-motion` respected, no console errors. This isn't a separate polish pass bolted on at the end — it's baked into each stage's Definition of Done.
+    13→    13→
+    14→    14→---
+    15→    15→
+    16→    16→## 1. Brand & Product Analysis
+    17→    17→
+    18→    18→### 1.1 What Educraft actually is
+    19→    19→A global digital education platform unifying **5 distinct verticals** under one trust umbrella — not a single-subject course site. The website's core job is therefore **twofold**: (a) build institutional/parental trust fast, because the offer is broad and could otherwise read as unfocused, and (b) route each visitor to *their* vertical quickly, because a parent looking for NEET coaching and a school evaluating inclusive-ed partnerships are having completely different conversations on the same site.
+    20→    20→
+    21→    21→### 1.2 Emotional strategy → UI decision mapping
+    22→    22→The brand doc names 5 target emotions. Each has a direct, concrete design consequence — not just a mood:
+    23→    23→
+    24→    24→| Emotion | UI consequence |
+    25→    25→|---|---|
+    26→    26→| Trust | Indigo-led navbar/footer, real institutional-feeling structure (clear nav, no dark patterns), no stock "smiling stock-photo student" clichés |
+    27→    27→| Hope | Warm gold used *only* for achievement/success moments (badges, CTA accents) — scarcity makes it mean something |
+    28→    28→| Belonging | Inclusive Education gets equal visual weight to NEET/JEE — no vertical is styled as the "real" product and others as filler |
+    29→    29→| Achievement | The gold accent + subtle upward-motion micro-interactions on stat/achievement elements |
+    30→    30→| Calm Confidence | Generous whitespace, soft shadows (never harsh drop-shadows), restrained motion — the site should never feel like it's trying to hype the visitor |
+    31→    31→
+    32→    32→### 1.3 Archetype blend → tone
+    33→    33→**Sage + Caregiver + Creator.** In practice: copy explains *why*, not just *what* (Sage); copy is warm and reassuring, never salesy (Caregiver); the site should feel like it's building something specific for *this* learner, not selling a generic course catalog (Creator). Concretely, avoid: exclamation-heavy CTAs, countdown/urgency tactics, "🔥 limited seats!" energy. This is a counselling-adjacent brand, not a flash-sale brand.
+    34→    34→
+    35→    35→### 1.4 Voice: do / don't (from brand doc §8, applied literally)
+    36→    36→- ✅ "Every student deserves a learning path that understands their strengths."
+    37→    37→- ❌ "Join our course now!"
+    38→    38→- Encouraging, not preachy · Expert, not academic-heavy · Warm, not childish · Global, not region-specific.
+    39→    39→
+    40→    40→### 1.5 Visual clichés to explicitly avoid
+    41→    41→From the brand doc itself: graduation caps, shields, mascots, cartoon children, generic stock "e-learning" iconography, excessive 3D. **Additionally**, avoid the three looks that currently read as "default AI-generated design": warm cream background + serif + terracotta accent; near-black background + single neon accent; broadsheet/newspaper hairline-rule layout. Educraft's actual palette (indigo/teal/gold on white/sky-blue) is naturally distinct from all three — stay inside the brand palette rather than drifting toward any of them for "safety."
+    42→    42→
+    43→    43→### 1.6 The 5 verticals (source of truth — used throughout)
+    44→    44→
+    45→    45→| # | Course | Pillar (brand §8) | Slug |
+    46→    46→|---|---|---|---|
+    47→    47→| 1 | Linguistics | Learn | `linguistics` |
+    48→    48→| 2 | Inclusive Education | Include | `inclusive-education` |
+    49→    49→| 3 | Psychological Counseling & Wellbeing | Thrive | `wellbeing-counseling` |
+    50→    50→| 4 | AI and Digital Technologies | Achieve | `ai-digital-tech` |
+    51→    51→| 5 | NEET & JEE Preparation | Excel | `neet-jee` |
+    52→    52→
+    53→    53→---
+    54→    54→
+    55→    55→## 2. Design System (single source of truth — build once in Stage 0, reference forever after)
+    56→    56→
+    57→    57→### 2.1 Color tokens
+    58→    58→Base 5 colors are fixed by the brand doc. Neutral/text scale below is a necessary, brand-consistent *extension* (the brand doc gives hero colors, not a full UI-ready neutral scale — pure indigo body text at small sizes fails contrast/readability, so a near-navy ink is used for text instead).
+    59→    59→
+    60→    60→```js
+    61→    61→// tailwind.config.js -> theme.extend.colors
+    62→    62→colors: {
+    63→    63→  indigo:  { DEFAULT: '#1E2A78', dark: '#141D57', light: '#3B4896' }, // trust, authority, nav/footer
+    64→    64→  teal:    { DEFAULT: '#00B3B8', dark: '#00898D', light: '#3FCBCF' }, // innovation, links, secondary CTA
+    65→    65→  gold:    { DEFAULT: '#F4B942', dark: '#D89F2B', light: '#F8CD73' }, // achievement — use SPARINGLY, accents only
+    66→    66→  sky:     '#EAF6FF',   // section background tint
+    67→    67→  white:   '#FFFFFF',
+    68→    68→  ink:     '#12172E',   // body text (near-navy, not pure black — stays in brand family)
+    69→    69→  slate:   '#5B6478',   // secondary/muted text
+    70→    70→  border:  '#E4E9F2',   // dividers, card borders
+    71→    71→}
+    72→    72→```
+    73→    73→**Usage rule:** indigo and white/sky carry ~80% of the UI (trust, calm). Teal is the interactive/secondary color (links, hover states, secondary buttons). Gold appears only on achievement moments — success states, "Excel"/"Achieve" pillar accents, primary CTA button — never as a background flood.
+    74→    74→
+    75→    75→### 2.2 Typography
+    76→    76→Two roles, both already brand-recommended fonts — no drift from the brief:
+    77→    77→- **Display** (headlines, hero, section titles): **Sora**, weights 600/700. Geometric, rounded, carries the "crafted compass" personality.
+    78→    78→- **Body/UI** (paragraphs, nav, forms, buttons): **Manrope**, weights 400/500/600. Same geometric family-feel, higher readability at small sizes.
+    79→    79→- **Eyebrows/labels** (pillar tags, form labels): Manrope 600, uppercase, `letter-spacing: 0.08em`, `font-size: 0.75rem` — no third typeface needed.
+    80→    80→
+    81→    81→Type scale (rem, desktop → mobile shrinks via `clamp()`):
+    82→    82→`h1: clamp(2.25rem, 4vw, 3.5rem)` · `h2: clamp(1.75rem, 3vw, 2.5rem)` · `h3: 1.5rem` · `body: 1rem/1.7` · `small: 0.875rem`
+    83→    83→
+    84→    84→### 2.3 Layout & structure
+    85→    85→- Radius: `rounded-2xl` (1rem) as the default card/button/input radius — matches brand's "rounded edges for friendliness."
+    86→    86→- Shadows: soft only — `shadow-[0_8px_30px_rgba(30,42,120,0.08)]`, never harsh/black drop shadows (supports "calm confidence").
+    87→    87→- Section rhythm: `py-24` desktop / `py-14` mobile, max content width `1200px`, `px-6` gutters.
+    88→    88→- **No decorative numbered markers (01/02/03) on the 5 course cards** — the verticals are not a sequence, presenting them as one implies a false hierarchy/order. Use icon + pillar label instead.
+    89→    89→
+    90→    90→### 2.4 Signature element: The Pathway Motif
+    91→    91→Pulled directly from the brand doc's own symbolism (§5 "interconnected pathways," §10 "global orbit"), turned into one real, reused UI element instead of generic decoration:
+    92→    92→
+    93→    93→A thin (1.5px) teal/indigo line-and-node motif, arranged as an **orbit/ring** (not a left-to-right timeline — avoids implying the 5 verticals are sequential steps):
+    94→    94→- **Hero:** faint animated SVG — the path draws itself once on load (`stroke-dashoffset` animation, ~1.2s, runs once), sitting behind the headline at low opacity. Skips animation entirely under `prefers-reduced-motion`, just renders static.
+    95→    95→- **Courses Overview section:** the 5 course cards sit around a faint circular orbit line connecting them — visualizing "one connected ecosystem," not a 5-step funnel.
+    96→    96→- **Footer:** the same ring, large-scale, very low opacity, as background texture.
+    97→    97→
+    98→    98→This is the *one* place the design gets expressive — everything else stays quiet and disciplined around it.
+    99→    99→
+   100→   100→### 2.5 Iconography
+   101→   101→`lucide-react` (lightweight, line-based, zero cliché risk). Mapping:
+   102→   102→| Course | Icon |
+   103→   103→|---|---|
+   104→   104→| Linguistics | `Languages` |
+   105→   105→| Inclusive Education | `HeartHandshake` |
+   106→   106→| Wellbeing & Counseling | `Sparkles` |
+   107→   107→| AI and Digital Technologies | `BrainCircuit` |
+   108→   108→| NEET & JEE | `Atom` |
+   109→   109→
+   110→   110→### 2.6 Motion principles
+   111→   111→Deliberate, not scattered. Scroll-reveal (fade + 12px slide-up, one shared `useReveal` hook via `IntersectionObserver` — no animation library dependency needed). Card hover: subtle lift (`translateY(-4px)`) + shadow deepen, 150ms. Hero pathway draw: once, on load. Nothing else animates. Always respect `prefers-reduced-motion: reduce`.
+   112→   112→
+   113→   113→---
+   114→   114→
+   115→   115→## 3. Information Architecture
+   116→   116→
+   117→   117→### 3.1 Sitemap
+   118→   118→```
+   119→   119→/                          Landing page
+   120→   120→/courses/:slug             Dynamic course page (5 routes, 1 template)
+   121→   121→  /courses/linguistics
+   122→   122→  /courses/inclusive-education
+   123→   123→  /courses/wellbeing-counseling
+   124→   124→  /courses/ai-digital-tech
+   125→   125→  /courses/neet-jee
+   126→   126→```
+   127→   127→Global elements on every route: Navbar (with Courses dropdown), Footer, floating "Enquire Now" button, Enquiry Modal (mounted once at app root via context).
+   128→   128→
+   129→   129→### 3.2 Component inventory (build once, reuse everywhere — this is the token-efficiency core)
+   130→   130→
+   131→   131→| Component | Role | Used on |
+   132→   132→|---|---|---|
+   133→   133→| `Navbar` | Logo, nav links, **Courses dropdown** (5 items), "Enquire Now" CTA, mobile hamburger | Every page |
+   134→   134→| `Footer` | Links, contact, pathway-motif background texture | Every page |
+   135→   135→| `Button` | Primary (gold-on-indigo), Secondary (teal outline), Ghost variants | Everywhere |
+   136→   136→| `SectionHeading` | Eyebrow label + H2 + optional subtext, consistent rhythm | All sections |
+   137→   137→| `EnquiryModal` | Wraps `EnquiryForm`, focus-trapped, `Esc` to close | Landing popup, floating CTA |
+   138→   138→| `EnquiryForm` | `mode="general"` (course dropdown) or `mode="locked"` (course fixed) | Modal + inline on course pages |
+   139→   139→| `Hero` | Headline, subhead, primary CTA, pathway-motif SVG | Landing only |
+   140→   140→| `TrustStrip` | Institutional trust signals (partner schools / accreditation-style badges) | Landing |
+   141→   141→| `PillarsSection` | Learn/Include/Thrive/Achieve/Excel, 5-across | Landing |
+   142→   142→| `CoursesOverview` | 5 course cards around orbit motif, links to `/courses/:slug` | Landing |
+   143→   143→| `CoursePage` | **Data-driven template** — hero, description, highlights, locked enquiry form | All 5 course routes |
+   144→   144→
+   145→   145→### 3.3 Content data model — `src/data/courses.js` (real content, ready to use verbatim)
+   146→   146→
+   147→   147→```js
+   148→   148→import { Languages, HeartHandshake, Sparkles, BrainCircuit, Atom } from 'lucide-react';
+   149→   149→
+   150→   150→export const courses = [
+   151→   151→  {
+   152→   152→    slug: 'linguistics',
+   153→   153→    pillar: 'Learn',
+   154→   154→    name: 'Linguistics',
+   155→   155→    icon: Languages,
+   156→   156→    shortIntro: 'Build real fluency and confident communication across languages, guided by methods rooted in how people actually learn to speak, read, and connect.',
+   157→   157→    longDescription: 'Educraft\'s linguistics track moves beyond textbook grammar drills toward practical, confidence-first language learning. Students build conversational fluency alongside academic writing and comprehension skills, with pathways tuned to their starting level and target language — preparing them to communicate, study, and thrive in genuinely global settings.',
+   158→   158→    highlights: [
+   159→   159→      'Personalized language pathways by level and goal',
+   160→   160→      'Conversational and academic fluency tracks',
+   161→   161→      'Global communication skill certification',
+   162→   162→      'Small-group sessions led by language specialists',
+   163→   163→    ],
+   164→   164→  },
+   165→   165→  {
+   166→   166→    slug: 'inclusive-education',
+   167→   167→    pillar: 'Include',
+   168→   168→    name: 'Inclusive Education',
+   169→   169→    icon: HeartHandshake,
+   170→   170→    shortIntro: 'Learning designed around every learner — adaptive support for diverse needs, so no student is left outside the circle of opportunity.',
+   171→   171→    longDescription: 'Every learner processes, paces, and engages differently — Educraft\'s inclusive education program is built around that reality rather than around it. Certified special-needs educators design individualized learning plans, adapt pace and sensory approach to each student, and keep families closely looped in, so progress is visible and support never feels like an afterthought.',
+   172→   172→    highlights: [
+   173→   173→      'Individualized learning plans per student',
+   174→   174→      'Certified special-needs educators',
+   175→   175→      'Pace- and sensory-adaptive content delivery',
+   176→   176→      'Regular family partnership check-ins',
+   177→   177→    ],
+   178→   178→  },
+   179→   179→  {
+   180→   180→    slug: 'wellbeing-counseling',
+   181→   181→    pillar: 'Thrive',
+   182→   182→    name: 'Psychological Counseling & Wellbeing',
+   183→   183→    icon: Sparkles,
+   184→   184→    shortIntro: 'Confidential, judgment-free support that helps students manage stress, build resilience, and feel steady enough to focus on what matters.',
+   185→   185→    longDescription: 'Academic pressure doesn\'t stay in the classroom — Educraft\'s counseling and wellbeing track gives students a confidential space to work through stress, exam anxiety, and the everyday weight of growing up. Licensed school counselors offer one-on-one sessions alongside practical resilience toolkits, with guidance extended to parents and teachers so support is consistent everywhere the student shows up.',
+   186→   186→    highlights: [
+   187→   187→      'Licensed, confidential school counselors',
+   188→   188→      'Exam-anxiety and stress-management toolkits',
+   189→   189→      'One-on-one sessions, judgment-free',
+   190→   190→      'Guidance resources for parents and teachers',
+   191→   191→    ],
+   192→   192→  },
+   193→   193→  {
+   194→   194→    slug: 'ai-digital-tech',
+   195→   195→    pillar: 'Achieve',
+   196→   196→    name: 'AI and Digital Technologies',
+   197→   197→    icon: BrainCircuit,
+   198→   198→    shortIntro: 'Practical AI literacy and digital-world readiness — helping students think critically about technology and build the skills tomorrow\'s careers will actually need.',
+   199→   199→    longDescription: 'Educraft\'s AI and Digital Technologies track moves past buzzwords into practical literacy — how AI tools actually work, how to use them responsibly, and the computational thinking behind them. Students build real digital fluency alongside ethical awareness, preparing them not just to use tomorrow\'s technology, but to understand and shape it with confidence.',
+   200→   200→    highlights: [
+   201→   201→      'Hands-on AI and machine-learning literacy',
+   202→   202→      'Ethical and responsible technology use',
+   203→   203→      'Computational thinking and coding foundations',
+   204→   204→      'Real-world portfolio projects for future careers',
+   205→   205→    ],
+   206→   206→  },
+   207→   207→  {
+   208→   208→    slug: 'neet-jee',
+   209→   209→    pillar: 'Excel',
+   210→   210→    name: 'NEET & JEE Preparation',
+   211→   211→    icon: Atom,
+   212→   212→    shortIntro: 'Rigorous, exam-focused coaching for NEET & JEE aspirants — built on strong fundamentals, disciplined practice, and steady mentorship.',
+   213→   213→    longDescription: 'Educraft\'s NEET & JEE program is built on fundamentals first — a concept-first curriculum mapped closely to the NCERT and JEE syllabus, reinforced through weekly mock tests with All-India ranking so students always know exactly where they stand. Regular doubt-clearing mentor sessions and a performance analytics dashboard keep preparation disciplined, measurable, and steady rather than last-minute and anxious.',
+   214→   214→    highlights: [
+   215→   215→      'Concept-first curriculum mapped to NCERT/JEE syllabus',
+   216→   216→      'Weekly mock tests with All-India ranking',
+   217→   217→      'Regular doubt-clearing mentor sessions',
+   218→   218→      'Personal performance analytics dashboard',
+   219→   219→    ],
+   220→   220→  },
+   221→   221→];
+   222→   222→
+   223→   223→export const getCourseBySlug = (slug) => courses.find((c) => c.slug === slug);
+   224→   224→```
+   225→   225→
+   226→   226→---
+   227→   227→
+   228→   228→## 4. Enquiry Form System Spec
+   229→   229→
+   230→   230→**Two modes of one component — this is the exact mechanism satisfying both form requirements from the brief:**
+   231→   231→
+   232→   232→- **`mode="general"`** (landing page popup, floating CTA): includes a "Which course are you interested in?" select, populated from `courses.js`. Used when intent is unknown.
+   233→   233→- **`mode="locked"`** (embedded inline on every course page, near the bottom): course select is hidden; a fixed, visibly-stated field shows "Enquiring about: **[Course Name]**"; the slug is passed as a hidden form value. No way to change course from this instance — that's the whole point of "only take enquiry for that particular course."
+   234→   234→
+   235→   235→### Fields
+   236→   236→Full name* · Email* · Phone* · Course (select — general mode only, else locked+hidden) · Preferred contact time (optional) · Message (optional, textarea) · Consent checkbox* ("I agree to be contacted about this enquiry")
+   237→   237→
+   238→   238→### Validation
+   239→   239→Required-field check, email regex, phone digit-length check (10+ digits), consent must be checked before submit is enabled. Inline error text under each field, not just a top-of-form banner.
+   240→   240→
+   241→   241→### Submission handling (demo-appropriate, real backend deferred)
+   242→   242→Centralize submission in one file so the actual provider is a one-line swap later:
+   243→   243→```js
+   244→   244→// src/api/enquiry.js
+   245→   245→export async function submitEnquiry(payload) {
+   246→   246→  // Demo default: Formspree (free, no backend needed, emails actually arrive)
+   247→   247→  // Replace YOUR_FORM_ID at https://formspree.io before the client demo.
+   248→   248→  const res = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+   249→   249→    method: 'POST',
+   250→   250→    headers: { Accept: 'application/json' },
+   251→   251→    body: JSON.stringify(payload),
+   252→   252→  });
+   253→   253→  if (!res.ok) throw new Error('Submission failed');
+   254→   254→  return res.json();
+   255→   255→}
+   256→   256→```
+   257→   257→UI: submit → loading state on button → success state ("Thanks — we'll be in touch within 1 business day.") replacing the form, or inline error state with a retry option on failure.
+   258→   258→
+   259→   259→### Accessibility (non-negotiable, both modes)
+   260→   260→Every input has a real `<label>`, modal traps focus and returns it to the trigger button on close, `Esc` closes the modal, error messages are associated via `aria-describedby`.
+   261→   261→
+   262→   262→---
+   263→   263→
+   264→   264→## 5. Tech Stack & Rationale (keep this exact dependency list — don't let the agent add extras)
+   265→   265→
+   266→   266→| Choice | Why |
+   267→   267→|---|---|
+   268→   268→| Vite + React 18 | Fast dev/preview loop for client demos, zero server needed |
+   269→   269→| React Router v6 | One `CoursePage` template + 5 data-driven routes instead of 5 hand-written pages |
+   270→   270→| Tailwind CSS | Design tokens live in `tailwind.config.js` once (Sec. 2), referenced everywhere — no scattered inline CSS |
+   271→   271→| `lucide-react` | Line icons matching the "avoid cartoon/mascot" brand direction, tree-shakeable |
+   272→   272→| **No animation library** | A ~30-line custom `useReveal` hook (IntersectionObserver) covers every motion need in Sec. 2.6 — skips a dependency for effects this simple |
+   273→   273→| Formspree (demo only) | Genuinely working form submission with zero backend code, swappable later |
+   274→   274→
+   275→   275→```
+   276→   276→educraft-website/
+   277→   277→├── index.html
+   278→   278→├── tailwind.config.js
+   279→   279→├── src/
+   280→   280→│   ├── main.jsx  ·  App.jsx  ·  index.css
+   281→   281→│   ├── data/courses.js
+   282→   282→│   ├── api/enquiry.js
+   283→   283→│   ├── hooks/useReveal.js
+   284→   284→│   ├── context/EnquiryModalContext.jsx
+   285→   285→│   ├── components/
+   286→   286→│   │   ├── layout/  → Navbar.jsx, Footer.jsx
+   287→   287→│   │   ├── ui/      → Button.jsx, SectionHeading.jsx, PathwayMotif.jsx
+   288→   288→│   │   ├── enquiry/ → EnquiryModal.jsx, EnquiryForm.jsx
+   289→   289→│   │   └── landing/ → Hero.jsx, TrustStrip.jsx, PillarsSection.jsx, CoursesOverview.jsx
+   290→   290→│   └── pages/       → LandingPage.jsx, CoursePage.jsx
+   291→   291→```
+   292→   292→
+   293→   293→---
+   294→   294→
+   295→   295→## 6. Multi-Stage Implementation Plan
+   296→   296→
+   297→   297→> Run these in order. Each prompt block is copy-paste-ready for an AI coding agent. Verify "Definition of Done" before starting the next stage.
+   298→   298→
+   299→   299→### Stage 0 — Scaffold & Design Tokens
+   300→   300→**Goal:** working empty shell with the full design system wired in, nothing else.
+   301→   301→
+   302→   302→```
+   303→   303→Scaffold a new Vite + React 18 project named "educraft-website" with Tailwind CSS
+   304→   304→and react-router-dom installed and configured. Set up the folder structure exactly
+   305→   305→as specified in Section 5 of the Educraft build guide. Implement the color tokens,
+   306→   306→font imports (Sora + Manrope from Google Fonts), and type scale exactly as defined
+   307→   307→in Section 2.1–2.2 into tailwind.config.js and index.css. Create src/data/courses.js
+   308→   308→with the exact content from Section 3.3, verbatim — do not paraphrase or shorten it.
+   309→   309→Set up React Router with routes for "/" and "/courses/:slug" pointing to placeholder
+   310→   310→LandingPage and CoursePage components. Confirm `npm run dev` runs with no console
+   311→   311→errors before stopping.
+   312→   312→```
+   313→   313→**Files:** full project scaffold, `tailwind.config.js`, `src/data/courses.js`, routing shell.
+   314→   314→**Done when:** dev server runs clean, brand colors/fonts visible in a basic test render, all 5 course objects present in `courses.js`.
+   315→   315→
+   316→   316→### Stage 1 — Shared Layout Components
+   317→   317→**Goal:** Navbar (with dropdown), Footer, Button, SectionHeading, PathwayMotif — the pieces every other stage depends on.
+   318→   318→
+   319→   319→```
+   320→   320→Using the design tokens already in tailwind.config.js (do not redefine them), build:
+   321→   321→1. Navbar.jsx — logo/wordmark left, nav links, a "Courses" dropdown menu listing all
+   322→   322→   5 items from src/data/courses.js (icon + name), an "Enquire Now" button on the
+   323→   323→   right that will later open the enquiry modal (stub the onClick for now), and a
+   324→   324→   mobile hamburger menu with an accordion-style course list. Dropdown must be
+   325→   325→   keyboard-navigable and close on outside click / Esc.
+   326→   326→2. Footer.jsx — brand statement, quick links, contact placeholder, with the Pathway
+   327→   327→   Motif (Section 2.4) as a large, low-opacity background ring.
+   328→   328→3. Button.jsx — primary (gold bg / indigo text), secondary (teal outline), and ghost
+   329→   329→   variants as one component with a `variant` prop.
+   330→   330→4. SectionHeading.jsx — eyebrow label + H2 + optional subtext, per Section 2.2 type
+   331→   331→   rules.
+   332→   332→5. PathwayMotif.jsx — a reusable SVG orbit-line-and-nodes component per Section 2.4,
+   333→   333→   accepting props for size and animate (true/false), respecting prefers-reduced-motion.
+   334→   334→Wire Navbar + Footer into App.jsx around the router outlet. No page content yet.
+   335→   335→```
+   336→   336→**Files:** `components/layout/`, `components/ui/`.
+   337→   337→**Done when:** Navbar dropdown works on desktop + mobile, keyboard-navigable, visible focus rings on every interactive element, motif renders and respects reduced-motion.
+   338→   338→
+   339→   339→### Stage 2 — Enquiry System
+   340→   340→**Goal:** the form/modal system used by both the landing popup and every course page.
+   341→   341→
+   342→   342→```
+   343→   343→Build the enquiry system per Section 4 of the Educraft build guide:
+   344→   344→1. EnquiryForm.jsx accepting a `mode` prop ("general" | "locked") and a `course`
+   345→   345→   prop (used to lock the course field when mode="locked"). Implement the exact
+   346→   346→   field set, validation rules, and success/error states from Section 4.
+   347→   347→2. api/enquiry.js with the submitEnquiry function from Section 4 (Formspree
+   348→   348→   placeholder — leave YOUR_FORM_ID as a clearly marked TODO).
+   349→   349→3. EnquiryModal.jsx wrapping EnquiryForm in mode="general", focus-trapped, closes
+   350→   350→   on Esc / outside click / close button, returns focus to the trigger on close.
+   351→   351→4. context/EnquiryModalContext.jsx exposing openModal() so any component can trigger
+   352→   352→   the general enquiry modal.
+   353→   353→5. Wire Navbar's "Enquire Now" button and a new floating bottom-right "Enquire Now"
+   354→   354→   button (visible on all pages) to context.openModal().
+   355→   355→```
+   356→   356→**Files:** `components/enquiry/`, `api/enquiry.js`, `context/EnquiryModalContext.jsx`.
+   357→   357→**Done when:** modal opens from Navbar and floating button, full validation works, focus trap works, submitting shows loading → success/error states, all inputs have real labels.
+   358→   358→
+   359→   359→### Stage 3 — Landing Page
+   360→   360→**Goal:** the full landing page, assembled entirely from Stage 1–2 components plus new landing-only sections.
+   361→   361→
+   362→   362→```
+   363→   363→Build the landing page using ONLY the components already built in Stage 1–2 plus
+   364→   364→these new landing-only sections, assembled in LandingPage.jsx in this order:
+   365→   365→1. Hero.jsx — headline built from the brand tagline "Empowering Schools, Empowering
+   366→   366→   Students," subhead from Section 1.1's positioning, primary Button opening the
+   367→   367→   enquiry modal (mode="general"), animated PathwayMotif in the background per
+   368→   368→   Section 2.4.
+   369→   369→2. TrustStrip.jsx — a row of institutional trust signals (e.g. "Trusted by schools
+   370→   370→   across [X] countries," accreditation-style badges) directly under the hero.
+   371→   371→3. PillarsSection.jsx — Learn / Include / Thrive / Achieve / Excel, 5-across on
+   372→   372→   desktop, using SectionHeading + icons from courses.js.
+   373→   373→4. CoursesOverview.jsx — 5 cards (one per course from courses.js: icon, pillar
+   374→   374→   eyebrow, name, shortIntro, "Learn more" link to /courses/:slug), arranged
+   375→   375→   around the PathwayMotif orbit per Section 2.4 — NOT numbered, NOT presented as
+   376→   376→   a linear sequence.
+   377→   377→5. FinalCTA.jsx — closing section reinforcing trust + a second Button opening the
+   378→   378→   enquiry modal.
+   379→   379→Apply the scroll-reveal behavior (Section 2.6) via a shared useReveal hook to each
+   380→   380→section as it enters the viewport.
+   381→   381→```
+   382→   382→**Files:** `pages/LandingPage.jsx`, `components/landing/`, `hooks/useReveal.js`.
+   383→   383→**Done when:** full page renders top-to-bottom with real content (no lorem ipsum), all 5 course cards link correctly, enquiry modal opens from both CTAs, scroll-reveal works and respects reduced-motion, responsive at 375px/768px/1280px.
+   384→   384→
+   385→   385→### Stage 4 — Dynamic Course Pages
+   386→   386→**Goal:** one template, all 5 routes, each with its own locked enquiry form.
+   387→   387→
+   388→   388→```
+   389→   389→Build pages/CoursePage.jsx as a single template driven by the useParams() slug,
+   390→   390→looked up via getCourseBySlug() from src/data/courses.js. Layout:
+   391→   391→1. Course hero — pillar eyebrow, course name, longDescription, PathwayMotif
+   392→   392→   (static, non-animated variant) as background accent.
+   393→   393→2. Highlights section — the 4 highlights from courses.js as a clean list/grid,
+   394→   394→   each with a small check or relevant icon.
+   395→   395→3. Inline enquiry section at the bottom — EnquiryForm with mode="locked" and
+   396→   396→   course={the current course}, wrapped in its own SectionHeading ("Enquire
+   397→   397→   about [Course Name]").
+   398→   398→4. Handle an invalid/unknown slug with a simple "Course not found" state linking
+   399→   399→   back to "/".
+   400→   400→Confirm all 5 routes (/courses/linguistics, /courses/inclusive-education,
+   401→   401→/courses/wellbeing-counseling, /courses/ai-digital-tech, /courses/neet-jee)
+   402→   402→render correctly from this one template.
+   403→   403→```
+   404→   404→**Files:** `pages/CoursePage.jsx`.
+   405→   405→**Done when:** all 5 course URLs work, each shows correct content and a correctly-locked enquiry form (course field fixed, not editable), invalid slugs handled gracefully.
+   406→   406→
+   407→   407→### Stage 5 — Motion, Responsive & Accessibility Pass
+   408→   408→**Goal:** cross-cutting polish across the whole site — not new components.
+   409→   409→
+   410→   410→```
+   411→   411→Do a full-site pass, no new components:
+   412→   412→1. Verify every interactive element (links, buttons, dropdown, modal, form
+   413→   413→   fields) has a visible keyboard focus state per Section 2.
+   414→   414→2. Verify all motion (hero pathway draw, scroll-reveal, card hover) respects
+   415→   415→   prefers-reduced-motion: reduce.
+   416→   416→3. Test and fix responsive layout at 375px, 768px, 1024px, 1280px for the
+   417→   417→   landing page and one course page — no horizontal scroll, no overlapping
+   418→   418→   text, mobile nav fully usable.
+   419→   419→4. Run a contrast check on all text/background combinations from Section 2.1 —
+   420→   420→   fix any pairing under WCAG AA (4.5:1 body text, 3:1 large text).
+   421→   421→5. Confirm no console errors or warnings across all 6 routes.
+   422→   422→```
+   423→   423→**Done when:** all 5 checks above pass on every route.
+   424→   424→
+   425→   425→### Stage 6 — SEO, QA & Deployment Prep
+   426→   426→**Goal:** demo-ready, shareable build.
+   427→   427→
+   428→   428→```
+   429→   429→1. Set a unique document.title and meta description per route (landing +
+   430→   430→   5 course pages), using each course's name/shortIntro for the course pages.
+   431→   431→2. Add a favicon and basic Open Graph tags (title, description) to index.html.
+   432→   432→3. Run `npm run build` and fix any build errors or warnings.
+   433→   433→4. Write a short README.md with: install steps, dev command, the Formspree
+   434→   434→   YOUR_FORM_ID TODO location, and a one-line deployment note for Vercel/Netlify
+   435→   435→   (drag-and-drop the /dist folder, or connect the repo for auto-deploys).
+   436→   436→```
+   437→   437→**Done when:** `npm run build` succeeds cleanly, every route has a distinct title/description, README is accurate.
+   438→   438→
+   439→   439→---
+   440→   440→
+   441→   441→## 7. Definition of Done — whole project
+   442→   442→
+   443→   443→- [ ] All 5 course verticals present with real content, equal visual weight
+   444→   444→- [ ] Navbar Courses dropdown works, keyboard-accessible, mobile-usable
+   445→   445→- [ ] Landing page enquiry popup lets the visitor pick any course
+   446→   446→- [ ] Every course page has its own locked, course-specific enquiry form
+   447→   447→- [ ] Forms validate properly and submit successfully (Formspree ID configured before client demo)
+   448→   448→- [ ] Design uses only the tokens from Section 2 — no off-palette colors, no off-brief fonts
+   449→   449→- [ ] Pathway motif is the one expressive element; everything else is quiet and disciplined
+   450→   450→- [ ] No graduation caps / mascots / cartoon children / generic stock edtech imagery anywhere
+   451→   451→- [ ] Fully responsive 375px → 1280px+, visible focus states, reduced-motion respected
+   452→   452→- [ ] `npm run build` succeeds with no errors
+   453→   453→
+   454→   454→---
+   455→   455→
+   456→   456→## 8. Deployment & Client Demo Notes
+   457→   457→
+   458→   458→- **Fastest path for a client demo:** `npm run build`, then drag the `/dist` folder into Netlify Drop, or connect the GitHub repo to Vercel for a live URL in under 2 minutes — no backend to provision.
+   459→   459→- **Before the actual demo call:** create a free Formspree account, replace `YOUR_FORM_ID` in `src/api/enquiry.js`, and send yourself one test enquiry from each form mode so you can show the client a real email landing in an inbox — this is what makes it read as "working," not just "styled."
+   460→   460→- **Natural upsell path once they approve the demo:** move to Next.js for server-rendered SEO, add a real CMS (Sanity/Contentful) for course content instead of the static `courses.js`, and swap Formspree for a proper CRM webhook (this is exactly why `submitEnquiry()` was isolated into one file in Stage 2 — that's the only place that changes).
+   461→   461→
