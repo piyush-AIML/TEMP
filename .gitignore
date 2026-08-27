@@ -22,6 +22,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# enquiry persistence (contains personal data — never commit)
+data/enquiries.jsonl
+
 # vercel
 .vercel
 

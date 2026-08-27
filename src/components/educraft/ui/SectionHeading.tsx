@@ -1,36 +1,58 @@
-'use client';
-
-import { useReveal } from '@/hooks/useReveal';
+import { cn } from '@/lib/utils';
+import Reveal from '../motion/Reveal';
+import Eyebrow from './Eyebrow';
 
 interface SectionHeadingProps {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   subtext?: string;
+  /** 'center' (default) or 'left' — left aligns with an editorial feel (plan §72: avoid every section centered). */
+  align?: 'center' | 'left';
   className?: string;
+  eyebrowClassName?: string;
+  as?: 'h2' | 'h3';
 }
 
-export default function SectionHeading({ eyebrow, title, subtext, className = '' }: SectionHeadingProps) {
-  const { ref, revealed } = useReveal();
+export default function SectionHeading({
+  eyebrow,
+  title,
+  subtext,
+  align = 'center',
+  className,
+  eyebrowClassName,
+  as: Heading = 'h2',
+}: SectionHeadingProps) {
+  const centered = align === 'center';
 
   return (
-    <div
-      ref={ref}
-      className={`text-center max-w-3xl mx-auto mb-12 md:mb-16 ${className} reveal-on-scroll ${revealed ? 'revealed' : ''}`}
+    <Reveal
+      className={cn(
+        'max-w-3xl mb-12 md:mb-16',
+        centered ? 'text-center mx-auto' : 'text-left',
+        className
+      )}
     >
-      <span className='inline-block font-[family-name:var(--font-manrope)] font-semibold uppercase text-ec-teal text-xs tracking-[0.08em] mb-3'>
-        {eyebrow}
-      </span>
-      <h2
-        className='font-[family-name:var(--font-sora)] font-bold text-ec-indigo dark:text-white leading-tight'
-        style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)' }}
+      {eyebrow && (
+        <Eyebrow className={cn('text-ec-teal mb-4', eyebrowClassName)}>{eyebrow}</Eyebrow>
+      )}
+      <Heading
+        className={cn(
+          'type-heading-l text-ec-ink dark:text-white text-balance',
+          centered && 'mx-auto'
+        )}
       >
         {title}
-      </h2>
+      </Heading>
       {subtext && (
-        <p className='mt-4 text-ec-slate text-base md:text-lg leading-relaxed max-w-2xl mx-auto'>
+        <p
+          className={cn(
+            'mt-4 type-body-m text-ec-slate text-pretty max-w-2xl',
+            centered && 'mx-auto'
+          )}
+        >
           {subtext}
         </p>
       )}
-    </div>
+    </Reveal>
   );
 }

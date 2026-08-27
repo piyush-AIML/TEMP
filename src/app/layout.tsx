@@ -17,10 +17,16 @@ const manrope = Manrope({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://educraft.com";
+
 export const metadata: Metadata = {
-  title: "Educraft — Empowering Schools, Empowering Students",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Educraft — Five Paths. One Learning Ecosystem.",
+    template: "%s",
+  },
   description:
-    "A global digital education platform unifying linguistics, inclusive education, psychological counseling, AI & digital technologies, and NEET/JEE preparation under one trust umbrella.",
+    "A global digital education platform unifying linguistics, inclusive education, wellbeing, AI & digital technologies, and NEET/JEE preparation under one trust umbrella.",
   icons: {
     icon: "/logo.svg",
   },
@@ -29,10 +35,34 @@ export const metadata: Metadata = {
     "color-scheme": "light dark",
   },
   openGraph: {
-    title: "Educraft — Empowering Schools, Empowering Students",
+    title: "Educraft — Five Paths. One Learning Ecosystem.",
     description:
       "Global digital education platform with 5 distinct verticals: Linguistics, Inclusive Education, Wellbeing, AI & Digital Tech, NEET & JEE.",
     type: "website",
+    siteName: "Educraft",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Educraft — Five Paths. One Learning Ecosystem.",
+    description:
+      "Global digital education platform with 5 distinct verticals under one trust umbrella.",
+  },
+};
+
+/** Organization structured data (plan §46) — site-wide. */
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  name: "Educraft",
+  description:
+    "Global digital education platform with five interconnected learning verticals: linguistics, inclusive education, wellbeing, AI & digital technologies, and NEET/JEE preparation.",
+  url: SITE_URL,
+  email: "hello@educraft.com",
+  telephone: "+918045678900",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Bangalore",
+    addressCountry: "IN",
   },
 };
 
@@ -46,6 +76,10 @@ export default function RootLayout({
       <body
         className={`${sora.variable} ${manrope.variable} antialiased bg-background text-foreground font-[family-name:var(--font-manrope)]`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

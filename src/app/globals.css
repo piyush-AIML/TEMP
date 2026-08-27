@@ -3,134 +3,431 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ---------------------------------------------------------------------------
+   Theme tokens (Tailwind 4). Runtime CSS vars flip under .dark for an
+   art-directed dark mode (plan §44) — values live in src/design/*.ts.
+--------------------------------------------------------------------------- */
 @theme inline {
+  /* shadcn base */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sora);
-  --font-body: var(--font-manrope);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+
+  --font-sans: var(--font-sora);
+  --font-display: var(--font-sora);
+  --font-body: var(--font-manrope);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
+  --radius-2xl: calc(var(--radius) + 16px);
 
-  /* Educraft brand tokens */
-  --color-ec-indigo: #1E2A78;
-  --color-ec-indigo-dark: #141D57;
-  --color-ec-indigo-light: #3B4896;
-  --color-ec-teal: #00B3B8;
-  --color-ec-teal-dark: #00898D;
-  --color-ec-teal-light: #3FCBCF;
-  --color-ec-gold: #F4B942;
-  --color-ec-gold-dark: #D89F2B;
-  --color-ec-gold-light: #F8CD73;
-  /* Theme-aware: backed by runtime vars that flip in .dark */
+  /* Brand */
+  --color-ec-indigo: var(--ec-indigo);
+  --color-ec-indigo-dark: var(--ec-indigo-dark);
+  --color-ec-indigo-light: var(--ec-indigo-light);
+  --color-ec-teal: var(--ec-teal);
+  --color-ec-teal-dark: var(--ec-teal-dark);
+  --color-ec-teal-light: var(--ec-teal-light);
+  --color-ec-gold: var(--ec-gold);
+  --color-ec-gold-dark: var(--ec-gold-dark);
+  --color-ec-gold-light: var(--ec-gold-light);
   --color-ec-sky: var(--ec-sky);
+
+  /* Neutrals */
+  --color-ec-canvas: var(--ec-canvas);
+  --color-ec-canvas-soft: var(--ec-canvas-soft);
+  --color-ec-canvas-deep: var(--ec-canvas-deep);
   --color-ec-ink: var(--ec-ink);
   --color-ec-slate: var(--ec-slate);
   --color-ec-border: var(--ec-border);
+  --color-ec-focus: var(--ec-focus);
+
+  /* Programme accents (plan §7) */
+  --color-ec-learn: var(--ec-p-learn);
+  --color-ec-learn-soft: var(--ec-p-learn-soft);
+  --color-ec-include: var(--ec-p-include);
+  --color-ec-include-soft: var(--ec-p-include-soft);
+  --color-ec-thrive: var(--ec-p-thrive);
+  --color-ec-thrive-soft: var(--ec-p-thrive-soft);
+  --color-ec-achieve: var(--ec-p-achieve);
+  --color-ec-achieve-soft: var(--ec-p-achieve-soft);
+  --color-ec-excel: var(--ec-p-excel);
+  --color-ec-excel-soft: var(--ec-p-excel-soft);
+
+  /* Semantic */
+  --color-ec-success: var(--ec-success);
+  --color-ec-warning: var(--ec-warning);
+  --color-ec-error: var(--ec-error);
+  --color-ec-info: var(--ec-info);
+
+  /* Motion easings (plan §26) — generates ease-out-soft etc. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-inout-soft: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ---------------------------------------------------------------------------
+   Light — airy, educational, optimistic (plan §44)
+--------------------------------------------------------------------------- */
 :root {
   color-scheme: light;
   --radius: 1rem;
-  --ec-sky: #EAF6FF;
-  --ec-ink: #12172E;
-  --ec-slate: #5B6478;
-  --ec-border: #E4E9F2;
-  --ec-focus: #1E2A78;
-  --background: #FFFFFF;
-  --foreground: #12172E;
-  --card: #FFFFFF;
-  --card-foreground: #12172E;
-  --popover: #FFFFFF;
-  --popover-foreground: #12172E;
-  --primary: #1E2A78;
-  --primary-foreground: #FFFFFF;
-  --secondary: #EAF6FF;
-  --secondary-foreground: #1E2A78;
-  --muted: #EAF6FF;
-  --muted-foreground: #5B6478;
-  --accent: #00B3B8;
-  --accent-foreground: #FFFFFF;
-  --destructive: #EF4444;
-  --border: #E4E9F2;
-  --input: #E4E9F2;
-  --ring: #1E2A78;
-  --chart-1: #1E2A78;
-  --chart-2: #00B3B8;
-  --chart-3: #F4B942;
-  --chart-4: #3B4896;
-  --chart-5: #00898D;
+
+  --ec-indigo: #1e2a78;
+  --ec-indigo-dark: #141d57;
+  --ec-indigo-light: #3b4896;
+  --ec-teal: #00b3b8;
+  --ec-teal-dark: #00898d;
+  --ec-teal-light: #3fcbcf;
+  --ec-gold: #f4b942;
+  --ec-gold-dark: #c58f1b;
+  --ec-gold-light: #f8cd73;
+
+  --ec-canvas: #ffffff;
+  --ec-canvas-soft: #f6f9fc;
+  --ec-canvas-deep: #eaf3fb;
+  --ec-sky: #eaf6ff;
+  --ec-ink: #12172e;
+  --ec-slate: #5b6478;
+  --ec-border: #e4e9f2;
+  --ec-focus: #1e2a78;
+
+  --ec-p-learn: #00898d;
+  --ec-p-learn-soft: #dff5f6;
+  --ec-p-include: #3b7dd8;
+  --ec-p-include-soft: #e7effb;
+  --ec-p-thrive: #6f5cb8;
+  --ec-p-thrive-soft: #efebfa;
+  --ec-p-achieve: #c58f1b;
+  --ec-p-achieve-soft: #fbf0d9;
+  --ec-p-excel: #1e2a78;
+  --ec-p-excel-soft: #e8ebf8;
+
+  --ec-success: #16a34a;
+  --ec-warning: #b45309;
+  --ec-error: #dc2626;
+  --ec-info: #2563eb;
+
+  --background: #ffffff;
+  --foreground: #12172e;
+  --card: #ffffff;
+  --card-foreground: #12172e;
+  --popover: #ffffff;
+  --popover-foreground: #12172e;
+  --primary: #1e2a78;
+  --primary-foreground: #ffffff;
+  --secondary: #eaf6ff;
+  --secondary-foreground: #1e2a78;
+  --muted: #eaf6ff;
+  --muted-foreground: #5b6478;
+  --accent: #00b3b8;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --border: #e4e9f2;
+  --input: #e4e9f2;
+  --ring: #1e2a78;
 }
 
+/* ---------------------------------------------------------------------------
+   Dark — cinematic, atmospheric, deeper indigo (plan §44)
+--------------------------------------------------------------------------- */
 .dark {
   color-scheme: dark;
-  --ec-sky: #151B36;
-  --ec-ink: #E8ECFB;
-  --ec-slate: #8E97B4;
-  --ec-border: #232B4D;
-  --ec-focus: #7C86C9;
-  --background: #0B0F1E;
-  --foreground: #E8ECFB;
-  --card: #12172E;
-  --card-foreground: #E8ECFB;
-  --popover: #151B36;
-  --popover-foreground: #E8ECFB;
-  --primary: #3B4896;
-  --primary-foreground: #FFFFFF;
-  --secondary: #1A2140;
-  --secondary-foreground: #B9C2E8;
-  --muted: #161D3A;
-  --muted-foreground: #8E97B4;
-  --accent: #00B3B8;
-  --accent-foreground: #0B0F1E;
-  --destructive: #F87171;
-  --border: #232B4D;
-  --input: #232B4D;
-  --ring: #3B4896;
-  --chart-1: #3B4896;
-  --chart-2: #00B3B8;
-  --chart-3: #F4B942;
-  --chart-4: #7C86C9;
-  --chart-5: #00898D;
+
+  --ec-indigo: #3b4896;
+  --ec-indigo-dark: #141d57;
+  --ec-indigo-light: #7c86c9;
+  --ec-teal: #00b3b8;
+  --ec-teal-dark: #00898d;
+  --ec-teal-light: #3fcbcf;
+  --ec-gold: #f4b942;
+  --ec-gold-dark: #f8cd73;
+  --ec-gold-light: #f8cd73;
+
+  --ec-canvas: #0b0f1e;
+  --ec-canvas-soft: #10152a;
+  --ec-canvas-deep: #141b38;
+  --ec-sky: #151b36;
+  --ec-ink: #e8ecfb;
+  --ec-slate: #9aa3c0;
+  --ec-border: #232b4d;
+  --ec-focus: #7c86c9;
+
+  --ec-p-learn: #3fcbcf;
+  --ec-p-learn-soft: #122a34;
+  --ec-p-include: #7fa8e8;
+  --ec-p-include-soft: #16233d;
+  --ec-p-thrive: #a795e8;
+  --ec-p-thrive-soft: #1d1934;
+  --ec-p-achieve: #f8cd73;
+  --ec-p-achieve-soft: #2b2312;
+  --ec-p-excel: #7c86c9;
+  --ec-p-excel-soft: #161c3a;
+
+  --ec-success: #4ade80;
+  --ec-warning: #fbbf24;
+  --ec-error: #f87171;
+  --ec-info: #60a5fa;
+
+  --background: #0b0f1e;
+  --foreground: #e8ecfb;
+  --card: #12172e;
+  --card-foreground: #e8ecfb;
+  --popover: #151b36;
+  --popover-foreground: #e8ecfb;
+  --primary: #3b4896;
+  --primary-foreground: #ffffff;
+  --secondary: #1a2140;
+  --secondary-foreground: #b9c2e8;
+  --muted: #161d3a;
+  --muted-foreground: #9aa3c0;
+  --accent: #00b3b8;
+  --accent-foreground: #0b0f1e;
+  --destructive: #f87171;
+  --border: #232b4d;
+  --input: #232b4d;
+  --ring: #3b4896;
 }
 
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-manrope);
+    text-rendering: optimizeLegibility;
   }
+  ::selection {
+    background: color-mix(in srgb, var(--ec-teal) 25%, transparent);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Layout primitives (plan §8)
+--------------------------------------------------------------------------- */
+@layer components {
+  .container-site {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+  .container-content {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+  @media (min-width: 768px) {
+    .container-site,
+    .container-content {
+      padding-inline: 32px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .container-site,
+    .container-content {
+      padding-inline: 48px;
+    }
+  }
+  @media (min-width: 1440px) {
+    .container-site {
+      padding-inline: 64px;
+    }
+  }
+
+  /* Type scale (plan §6.2) — mirrors src/design/typography.ts */
+  .type-display-xl {
+    font-family: var(--font-sora);
+    font-weight: 700;
+    font-size: clamp(3rem, 6.5vw + 0.75rem, 5.25rem);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+  }
+  .type-display-l {
+    font-family: var(--font-sora);
+    font-weight: 700;
+    font-size: clamp(2.5rem, 5vw + 1rem, 4.25rem);
+    line-height: 1;
+    letter-spacing: -0.025em;
+  }
+  .type-display-m {
+    font-family: var(--font-sora);
+    font-weight: 700;
+    font-size: clamp(2.125rem, 4vw + 0.75rem, 3.25rem);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+  }
+  .type-heading-xl {
+    font-family: var(--font-sora);
+    font-weight: 700;
+    font-size: clamp(2rem, 3.5vw + 0.5rem, 2.75rem);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+  }
+  .type-heading-l {
+    font-family: var(--font-sora);
+    font-weight: 700;
+    font-size: clamp(1.75rem, 2.75vw + 0.5rem, 2.25rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+  }
+  .type-heading-m {
+    font-family: var(--font-sora);
+    font-weight: 700;
+    font-size: clamp(1.5rem, 2vw + 0.5rem, 1.75rem);
+    line-height: 1.18;
+    letter-spacing: -0.005em;
+  }
+  .type-heading-s {
+    font-family: var(--font-sora);
+    font-weight: 700;
+    font-size: clamp(1.25rem, 1.5vw + 0.5rem, 1.375rem);
+    line-height: 1.22;
+  }
+  .type-body-l {
+    font-size: 1.25rem;
+    line-height: 1.55;
+  }
+  .type-body-m {
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  .type-body-s {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .type-caption {
+    font-size: 0.75rem;
+    line-height: 1.3;
+    font-weight: 500;
+  }
+
+  /* Micro-label: all-caps, small, letter-spaced (plan §6.3) */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-manrope);
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .eyebrow-rule::before {
+    content: "";
+    width: 1.5rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.7;
+  }
+
+  /* Card surface token */
+  .card-surface {
+    background: var(--card);
+    border: 1px solid var(--ec-border);
+    border-radius: var(--radius-xl);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Motion layer 1 — reveal (plan §25)
+--------------------------------------------------------------------------- */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.7s var(--ease-out-soft),
+    transform 0.7s var(--ease-out-soft);
+  will-change: opacity, transform;
+}
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Staggered reveal for lists — apply delay inline. */
+.reveal-delay {
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+/* Hero entrance sequence (plan §4.2) — delays applied inline per element. */
+.hero-enter {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: hero-enter 0.8s var(--ease-out-soft) forwards;
+  animation-delay: var(--hero-delay, 0ms);
+}
+.hero-enter-fade {
+  opacity: 0;
+  animation: hero-fade 1.2s var(--ease-out-soft) forwards;
+  animation-delay: var(--hero-delay, 0ms);
+}
+@keyframes hero-enter {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hero-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Ambient micro-motion (plan §25 layer 5) — pause under reduced motion. */
+.ambient-drift {
+  animation: ambient-drift 14s ease-in-out infinite alternate;
+}
+@keyframes ambient-drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-10px);
+  }
+}
+.ambient-pulse {
+  animation: ambient-pulse 5s ease-in-out infinite;
+}
+@keyframes ambient-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Utilities
+--------------------------------------------------------------------------- */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Smooth scrolling */
@@ -153,35 +450,40 @@ html {
   background: var(--ec-slate);
 }
 
-/* Reveal animation */
-.reveal-on-scroll {
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-.reveal-on-scroll.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal-on-scroll {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-  html {
-    scroll-behavior: auto;
-  }
-}
-
-/* Focus visible states */
+/* Visible focus (plan §33) */
 :focus-visible {
   outline: 2px solid var(--ec-focus);
   outline-offset: 2px;
 }
 
-/* Canvas container */
+/* Canvas containers never trap clicks meant for content. */
 .canvas-container canvas {
   pointer-events: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion (plan §33, §70) — functional transitions only
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal-on-scroll,
+  .hero-enter,
+  .hero-enter-fade {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+  .ambient-drift,
+  .ambient-pulse {
+    animation: none;
+  }
 }

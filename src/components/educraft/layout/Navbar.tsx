@@ -1,154 +1,231 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Menu, X, ChevronDown, GraduationCap, Sun, Moon } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Menu, X, ChevronDown, GraduationCap, Sun, Moon, ArrowRight } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { courses } from '@/data/courses';
+import { mainNavigation, megaProgrammes, audienceEntries, audiencePageHrefs } from '@/data/navigation';
+import { pillarBgClass } from '@/lib/pillarStyles';
+import { programmes } from '@/data/programmes';
+import { useScrollLock } from '@/hooks/useScrollLock';
+import { useEnquiryModal } from '@/context/EnquiryModalContext';
 import Button from '../ui/Button';
+import { cn } from '@/lib/utils';
 
-interface NavbarProps {
-  onEnquire: () => void;
-}
-
-export default function Navbar({ onEnquire }: NavbarProps) {
+/**
+ * Global navigation V2 (plan §9, Stage 3) — minimal fixed nav with a
+ * programmes mega panel, scroll-aware backdrop, route-aware active states,
+ * and an accessible mobile menu.
+ */
+export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [megaOpen, setMegaOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const dropdownBtnRef = useRef<HTMLButtonElement>(null);
+  const megaRef = useRef<HTMLDivElement>(null);
+  const megaBtnRef = useRef<HTMLButtonElement>(null);
   const { theme, setTheme } = useTheme();
+  const pathname = usePathname();
+  const { openModal } = useEnquiryModal();
+
+  useScrollLock(mobileOpen);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    setMounted(true);
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Close the mega menu on route change.
+  useEffect(() => {
+    setMegaOpen(false);
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Outside click + Escape handling for the mega menu.
+  useEffect(() => {
+    if (!megaOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (megaRef.current && !megaRef.current.contains(e.target as Node)) {
+        setMegaOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMegaOpen(false);
+        megaBtnRef.current?.focus();
+      }
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [megaOpen]);
 
   const toggleTheme = useCallback(() => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   }, [theme, setTheme]);
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const closeDropdown = useCallback(() => setDropdownOpen(false), []);
-
-  useEffect(() => {
-    if (!dropdownOpen) return;
-    const handleOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        closeDropdown();
-      }
-    };
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeDropdown();
-    };
-    document.addEventListener('mousedown', handleOutside);
-    document.addEventListener('keydown', handleEsc);
-    return () => {
-      document.removeEventListener('mousedown', handleOutside);
-      document.removeEventListener('keydown', handleEsc);
-    };
-  }, [dropdownOpen, closeDropdown]);
-
-  useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [mobileOpen]);
-
-  const navLinks = [
-    { label: 'Home', href: '#hero' },
-    { label: 'Courses', href: '#courses', hasDropdown: true },
-    { label: 'About', href: '#pillars' },
-  ];
+  const isActive = (href: string) => {
+    if (href === '/programmes') return pathname.startsWith('/programmes');
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-background/90 backdrop-blur-md shadow-[0_2px_20px_rgba(30,42,120,0.06)]'
-          : 'bg-transparent'
-      }`}
+      className={cn(
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out-soft',
+        scrolled || mobileOpen
+          ? 'bg-background/85 backdrop-blur-md border-b border-ec-border shadow-[0_2px_20px_rgba(30,42,120,0.06)]'
+          : 'bg-transparent border-b border-transparent'
+      )}
     >
-      <nav className='max-w-[1200px] mx-auto px-6 h-16 md:h-20 flex items-center justify-between'>
+      <nav
+        className={cn(
+          'container-site flex items-center justify-between transition-all duration-300 ease-out-soft',
+          scrolled ? 'h-14 md:h-16' : 'h-16 md:h-20'
+        )}
+        aria-label='Main navigation'
+      >
         {/* Logo */}
-        <a href='#hero' className='flex items-center gap-2 group' aria-label='Educraft Home'>
+        <Link href='/' className='flex items-center gap-2 group' aria-label='Educraft Home'>
           <div className='w-9 h-9 rounded-xl bg-ec-indigo flex items-center justify-center group-hover:bg-ec-indigo-light transition-colors'>
             <GraduationCap className='w-5 h-5 text-white' />
           </div>
           <span className='font-[family-name:var(--font-sora)] font-bold text-xl text-ec-indigo dark:text-white'>
             Edu<span className='text-ec-teal'>craft</span>
           </span>
-        </a>
+        </Link>
 
-        {/* Desktop Nav */}
+        {/* Desktop nav */}
         <div className='hidden md:flex items-center gap-8'>
-          {navLinks.map((link) =>
-            link.hasDropdown ? (
-              <div key={link.label} ref={dropdownRef} className='relative'>
-                <button
-                  ref={dropdownBtnRef}
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setDropdownOpen(!dropdownOpen);
-                    }
-                  }}
-                  className='flex items-center gap-1 text-ec-ink hover:text-ec-teal transition-colors font-medium text-sm'
-                  aria-expanded={dropdownOpen}
-                  aria-haspopup='true'
+          {mainNavigation.map((item) => {
+            if (item.mega) {
+              const active = isActive(item.href);
+              return (
+                <div
+                  key={item.label}
+                  ref={megaRef}
+                  className='relative'
+                  onMouseEnter={() => setMegaOpen(true)}
+                  onMouseLeave={() => setMegaOpen(false)}
                 >
-                  {link.label}
-                  <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {dropdownOpen && (
-                  <div
-                    className='absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-card rounded-2xl shadow-[0_8px_30px_rgba(30,42,120,0.12)] border border-ec-border py-2 animate-in fade-in slide-in-from-top-2 duration-200'
-                    role='menu'
+                  <button
+                    ref={megaBtnRef}
+                    onClick={() => setMegaOpen((o) => !o)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setMegaOpen((o) => !o);
+                      }
+                    }}
+                    className={cn(
+                      'flex items-center gap-1 text-sm font-medium transition-colors py-2',
+                      active || megaOpen
+                        ? 'text-ec-teal'
+                        : 'text-ec-ink hover:text-ec-teal'
+                    )}
+                    aria-expanded={megaOpen}
+                    aria-controls='programmes-mega-menu'
                   >
-                    {courses.map((course) => {
-                      const Icon = course.icon;
-                      return (
-                        <a
-                          key={course.slug}
-                          href={`#courses`}
-                          onClick={closeDropdown}
-                          className='flex items-center gap-3 px-4 py-3 hover:bg-ec-sky transition-colors'
-                          role='menuitem'
-                        >
-                          <div className='w-9 h-9 rounded-xl bg-ec-sky flex items-center justify-center flex-shrink-0'>
-                            <Icon className='w-4 h-4 text-ec-teal' />
-                          </div>
+                    {item.label}
+                    <ChevronDown
+                      className={cn('w-4 h-4 transition-transform duration-150', megaOpen && 'rotate-180')}
+                      aria-hidden='true'
+                    />
+                  </button>
+
+                  {megaOpen && (
+                    <div
+                      id='programmes-mega-menu'
+                      className='absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[min(720px,calc(100vw-48px))] card-surface shadow-[0_16px_48px_rgba(14,19,48,0.14)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200'
+                    >
+                      <div className='grid grid-cols-[1fr_240px]'>
+                        {/* Programme links */}
+                        <ul className='p-3 space-y-1' aria-label='Programmes'>
+                          {megaProgrammes.map((p) => (
+                            <li key={p.slug}>
+                              <Link
+                                href={p.href}
+                                className='group/item flex items-start gap-4 rounded-2xl px-4 py-3 hover:bg-ec-sky dark:hover:bg-ec-canvas-deep transition-colors'
+                              >
+                                <span
+                                  className={`mt-1.5 w-2.5 h-2.5 rounded-full flex-shrink-0 ${pillarBgClass[programmes.find((pr) => pr.slug === p.slug)!.pillarId]}`}
+                                  aria-hidden='true'
+                                />
+                                <span className='flex-1 min-w-0'>
+                                  <span className='block text-xs font-semibold uppercase tracking-[0.08em] text-ec-gold-dark dark:text-ec-gold'>
+                                    {p.pillar}
+                                  </span>
+                                  <span className='block text-sm font-semibold text-ec-ink mt-0.5'>
+                                    {p.name}
+                                  </span>
+                                  <span className='block text-xs text-ec-slate leading-relaxed mt-1'>
+                                    {p.short}
+                                  </span>
+                                </span>
+                                <ArrowRight
+                                  className='w-4 h-4 text-ec-slate mt-1 group-hover/item:text-ec-teal group-hover/item:translate-x-1 transition-all flex-shrink-0'
+                                  aria-hidden='true'
+                                />
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {/* Mini ecosystem map + audience links */}
+                        <div className='border-l border-ec-border bg-ec-canvas-soft dark:bg-ec-canvas-deep p-5 flex flex-col gap-5'>
+                          <MegaMenuMap />
                           <div>
-                            <div className='text-sm font-medium text-ec-ink'>{course.name}</div>
-                            <div className='text-xs text-ec-slate'>{course.pillar}</div>
+                            <p className='type-caption uppercase tracking-[0.08em] text-ec-slate mb-2'>
+                              Who are you?
+                            </p>
+                            <ul className='space-y-1'>
+                              {audienceEntries.map((a) => (
+                                <li key={a.slug}>
+                                  <Link
+                                    href={audiencePageHrefs[a.slug]}
+                                    className='text-sm font-medium text-ec-ink hover:text-ec-teal transition-colors'
+                                  >
+                                    {a.label}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
-                        </a>
-                      );
-                    })}
-                  </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={cn(
+                  'text-sm font-medium transition-colors py-2',
+                  active ? 'text-ec-teal' : 'text-ec-ink hover:text-ec-teal'
                 )}
-              </div>
-            ) : (
-              <a
-                key={link.label}
-                href={link.href}
-                className='text-ec-ink hover:text-ec-teal transition-colors font-medium text-sm'
+                aria-current={active ? 'page' : undefined}
               >
-                {link.label}
-              </a>
-            )
-          )}
+                {item.label}
+              </Link>
+            );
+          })}
+
           <ThemeToggleButton mounted={mounted} theme={theme} onToggle={toggleTheme} />
-          <Button size='sm' onClick={onEnquire}>
-            Enquire Now
+          <Button size='sm' onClick={() => openModal()}>
+            Enquire
           </Button>
         </div>
 
@@ -156,8 +233,8 @@ export default function Navbar({ onEnquire }: NavbarProps) {
         <div className='md:hidden flex items-center gap-1'>
           <ThemeToggleButton mounted={mounted} theme={theme} onToggle={toggleTheme} />
           <button
-            className='p-2 text-ec-indigo dark:text-white'
-            onClick={() => setMobileOpen(!mobileOpen)}
+            className='p-2 text-ec-indigo dark:text-white rounded-xl'
+            onClick={() => setMobileOpen((o) => !o)}
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}
           >
@@ -168,46 +245,102 @@ export default function Navbar({ onEnquire }: NavbarProps) {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className='md:hidden fixed inset-0 top-16 bg-background z-40 overflow-y-auto'>
-          <div className='px-6 py-6 space-y-1'>
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
+        <div className='md:hidden fixed inset-x-0 top-14 bottom-0 bg-background z-40 overflow-y-auto border-t border-ec-border'>
+          <div className='px-6 py-6 space-y-2'>
+            {mainNavigation.map((item) =>
+              item.mega ? (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className='block px-4 py-3 rounded-xl text-ec-ink font-semibold hover:bg-ec-sky transition-colors'
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className='block px-4 py-3 rounded-xl text-ec-ink font-semibold hover:bg-ec-sky transition-colors'
+                >
+                  {item.label}
+                </Link>
+              )
+            )}
+
+            <p className='px-4 pt-4 pb-1 type-caption uppercase tracking-[0.08em] text-ec-slate'>
+              Programmes
+            </p>
+            {megaProgrammes.map((p) => (
+              <Link
+                key={p.slug}
+                href={p.href}
+                className='flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-ec-sky transition-colors'
+              >
+                <span
+                  className={`w-2.5 h-2.5 rounded-full ${pillarBgClass[programmes.find((pr) => pr.slug === p.slug)!.pillarId]}`}
+                  aria-hidden='true'
+                />
+                <span className='text-sm font-medium text-ec-ink'>{p.name}</span>
+              </Link>
+            ))}
+
+            <p className='px-4 pt-4 pb-1 type-caption uppercase tracking-[0.08em] text-ec-slate'>
+              Audiences
+            </p>
+            {audienceEntries.map((a) => (
+              <Link
+                key={a.slug}
+                href={audiencePageHrefs[a.slug]}
                 className='block px-4 py-3 rounded-xl text-ec-ink font-medium hover:bg-ec-sky transition-colors'
               >
-                {link.label}
-              </a>
+                {a.label}
+              </Link>
             ))}
-            <div className='pt-2'>
-              <p className='px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-ec-slate'>
-                Our Courses
-              </p>
-              {courses.map((course) => {
-                const Icon = course.icon;
-                return (
-                  <a
-                    key={course.slug}
-                    href={`#courses`}
-                    onClick={() => setMobileOpen(false)}
-                    className='flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-ec-sky transition-colors'
-                  >
-                    <Icon className='w-4 h-4 text-ec-teal' />
-                    <span className='text-sm font-medium text-ec-ink'>{course.name}</span>
-                  </a>
-                );
-              })}
-            </div>
-            <div className='pt-4'>
-              <Button className='w-full' onClick={() => { setMobileOpen(false); onEnquire(); }}>
-                Enquire Now
+
+            <div className='pt-5'>
+              <Button
+                className='w-full'
+                onClick={() => {
+                  setMobileOpen(false);
+                  openModal();
+                }}
+              >
+                Enquire
               </Button>
             </div>
           </div>
         </div>
       )}
     </header>
+  );
+}
+
+/** Mini five-node ecosystem map for the mega panel (plan §9 visual strip). */
+function MegaMenuMap() {
+  const nodes = [
+    { x: 60, y: 14, fill: 'var(--ec-p-learn)' },
+    { x: 102, y: 38, fill: 'var(--ec-p-include)' },
+    { x: 86, y: 76, fill: 'var(--ec-p-thrive)' },
+    { x: 34, y: 76, fill: 'var(--ec-p-achieve)' },
+    { x: 18, y: 38, fill: 'var(--ec-p-excel)' },
+  ];
+  return (
+    <div>
+      <p className='type-caption uppercase tracking-[0.08em] text-ec-slate mb-2'>
+        One ecosystem
+      </p>
+      <svg viewBox='0 0 120 90' className='w-full max-w-[200px]' aria-hidden='true'>
+        <circle cx='60' cy='45' r='30' fill='none' stroke='var(--ec-border)' strokeWidth='1' strokeDasharray='3 3' />
+        <circle cx='60' cy='45' r='8' fill='none' stroke='var(--ec-teal)' strokeWidth='1' />
+        <circle cx='60' cy='45' r='3' fill='var(--ec-teal)' />
+        {nodes.map((n, i) => (
+          <g key={i}>
+            <line x1='60' y1='45' x2={n.x} y2={n.y} stroke='var(--ec-border)' strokeWidth='1' />
+            <circle cx={n.x} cy={n.y} r='4.5' fill={n.fill} />
+          </g>
+        ))}
+      </svg>
+    </div>
   );
 }
 
@@ -223,7 +356,7 @@ function ThemeToggleButton({
   return (
     <button
       onClick={onToggle}
-      className='p-2 rounded-xl text-ec-ink hover:bg-ec-sky transition-colors'
+      className='p-2 rounded-xl text-ec-ink hover:bg-ec-sky dark:hover:bg-ec-canvas-deep transition-colors'
       aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
       title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
