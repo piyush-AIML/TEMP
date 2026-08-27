@@ -35,7 +35,9 @@ export default function StudentJourney() {
   const StageIcon = STAGE_ICONS[idx];
 
   return (
-    <section ref={ref} className='relative bg-ec-sky dark:bg-ec-canvas-soft overflow-hidden'>
+    // Note: no overflow-hidden here — it would break the sticky pinning
+    // (an ancestor with overflow:hidden becomes the sticky's scroll box).
+    <section ref={ref} className='relative bg-ec-sky dark:bg-ec-canvas-soft'>
       {/* ---------------- Desktop pinned story ---------------- */}
       <div className='hidden lg:block relative' style={{ height: `${total * 92}vh` }}>
         <div className='sticky top-0 h-screen flex items-center overflow-hidden'>

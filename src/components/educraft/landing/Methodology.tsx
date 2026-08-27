@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { useScrollProgress } from '@/hooks/useScrollProgress';
+import { useScrollProgress, clamp01 } from '@/hooks/useScrollProgress';
 import { methodologySteps } from '@/data/pillars';
 import SectionHeading from '../ui/SectionHeading';
 import Reveal from '../motion/Reveal';
@@ -17,7 +17,16 @@ const PATH_D = 'M 60 100 C 180 30, 240 150, 348 90 S 500 40, 600 80 S 730 150, 8
  * and the five steps emerge beneath.
  */
 export default function MethodologySection() {
-  const { ref, progress } = useScrollProgress<HTMLElement>(32);
+  // 'visible' mode: progress 1 = section fully scrolled through while still
+  // on screen. Draw completes at ~91% of that, so the path finishes well
+  // before the section leaves the viewport.
+  const { ref, progress } = useScrollProgress<HTMLElement>(32, 'visible');
+
+  /** Path draw progress — accelerated so it never lags behind the scroll. */
+  const draw = clamp01(progress * 1.1);
+
+  /** Milestone i lights when the drawn path reaches it (~in sync with the dash). */
+  const nodeLitAt = (i: number) => clamp01(((i + 0.08) / 5.5) * 1.1);
 
   return (
     <section ref={ref} className='relative py-20 md:py-28 bg-ec-sky dark:bg-ec-canvas-soft overflow-hidden'>
@@ -41,11 +50,10 @@ export default function MethodologySection() {
               strokeLinecap='round'
               pathLength={1}
               strokeDasharray={1}
-              strokeDashoffset={1 - progress}
+              strokeDashoffset={1 - draw}
             />
             {methodologySteps.map((s, i) => {
-              const nodeProgress = (i + 0.12) / methodologySteps.length;
-              const lit = progress >= nodeProgress;
+              const lit = draw >= nodeLitAt(i);
               return (
                 <g key={s.title}>
                   <circle

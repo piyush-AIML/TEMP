@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { appendFile } from 'fs/promises';
+import { appendFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { enquirySchema } from '@/lib/validation';
 import { rateLimit, clientIp } from '@/lib/rate-limit';
@@ -80,7 +80,9 @@ export async function POST(request: Request) {
 
   // 2) Local JSONL persistence (best-effort; skipped on read-only FS).
   try {
-    const file = path.join(process.cwd(), 'data', 'enquiries.jsonl');
+    const dir = path.join(process.cwd(), 'data');
+    await mkdir(dir, { recursive: true });
+    const file = path.join(dir, 'enquiries.jsonl');
     await appendFile(file, `${JSON.stringify(record)}\n`, 'utf8');
   } catch (err) {
     console.warn('[enquiry] local persistence skipped', err instanceof Error ? err.message : err);

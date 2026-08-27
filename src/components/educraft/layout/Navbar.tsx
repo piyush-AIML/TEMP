@@ -353,12 +353,15 @@ function ThemeToggleButton({
   theme?: string;
   onToggle: () => void;
 }) {
+  // Gated on `mounted` so SSR and the first client render agree
+  // (next-themes resolves the stored theme only after mount).
+  const label = !mounted ? 'Toggle theme' : theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
   return (
     <button
       onClick={onToggle}
       className='p-2 rounded-xl text-ec-ink hover:bg-ec-sky dark:hover:bg-ec-canvas-deep transition-colors'
-      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-      title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-label={label}
+      title={label}
     >
       {mounted && theme === 'dark' ? (
         <Sun className='w-5 h-5' />
