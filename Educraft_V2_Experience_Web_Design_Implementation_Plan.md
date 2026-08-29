@@ -1,3 +1,18 @@
+> # ✅ STATUS: COMPLETED — ARCHIVED. Do not plan or build from this document.
+>
+> This plan was **fully implemented** as V2 and shipped in commits `Prod.ver-0.0.1` / `Prod.ver-0.0.2`
+> (Aug 2026). Every Stage 1–15 roadmap item is done; the few deliberately deferred items were
+> carried forward into the V3 roadmap.
+>
+> **Skip this file in future sessions.** The three live documents are:
+> - **Current state:** [`prod.md`](prod.md) — the single source of truth for the production system
+> - **Next version planner:** [`Educraft_V3_Next_Version_Planner.md`](Educraft_V3_Next_Version_Planner.md) — remaining work, tiered A–D
+> - **Previous state:** [`Educraft_V1_Previous_State.md`](Educraft_V1_Previous_State.md) — what existed before this plan ran
+>
+> Kept only as a historical reference for *why* V2 looks the way it does.
+
+---
+
 # Educraft V2 — Full Experience Web Design & UI/UX Implementation Plan
 
 **Project:** Educraft  
