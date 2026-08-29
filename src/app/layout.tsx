@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   description:
     "A global digital education platform unifying linguistics, inclusive education, wellbeing, AI & digital technologies, and NEET/JEE preparation under one trust umbrella.",
   icons: {
-    icon: "/logo.svg",
+    icon: "/logo.png",
   },
   other: {
     // Tell the browser the page supports both schemes so it never auto-inverts it

@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { GraduationCap, Mail, Phone, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import { Mail, Phone, MapPin } from 'lucide-react';
 import { footerProgrammes, footerAudiences, footerCompany, footerLegal } from '@/data/navigation';
 import { Constellation, PathLines } from '../graphics/DecorativeSystems';
 import { ButtonNextLink } from '../ui/Button';
@@ -47,13 +48,10 @@ export default function Footer() {
         <div className='mt-16 md:mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 border-t border-white/10 pt-12'>
           {/* Brand */}
           <div className='lg:col-span-2'>
-            <Link href='/' className='flex items-center gap-2 mb-4' aria-label='Educraft Home'>
-              <div className='w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center'>
-                <GraduationCap className='w-5 h-5 text-ec-gold' />
-              </div>
-              <span className='font-[family-name:var(--font-sora)] font-bold text-xl'>
-                Edu<span className='text-ec-teal-light'>craft</span>
-              </span>
+            <Link href='/' className='flex items-center mb-4' aria-label='Educraft Home'>
+              {/* Logo — light mode uses logo.png, dark mode swaps to logo-dark.png via CSS */}
+              <Image src='/logo.png' alt='Educraft' width={2135} height={736} className='h-14 md:h-16 w-auto dark:hidden' />
+              <Image src='/logo-dark.png' alt='Educraft' width={2172} height={724} className='hidden h-14 md:h-16 w-auto dark:block' />
             </Link>
             <p className='text-white/60 text-sm leading-relaxed max-w-sm'>
               A global digital education platform with five interconnected learning

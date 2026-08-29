@@ -107,7 +107,7 @@ Hero (accent eyebrow + ProgrammeGraphic) → why it matters → audience (3 card
 
 ### 5.4 Navigation & shell details
 
-Navbar: transparent → blurred+bordered on scroll (h-20→h-16), programmes mega menu (5 pillar rows + mini ecosystem SVG map + audience links) with hover + click toggle, Escape/outside-click close, focus return, route-change close, aria-expanded/controls, route-aware active states (`aria-current`), accessible mobile menu. Footer V2: closing statement "Build learning journeys that last.", CTA pair, 4 nav clusters, constellation + path-lines background, no social icons (waiting for real handles).
+Navbar: transparent → blurred+bordered on scroll (h-20→h-16), programmes mega menu (5 pillar rows + mini ecosystem SVG map + audience links) with hover + click toggle, Escape/outside-click close, focus return, route-change close, aria-expanded/controls, route-aware active states (`aria-current`), accessible mobile menu. Footer V2: closing statement "Build learning journeys that last.", CTA pair, 4 nav clusters, constellation + path-lines background, no social icons (waiting for real handles). Brand lockup (theme-aware, swapped in 2026-08-30): light mode renders `public/logo.png` (2135×736), dark mode renders `public/logo-dark.png` (2172×724) — CSS-class switch (`dark:hidden` / `hidden dark:block`), native colors, no JS/hydration gating needed. Sizes: Navbar `h-11 md:h-14`, Footer `h-14 md:h-16`. Replaced the GraduationCap+wordmark lockup and the `public/logo.svg` favicon.
 
 ---
 

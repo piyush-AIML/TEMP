@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ChevronDown, GraduationCap, Sun, Moon, ArrowRight } from 'lucide-react';
+import { Menu, X, ChevronDown, Sun, Moon, ArrowRight } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { mainNavigation, megaProgrammes, audienceEntries, audiencePageHrefs } from '@/data/navigation';
 import { pillarBgClass } from '@/lib/pillarStyles';
@@ -93,14 +94,23 @@ export default function Navbar() {
         )}
         aria-label='Main navigation'
       >
-        {/* Logo */}
-        <Link href='/' className='flex items-center gap-2 group' aria-label='Educraft Home'>
-          <div className='w-9 h-9 rounded-xl bg-ec-indigo flex items-center justify-center group-hover:bg-ec-indigo-light transition-colors'>
-            <GraduationCap className='w-5 h-5 text-white' />
-          </div>
-          <span className='font-[family-name:var(--font-sora)] font-bold text-xl text-ec-indigo dark:text-white'>
-            Edu<span className='text-ec-teal'>craft</span>
-          </span>
+        {/* Logo — light mode uses logo.png, dark mode swaps to logo-dark.png via CSS */}
+        <Link href='/' className='flex items-center' aria-label='Educraft Home'>
+          <Image
+            src='/logo.png'
+            alt='Educraft'
+            width={2135}
+            height={736}
+            priority
+            className='h-11 md:h-14 w-auto dark:hidden'
+          />
+          <Image
+            src='/logo-dark.png'
+            alt='Educraft'
+            width={2172}
+            height={724}
+            className='hidden h-11 md:h-14 w-auto dark:block'
+          />
         </Link>
 
         {/* Desktop nav */}
