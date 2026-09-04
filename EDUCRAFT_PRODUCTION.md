@@ -237,7 +237,7 @@ One coordinated system in `three/` (V1's `HeroScene`/`CourseOrbit3D`/`FloatingPa
 
 ## 12. Navigation / Shell / Brand
 
-**Navbar:** transparent → blurred+bordered on scroll (`h-20`→`h-16`); programmes mega menu (5 pillar rows + mini ecosystem SVG map + audience links) opens on hover + click, closes on Escape/outside-click/route-change with focus return; `aria-expanded`/`aria-controls`; route-aware active states (`aria-current`); accessible mobile menu. **Dashboard sign-in entry (added 2026-09-04, post-Stage-1 by user request):** a "Sign in" text link sits in the desktop nav (next to the Enquire CTA), the mobile menu (above Enquire), and the footer bottom bar — all pointing at `/dashboard`, which dispatches signed-in users to their role root and sends signed-out visitors to the Clerk `/sign-in` page via `proxy.ts`. Deliberately no sign-up link anywhere: sign-ups are invite-only (accounts are created in the Clerk dashboard with `publicMetadata.role`; a self-service sign-up would create role-less users that `getCurrentUser()` rejects).
+**Navbar:** transparent → blurred+bordered on scroll (`h-20`→`h-16`); programmes mega menu (5 pillar rows + mini ecosystem SVG map + audience links) opens on hover + click, closes on Escape/outside-click/route-change with focus return; `aria-expanded`/`aria-controls`; route-aware active states (`aria-current`); accessible mobile menu. **Dashboard sign-in entry (added 2026-09-04, post-Stage-1 by user request):** a "Sign in" text link sits in the desktop nav (next to the Enquire CTA), the mobile menu (above Enquire), and the footer bottom bar — all pointing at `/dashboard`, which dispatches signed-in users to their role root and sends signed-out visitors to the Clerk `/sign-in` page via `proxy.ts`. Deliberately no sign-up link anywhere: sign-ups are invite-only. **Invite flow (2026-09-05, app-driven):** invitations are sent from the dashboard — an `admin` invites professors and students, a `professor` invites only students (policy in `INVITE_ROLES_BY_INVITER`, `src/lib/validators/auth.ts`) — via the Clerk Invitations API with `publicMetadata: { role }`; on acceptance Clerk copies the role into the new user's publicMetadata, so `getCurrentUser()` accepts them on first hit (no webhook needed). The pre-2026-09-05 path (manual account creation in the Clerk dashboard + hand-set `publicMetadata.role`) still applies to the owner's own account — **to use the admin area, set your own Clerk user's `publicMetadata.role` to `"admin"`** (Clerk dashboard → Users → edit → public metadata); a self-service sign-up would create role-less users that `getCurrentUser()` rejects.
 
 **Footer V2:** closing statement "Build learning journeys that last.", CTA pair, 4 nav clusters, constellation + path-lines background. No social icons — deliberately absent until real handles exist (no dead `href="#"` links).
 
@@ -408,7 +408,7 @@ V2's design principles (non-negotiable — they live on in §25): visuals must e
 
 ### 24.2 Actors & Core Entities
 
-**Actors:** Student, Professor, (future: Admin/Coordinator)
+**Actors:** Student, Professor, Admin (minimal invitation area shipped 2026-09-05; full admin console is Stage 6 backlog)
 
 | Entity | Key fields |
 |---|---|
@@ -457,9 +457,10 @@ src/ (this repo — verified 2026-09-04)
 │   │   │                        role dispatch happens in proxy.ts (sign-in's fallbackRedirectUrl = /dashboard)
 │   │   ├── student/             page.tsx (overview) · courses/ · schedule/ ·
 │   │   │                        notifications/ · profile/
-│   │   └── professor/           page.tsx (overview) · courses/ · schedule/ ·
-│   │                            meetings/ · profile/   (Stage 2+: courses/[courseId]/materials ·
-│   │                            planner · students)
+│   │   ├── professor/           page.tsx (overview) · courses/ · schedule/ · invite/ ·
+│   │   │                        meetings/ · profile/   (Stage 2+: courses/[courseId]/materials ·
+│   │   │                        planner · students)
+│   │   └── admin/               (since 2026-09-05) page.tsx (invitation hub) · invite/
 │   └── api/                     Route Handlers only where needed (webhooks, file callbacks)
 ├── lib/                         auth.ts · db.ts · prisma-client.ts (factory: adapter + ws) ·
 │                                validators/auth.ts (zod v4 publicMetadata schema)
@@ -504,7 +505,7 @@ src/ (this repo — verified 2026-09-04)
 4. File storage limits: provider choice deferred to Stage 2 (materials upload); nothing installed in Stage 0. (unchanged)
 5. **Isolation:** the `(dashboard)` group is fully isolated (separate layout + data fetching) so a dashboard bug can never take down the marketing pages that drive enquiries. Stage 0 makes zero marketing-page changes. (unchanged)
 
-**Stage 0 complete — absorbed from `Dashboard-Stage0-Implementation-Plan.md` (deleted 2026-09-04, same lifecycle as the archived V2 plan).** What shipped beyond the decisions above: role dispatch for `/dashboard` lives in `src/proxy.ts` (no index page — a group/root-level page collides with `(site)/page.tsx`); real folder `src/app/dashboard/` (route-group correction, §18 rule 8 + §19 ledger); demo walkthrough accounts are the owner's real Clerk users — professor `piyush.ghosal.ai@gmail.com`, student `pika38212@gmail.com` (both roled via publicMetadata; seed links demo data by these emails, not the placeholder `.test` addresses from the plan). Clerk webhook sync, file storage, `Material.visibility`, admin role, mobile drawer polish remain deferred as planned.
+**Stage 0 complete — absorbed from `Dashboard-Stage0-Implementation-Plan.md` (deleted 2026-09-04, same lifecycle as the archived V2 plan).** What shipped beyond the decisions above: role dispatch for `/dashboard` lives in `src/proxy.ts` (no index page — a group/root-level page collides with `(site)/page.tsx`); real folder `src/app/dashboard/` (route-group correction, §18 rule 8 + §19 ledger); demo walkthrough accounts are the owner's real Clerk users — professor `piyush.ghosal.ai@gmail.com`, student `pika38212@gmail.com` (both roled via publicMetadata; seed links demo data by these emails, not the placeholder `.test` addresses from the plan). Clerk webhook sync, file storage, `Material.visibility`, mobile drawer polish remain deferred as planned (the admin role gained a minimal invitation area 2026-09-05 — see below).
 
 **Stage 1 — Student Core complete (2026-09-04).** All five student routes now show real DB data; zero mutations (notification bell still Stage 2). Decisions and shipped shape:
 - **Profile** = view mirror (avatar/name/email/role/"Dashboard member since" — the DB row's `createdAt`, honestly labelled as first dashboard visit) + embedded Clerk `<UserProfile routing="hash" />` portal (path routing would navigate to a nonexistent `/user` route). Identity edits stay Clerk-owned; the mirror refreshes on the next hit. Clerk's own theme accepted for now (polish deferred to Stage 4).
@@ -522,6 +523,14 @@ src/ (this repo — verified 2026-09-04)
 - **Datetime contract (all forms):** `<input type="datetime-local">` values are IST wall times — regex-validated, range-checked lexicographically, converted via `istWallTimeToUtc` (`validators/datetime.ts`); prefills convert UTC→IST wall time client-side (`lib/ist.ts`, deliberately not server-only). Reused by every session/meeting/task form.
 - **Professor pages:** overview (real stats/next/courses), courses grid, per-course management (`courses/[courseId]` — CourseTabs Overview/Roster/Sessions/Materials; server-rendered panels, client tab shell; SessionsManager with inline edit + two-step cancel, only SCHEDULED editable), schedule (create across courses + IST-grouped list), profile (mirror + shared `ProfileSection` — moved to `components/dashboard/`, both roles; professor stub's "Stage 1" label fixed). Student side: `notifications` page real; MaterialFeed FILE rows render signed download links + `formatBytes`.
 - Verified 2026-09-05: lint ✓ · tsc ✓ · build ✓ (13 dynamic dashboard routes + `/api/dashboard/notifications`); DB smoke against live Neon (migration columns, professor counts 5/1/2/3, bogus-course → null, roster incl. prefs shape). Storage smoke gate ran 2026-09-05 against UploadThing and was **BLOCKED** by the free tier (§24.9) — provider then switched to **AWS S3** same day and the gate **PASSED** end-to-end against the live bucket (presigned PUT/HEAD/GET/delete; browser E2E still the owner's remaining check).
+
+**Invite flow + minimal admin area (2026-09-05).** Sign-ups were invite-only from the start (no sign-up link anywhere); the invitation *mechanism* was previously manual account creation in the Clerk dashboard. Now app-driven and role-aware:
+- **Policy (single source):** `INVITE_ROLES_BY_INVITER` in `src/lib/validators/auth.ts` — `admin` → professor + student; `professor` → student only. `inviteInputSchema` (zod v4) validates email + role; no role strings live anywhere else.
+- **Action:** `src/lib/actions/invitations.ts` `createInvitation` — `requireRole('admin','professor')` → validate → re-check role against the inviter's allowed list (a tampered request cannot escalate) → Clerk `invitations.createInvitation({ emailAddress, publicMetadata: { role }, notify: true })`. Invitation `publicMetadata.role` lands in the user's publicMetadata on acceptance → `getCurrentUser()` accepts them on first dashboard hit (lazy mirror-upsert unchanged; no webhook needed).
+- **UI:** shared `InviteUserForm` client component renders only the inviter's allowed roles (fixed "Student" chip for professors; Professor/Student cards for admins). Pages: `/dashboard/professor/invite` (professor nav, "+Invite" between Schedule and Notifications) and `/dashboard/admin/invite`.
+- **Admin area (new — the role previously had no surface, `ROLE_HOME`/proxy landed it at `/`):** real folder `src/app/dashboard/admin/` (`layout.tsx` gated by `requireRole('admin')`; home = invitation hub; `ADMIN_NAV` = Overview + Invite). `DashboardShell` role union widened to `admin`; the notification bell is omitted for admin (no fan-out targets admins). `ROLE_HOME`/`ROLE_LANDING.admin` → `/dashboard/admin` (both maps updated).
+- Verified 2026-09-05: lint ✓ · tsc ✓ · build ✓ (3 new routes: `/dashboard/admin`, `/dashboard/admin/invite`, `/dashboard/professor/invite`). Browser E2E remains the owner's check (admin/professor each send an invitation; invitee accepts and lands in the right dashboard).
+- **Owner action to use it:** set your own Clerk `publicMetadata.role` to `"admin"` (your demo account is currently `professor`); professor invites are available without that step.
 
 ---
 

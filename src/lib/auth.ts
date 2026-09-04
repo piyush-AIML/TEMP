@@ -28,7 +28,7 @@ const ROLE_TO_DB: Record<DashboardRole, Role> = {
 export const ROLE_HOME: Record<DashboardRole, string> = {
   student: '/dashboard/student',
   professor: '/dashboard/professor',
-  admin: '/',
+  admin: '/dashboard/admin',
 };
 
 export type CurrentUser = {

@@ -5,6 +5,7 @@ import {
   UserRound,
   LayoutDashboard,
   CalendarClock,
+  UserPlus,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -31,7 +32,13 @@ export const PROFESSOR_NAV: DashboardNavItem[] = [
   { label: 'Overview', href: '/dashboard/professor', icon: LayoutDashboard },
   { label: 'My Courses', href: '/dashboard/professor/courses', icon: BookOpen },
   { label: 'Schedule', href: '/dashboard/professor/schedule', icon: CalendarDays },
+  { label: 'Invite', href: '/dashboard/professor/invite', icon: UserPlus },
   { label: 'Notifications', href: '/dashboard/professor/notifications', icon: Bell },
   { label: 'Meetings', href: '/dashboard/professor/meetings', icon: CalendarClock },
   { label: 'Profile', href: '/dashboard/professor/profile', icon: UserRound },
+];
+
+export const ADMIN_NAV: DashboardNavItem[] = [
+  { label: 'Overview', href: '/dashboard/admin', icon: LayoutDashboard },
+  { label: 'Invite', href: '/dashboard/admin/invite', icon: UserPlus },
 ];

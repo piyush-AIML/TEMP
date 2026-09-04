@@ -8,7 +8,7 @@ import { useTheme } from 'next-themes';
 import { UserButton } from '@clerk/nextjs';
 import { Sun, Moon } from 'lucide-react';
 import SkipLink from '@/components/educraft/layout/SkipLink';
-import { STUDENT_NAV, PROFESSOR_NAV, type DashboardNavItem } from '@/components/dashboard/navItems';
+import { STUDENT_NAV, PROFESSOR_NAV, ADMIN_NAV, type DashboardNavItem } from '@/components/dashboard/navItems';
 import { NotificationBell } from '@/components/dashboard/NotificationBell';
 import { cn } from '@/lib/utils';
 
@@ -25,11 +25,11 @@ export default function DashboardShell({
   user,
   children,
 }: {
-  role: 'student' | 'professor';
+  role: 'student' | 'professor' | 'admin';
   user: { name: string; email: string; imageUrl: string | null };
   children: React.ReactNode;
 }) {
-  const nav = role === 'student' ? STUDENT_NAV : PROFESSOR_NAV;
+  const nav = role === 'student' ? STUDENT_NAV : role === 'professor' ? PROFESSOR_NAV : ADMIN_NAV;
 
   return (
     <div className='min-h-dvh bg-background text-foreground'>
@@ -73,7 +73,9 @@ export default function DashboardShell({
               <Image src='/logo-dark.png' alt='' width={150} height={52} className='hidden h-8 w-auto dark:block' />
             </Link>
             <div className='ml-auto flex items-center gap-2'>
-              <NotificationBell role={role} />
+              {/* Admin has no fan-out notifications (bell + page exist for
+                  student/professor only) — omit the bell for admin. */}
+              {role !== 'admin' && <NotificationBell role={role} />}
               <ThemeToggle />
               <UserButton appearance={{ elements: { avatarBox: 'size-9' } }} />
             </div>

@@ -18,7 +18,7 @@ const isDashboardApiRoute = createRouteMatcher(['/api/dashboard/(.*)']);
 const ROLE_LANDING: Record<string, string> = {
   student: '/dashboard/student',
   professor: '/dashboard/professor',
-  admin: '/',
+  admin: '/dashboard/admin',
 };
 
 export default clerkMiddleware(
