@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Bell } from 'lucide-react';
+import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
 import { getMyNotifications } from '@/lib/dashboard/notifications';
 import { NotificationList } from '@/components/dashboard/NotificationList';
@@ -7,16 +7,17 @@ import { NotificationActions } from '@/components/dashboard/NotificationActions'
 
 export const metadata: Metadata = { title: 'Notifications' };
 
-/** Student notifications page (Stage 2) — full list with unread emphasis,
- *  mark-read controls and role-aware course links. */
-export default async function StudentNotificationsPage() {
+/** Professor notifications page (Stage 2). Professor-facing notifications
+ *  don't exist yet (announcements target students) — the honest empty state
+ *  explains that; the page and bell stay wired for when they do. */
+export default async function ProfessorNotificationsPage() {
   const session = await getCurrentUser();
   const notifications = await getMyNotifications(session.userId, 50);
   const unread = notifications.filter((item) => !item.read).length;
 
   const courseHrefFor = (relatedEntity: string | null) => {
     if (!relatedEntity?.startsWith('course:')) return null;
-    return `/dashboard/student/courses/${relatedEntity.slice('course:'.length)}`;
+    return `/dashboard/professor/courses/${relatedEntity.slice('course:'.length)}`;
   };
 
   return (
@@ -25,12 +26,6 @@ export default async function StudentNotificationsPage() {
         <div>
           <p className='eyebrow'>Notifications</p>
           <h1 className='type-display-m mt-3'>Your updates</h1>
-          {unread > 0 ? (
-            <p className='mt-2 inline-flex items-center gap-1.5 rounded-full bg-ec-sky/70 px-3 py-1 text-xs font-semibold text-ec-indigo dark:bg-ec-canvas-deep dark:text-white'>
-              <Bell className='size-3.5' aria-hidden='true' />
-              {unread} unread
-            </p>
-          ) : null}
         </div>
         <NotificationActions hasUnread={unread > 0} />
       </div>
@@ -38,6 +33,15 @@ export default async function StudentNotificationsPage() {
       <div className='mt-8'>
         <NotificationList notifications={notifications} courseHrefFor={courseHrefFor} />
       </div>
+
+      <p className='mt-6 text-sm leading-relaxed text-foreground/50'>
+        Students are notified when you post materials or change classes — announcements to professors
+        themselves will appear here in a future stage. Need a quick route back?{' '}
+        <Link href='/dashboard/professor/schedule' className='font-semibold text-ec-indigo underline-offset-2 hover:underline dark:text-white'>
+          View your schedule
+        </Link>
+        .
+      </p>
     </section>
   );
 }

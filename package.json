@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:storage-smoke": "tsx scripts/storage-smoke.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio"
   },
@@ -32,8 +33,10 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sharp": "^0.35.3",
+    "sqids": "^0.3.0",
     "tailwind-merge": "^3.6.0",
     "three": "^0.185.1",
+    "uploadthing": "^7.7.4",
     "ws": "^8.21.3",
     "zod": "^4.4.3"
   },

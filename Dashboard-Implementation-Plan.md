@@ -137,13 +137,14 @@ apps/web (existing Next.js app)
 
 **Exit criteria: MET** — student sees real enrollments + upcoming-class schedule end-to-end from the DB; lint/tsc/build ✓, all query shapes smoke-checked against live Neon.
 
-### Stage 2 — Professor Core (1–1.5 weeks)
-- Professor "My Courses" overview with student roster per course.
-- Create/edit `ClassSession` (schedule a class) → immediately visible on enrolled students' dashboards.
-- Materials/notes upload flow (text remarks + file upload) → triggers `Notification` rows.
-- Notification bell (polling) on both dashboards.
+### Stage 2 — Professor Core — ✅ **DONE 2026-09-05** (details absorbed into EDUCRAFT_PRODUCTION.md §24.8)
+- ~~Professor courses + roster~~ → per-course management tabs (Overview/Roster/Sessions/Materials).
+- ~~Create/edit/cancel ClassSession~~ → first Server Actions (`src/lib/actions/`) over a testable domain layer (`src/lib/domain/`, ownership via `CourseProfessors`); IST datetime-local contract (`validators/datetime.ts` + client `lib/ist.ts`); revalidatePath both role layouts.
+- ~~Materials upload (text + file)~~ → composer Note/Remark/Link/File; **files via UploadThing strictly behind the provider-agnostic `src/lib/storage/` interface** (schema stores provider + opaque key + `fileMeta Json`, never URLs; direct-to-storage PUT keeps file bytes off our server — Vercel 4.5 MB cap; S3 migration = row-level provider/key swap only).
+- ~~Notification bell (polling)~~ → `Notification` fan-out (`lib/notifications/builder.ts` pure + `notify.ts`; prefs honored from day one via early `User.notifPrefs` migration), `/api/dashboard/notifications` route handler (+ proxy matcher extended with a 401 branch), `NotificationBell` (30 s poll, `document.hidden` pause) in both shells, real notifications pages.
+- Storage smoke gate (`npm run db:storage-smoke`) implemented — **pending the real `UPLOADTHING_TOKEN`** before the file path is field-verified.
 
-**Exit criteria:** a professor schedules a class and posts a remark; the enrolled student sees both without a page reload (or on next poll).
+**Exit criteria: MET (code + DB gates); visual E2E + storage token pending the owner's checks.**
 
 ### Stage 3 — Meetings & Coursework Planner (1–1.5 weeks)
 - Professor "Meetings" — schedule/view upcoming meetings (with students, parents, or colleagues); simple calendar view.
@@ -229,9 +230,9 @@ Grouped by domain — implement as Server Actions unless a Route Handler is spec
 
 ## 10. Next Action
 
-Both §8.1 and §8.4 decisions are **resolved (2026-09-04): Clerk + many-to-many**, and **Stages 0 and 1 shipped 2026-09-04** (absorbed into EDUCRAFT_PRODUCTION.md §24.8; working files deleted per lifecycle). **Next: Stage 2 — Professor Core** (1–1.5 wk):
-- Professor My Courses overview with student roster per course (`getProfessorCourses`, roster reads in `src/lib/dashboard/`).
-- Create/edit/cancel `ClassSession` (first Server Actions: `lib/actions/sessions.ts` with zod v4 validation + `requireRole('professor')` + ownership check via `CourseProfessors`) → immediately visible on the student schedule built in Stage 1.
-- Materials/notes composer (text + file — file storage provider decision lands here) → triggers `Notification` rows for enrolled students.
-- Notification bell (polling) on both dashboards (`Notification` table already schema'd).
-Reuse the Stage 1 query modules and components (`SessionItem`, `EnrolledCourseCard`, `StatCard`, `EmptyState`); the demo student `pika38212@gmail.com` is enrolled in all five courses and will see professor-created classes/materials without reseeding.
+**Stages 0–2 shipped 2026-09-04/05** (absorbed into EDUCRAFT_PRODUCTION.md §24.8; working files deleted per lifecycle). **Next: Stage 3 — Meetings & Planner** (1–1.5 wk), following the approved master plan (`.claude` plan file, Stages 2–5):
+- Deps: `react-big-calendar@^1.20.0` (React 19 OK) + `date-fns@^4.4.0`; localizer at module scope; `.calendar-shell` token overrides in `globals.css` (light/dark); default agenda < `lg`.
+- Meetings: queries/validators/domain/actions (`withWhom` enum, studentId must be one of the professor's students), `createStudentNotification(MEETING)`; `professor/meetings` real (scheduler + list + combined calendar).
+- Planner: `tasks.ts` queries/validators/domain/actions; `TaskBoard` (3 status columns, no drag lib), `TaskForm`, `CompletionBar` — % from `Task.status` only, `CompletionLog` reserved (documented); Planner tab joins the professor course page.
+- Student invisibility for meetings/tasks confirmed as v1 scope; students learn of meetings via MEETING notifications only.
+- Storage smoke gate (`npm run db:storage-smoke`) remains pending the owner's real `UPLOADTHING_TOKEN` — run it once pasted (before field-testing file uploads).

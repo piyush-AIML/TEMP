@@ -48,6 +48,14 @@ enum MaterialType {
   LINK
 }
 
+/// Storage backends for FILE materials — the provider-agnostic storage layer
+/// (src/lib/storage) resolves uploads/downloads through a StorageProvider
+/// interface; rows store only the provider id + an opaque key, never URLs.
+enum StorageProvider {
+  UPLOADTHING
+  S3
+}
+
 enum NotificationType {
   NEW_MATERIAL
   NEW_CLASS
@@ -79,6 +87,11 @@ model User {
   name      String
   avatarUrl String?
   role      Role // written through from Clerk publicMetadata — Clerk is the authority
+  /// { newMaterial, newClass, meeting, taskDue } booleans; absent = all ON.
+  /// Owned by the user only; getCurrentUser's mirror upsert NEVER touches it.
+  /// (added Stage 2 — the notification builder reads it from day one; the
+  /// preference editor UI ships in Stage 4)
+  notifPrefs Json?
   createdAt DateTime @default(now())
 
   professorAssignments CourseProfessors[] @relation("professorAssignments")
@@ -157,7 +170,15 @@ model Material {
   type         MaterialType
   title        String
   body         String? // remark/note text
+  /// LINK rows: the target URL (domain field — never a storage URL).
+  /// FILE rows: always null; storage is resolved via fileProvider/fileKey.
   fileUrl      String?
+  /// FILE rows: which provider holds the object. NOTE/REMARK/LINK rows: null.
+  fileProvider StorageProvider?
+  /// FILE rows: opaque provider-side key — never a URL, never rendered.
+  fileKey      String?
+  /// FILE rows: { name, size, mime } — zod-validated on read, shape-drift safe.
+  fileMeta     Json?
   createdAt    DateTime     @default(now())
 
   @@index([courseId])

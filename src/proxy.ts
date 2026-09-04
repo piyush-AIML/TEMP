@@ -13,6 +13,7 @@ import { publicMetadataSchema } from '@/lib/validators/auth';
  */
 const isDashboardRoute = createRouteMatcher(['/dashboard/(.*)']);
 const isDashboardIndex = createRouteMatcher(['/dashboard']);
+const isDashboardApiRoute = createRouteMatcher(['/api/dashboard/(.*)']);
 
 const ROLE_LANDING: Record<string, string> = {
   student: '/dashboard/student',
@@ -37,10 +38,21 @@ export default clerkMiddleware(
     if (isDashboardRoute(req)) {
       await auth.protect();
     }
+    if (isDashboardApiRoute(req)) {
+      // Dashboard API routes (notification bell polling etc.) must NOT use
+      // auth.protect() — it redirects to /sign-in, which is wrong for fetch.
+      // Cover them in the matcher so auth() is safe to call (§18 rule 8),
+      // then return 401 JSON for signed-out callers; the handler re-checks.
+      const { userId } = await auth();
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      return NextResponse.next();
+    }
   },
   { signInUrl: '/sign-in' }
 );
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/dashboard/:path*', '/api/dashboard/:path*'],
 };

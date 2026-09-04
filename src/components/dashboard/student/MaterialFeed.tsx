@@ -1,13 +1,13 @@
-import { FileText, Link2, MessageSquareText, StickyNote, type LucideIcon } from 'lucide-react';
+import { Download, FileText, Link2, MessageSquareText, StickyNote, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
-import { formatShortDate } from '@/lib/dashboard/format';
+import { formatBytes, formatShortDate } from '@/lib/dashboard/format';
 import type { MaterialDTO } from '@/lib/dashboard/materials';
 
 /**
- * Read-only materials & remarks feed for one course (Stage 1). Fed by
- * professor uploads — seeded NOTE/REMARK/LINK rows today, the professor
- * composer lands in Stage 2. Literal type→label/icon map; one neutral chip
- * style throughout (no invented status palette).
+ * Read-only materials & remarks feed for one course (Stage 1, FILE rows
+ * Stage 2). FILE rows carry a short-lived signed download URL resolved
+ * server-side (downloadUrl) with honest copy when it is unavailable.
+ * Literal type→label/icon map; one neutral chip style throughout.
  */
 const TYPE_META: Record<MaterialDTO['type'], { label: string; icon: LucideIcon }> = {
   NOTE: { label: 'Note', icon: StickyNote },
@@ -46,9 +46,20 @@ export function MaterialFeed({ materials }: { materials: MaterialDTO[] }) {
                   <MaterialLink url={material.fileUrl} title={material.title} />
                 )}
 
-                {material.type === 'FILE' && !material.fileUrl && (
+                {material.type === 'FILE' && material.fileMeta && material.downloadUrl && (
+                  <a
+                    href={material.downloadUrl}
+                    download
+                    className='mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-ec-indigo underline-offset-2 hover:underline dark:text-white'
+                  >
+                    <Download className='size-3.5' aria-hidden='true' />
+                    Download {material.fileMeta.name} · {formatBytes(material.fileMeta.size)}
+                  </a>
+                )}
+                {material.type === 'FILE' && material.fileMeta && !material.downloadUrl && (
                   <p className='mt-2 text-xs text-foreground/50'>
-                    File downloads arrive with the professor composer (Stage 2).
+                    {material.fileMeta.name} · {formatBytes(material.fileMeta.size)} — download link
+                    unavailable right now; refresh the page to try again.
                   </p>
                 )}
 

@@ -9,6 +9,7 @@ import { UserButton } from '@clerk/nextjs';
 import { Sun, Moon } from 'lucide-react';
 import SkipLink from '@/components/educraft/layout/SkipLink';
 import { STUDENT_NAV, PROFESSOR_NAV, type DashboardNavItem } from '@/components/dashboard/navItems';
+import { NotificationBell } from '@/components/dashboard/NotificationBell';
 import { cn } from '@/lib/utils';
 
 /**
@@ -16,6 +17,8 @@ import { cn } from '@/lib/utils';
  * language — same tokens, same light/dark art direction (root ThemeProvider
  * covers these routes). Desktop: fixed sidebar. Small screens: top bar with a
  * horizontally scrollable nav — the real drawer/bottom-nav pass is Stage 4.
+ * Stage 2: the header carries the polling NotificationBell next to the
+ * theme toggle (both roles — the bell's own poll keeps itself fresh).
  */
 export default function DashboardShell({
   role,
@@ -70,6 +73,7 @@ export default function DashboardShell({
               <Image src='/logo-dark.png' alt='' width={150} height={52} className='hidden h-8 w-auto dark:block' />
             </Link>
             <div className='ml-auto flex items-center gap-2'>
+              <NotificationBell role={role} />
               <ThemeToggle />
               <UserButton appearance={{ elements: { avatarBox: 'size-9' } }} />
             </div>

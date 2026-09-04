@@ -3,7 +3,7 @@ import { UserRound } from 'lucide-react';
 import { getCurrentUser } from '@/lib/auth';
 import { getProfileRecord } from '@/lib/dashboard/profile';
 import { formatFullDate } from '@/lib/dashboard/format';
-import { ProfileSection } from '@/components/dashboard/student/ProfileSection';
+import { ProfileSection } from '@/components/dashboard/ProfileSection';
 
 export const metadata: Metadata = { title: 'Profile' };
 

@@ -31,6 +31,7 @@ export const PROFESSOR_NAV: DashboardNavItem[] = [
   { label: 'Overview', href: '/dashboard/professor', icon: LayoutDashboard },
   { label: 'My Courses', href: '/dashboard/professor/courses', icon: BookOpen },
   { label: 'Schedule', href: '/dashboard/professor/schedule', icon: CalendarDays },
+  { label: 'Notifications', href: '/dashboard/professor/notifications', icon: Bell },
   { label: 'Meetings', href: '/dashboard/professor/meetings', icon: CalendarClock },
   { label: 'Profile', href: '/dashboard/professor/profile', icon: UserRound },
 ];

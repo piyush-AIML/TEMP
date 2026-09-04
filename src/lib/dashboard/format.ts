@@ -88,6 +88,20 @@ export function formatShortDate(iso: string): string {
   return formatISTDayDate(iso);
 }
 
+/** Human file size, e.g. `1.2 MB` — used for FILE material rows. */
+export function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  const units = ['KB', 'MB', 'GB'] as const;
+  let value = bytes / 1024;
+  let unit: (typeof units)[number] = units[0];
+  for (let i = 1; i < units.length && value >= 1024; i += 1) {
+    value /= 1024;
+    unit = units[i];
+  }
+  return `${value >= 10 || Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)} ${unit}`;
+}
+
 /**
  * Relative day label: `Today` / `Tomorrow` for the next two IST days,
  * otherwise a full IST date (`Friday, 5 September`).
