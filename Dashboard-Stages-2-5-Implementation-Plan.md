@@ -1,5 +1,7 @@
 # Dashboard Stages 2–5 — Master Implementation Plan
 
+> ⚠️ **Implementation status snapshot (2026-09-05):** Stages 0–2 shipped. **§24.9 blocker RESOLVED at code level 2026-09-05** — file storage switched UploadThing → **AWS S3** (`S3Provider` on `@aws-sdk/client-s3` presigned URLs; `uploadthing.ts` + `uploadthing`/`sqids` deps removed; lint/tsc/build ✓). Remaining: the owner's one-time AWS setup (bucket / IAM policy / CORS, master §24.9.1) → `npm run db:storage-smoke` → visual E2E. Everything else in Stage 2 (text/link materials, sessions, notifications, bells) is done. Next: Stage 3 — Meetings & Planner (unaffected).
+>
 > Single implementation guide for all remaining dashboard stages. Stage 1 shipped (superseded plan replaced). Each stage ends with: verification loop → docs sync (EDUCRAFT_PRODUCTION.md §24 + Dashboard-Implementation-Plan.md) → next stage. Library specifics below were verified against current docs (2026-09-05).
 
 ## Context
@@ -8,7 +10,7 @@ Stages 0–1 shipped: Clerk 7.9 auth (roles via publicMetadata), Neon/Prisma 7.1
 
 ## User decisions (locked 2026-09-05)
 
-1. **Storage**: UploadThing as Stage 2 provider, **strictly behind a provider-agnostic `StorageProvider` interface** — schema stores provider + opaque key + metadata, never provider URLs/fields; the `UploadThingProvider` adapter is the only place `uploadthing/*` is imported; migration mechanism designed so assets can move to S3 later with a provider/key row update only.
+1. **Storage**: UploadThing was chosen as the Stage 2 provider **strictly behind a provider-agnostic `StorageProvider` interface** (schema stores provider + opaque key + metadata, never provider URLs/fields) — and that isolation paid off: its free tier blocked private files, so the provider was swapped to **AWS S3 on 2026-09-05** with no domain/DB/UI change (§24.9; `S3Provider` adapter is the only place `@aws-sdk/*` is imported; migration mechanism still designed for future provider/key row updates).
 2. **Calendar**: react-big-calendar (v1.20.0, React 19 compat confirmed) + date-fns v4 localizer.
 3. **Testing (Stage 5)**: Vitest unit + Playwright E2E (auth flows, professor→student visibility loop, role-boundary attacks) + manual walkthrough.
 
@@ -39,8 +41,8 @@ fileMeta     Json?              // { name, size, mime } — zod-validated on rea
 `fileUrl` documented as **LINK-target only**. All changes additive (safe prod migration). `npx prisma migrate dev --name add_material_file_storage` → `npm run db:generate`. If Neon shadow-DB fails: `--create-only` → review SQL → apply.
 
 ### 2.2 Env + deps
-- `.env.example` + `.env.local`: `UPLOADTHING_TOKEN=` (base64 JSON `{apiKey, appId, regions[]}` from UploadThing dashboard → V7 tab; region e.g. `bom1`), `STORAGE_PROVIDER=uploadthing`. **Note: v7 env is `UPLOADTHING_TOKEN`, not `UTAPI_TOKEN`.**
-- `npm i uploadthing@^7.7.4 sqids@^0.3.0`.
+- `.env.example` + `.env.local` (**superseded 2026-09-05 — S3 is the provider**): `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `STORAGE_PROVIDER=s3` (AWS setup in master §24.9.1).
+- `npm i @aws-sdk/client-s3 @aws-sdk/s3-request-presigner` (uploadthing + sqids removed 2026-09-05).
 
 ### 2.3 Storage abstraction — `src/lib/storage/`
 Verified UploadThing v7 reality: **no generateUploadToken/completeUpload API.** The documented "build your own SDK" contract gives exactly the provider-agnostic design (zero `@uploadthing/*` imports outside the provider):
@@ -55,21 +57,20 @@ Verified UploadThing v7 reality: **no generateUploadToken/completeUpload API.** 
   }
   ```
   Plus `StorageNotConfiguredError` (code `'STORAGE_NOT_CONFIGURED'`).
-- **`uploadthing.ts`** (`UploadThingProvider` — the only file importing `uploadthing/server`):
-  1. File key = sqids encode (alphabet shuffled by appId via documented `djb2`/`shuffle`/`generateKey` recipe, `minLength: 12`) + url-safe random seed (`crypto.randomUUID()` base64url).
-  2. Signed upload URL = `https://{region}.ingest.uploadthing.com/{fileKey}` + params `expires` (+15 min ms epoch), `x-ut-identifier` (appId), `x-ut-file-name`, `x-ut-file-size`, `x-ut-file-type`, `x-ut-acl=private` — **drop `x-ut-slug`** (server-side/no-file-router path: no registration, no callbacks). Signature = `hmac-sha256=` + hex HMAC-SHA256 of full URL-with-params keyed with apiKey, appended last.
-  3. `verifyUpload` → `utapi.getFileUrls([fileKey])` presence (deprecated but present in 7.7.4; comment fallback `listFiles` scan).
-  4. `getDownloadUrl` → `utapi.generateSignedURL(fileKey, { expiresIn: '24h' }).ufsUrl` (local HMAC, no API call).
-  5. `delete` → `utapi.deleteFiles([fileKey])`.
-- **`index.ts`** (`'server-only'`): `getStorage()` factory on `STORAGE_PROVIDER`; unset/unknown → `DisabledStorage` throwing `StorageNotConfiguredError` (composer shows honest "uploads not configured" copy).
-- **`scripts/storage-smoke.ts`** (tsx; script `db:storage-smoke`): createUpload → fetch PUT with FormData → verifyUpload → getDownloadUrl → delete. **Gate runs before any UI work** — proves the hand-rolled signing contract against the live app.
-- **S3 migration mechanism (designed now, script later):** `scripts/storage-migrate.ts` iterates FILE rows, streams object from provider A → PUT to provider B, updates `fileProvider`/`fileKey` in a transaction. Domain reads only the interface — nothing else changes.
+- **`s3.ts`** (`S3Provider` — the only file importing `@aws-sdk/*`; shipped 2026-09-05, replacing the deleted `uploadthing.ts`):
+  1. Object key = `materials/{24 random base64url bytes}` — plain opaque key under one prefix (IAM policy + lifecycle rules target `materials/*`); no provider keygen recipe needed.
+  2. Signed upload URL = presigned `PutObjectCommand` via `getSignedUrl` (15 min), **Content-Type signed in** — the client must send that exact header with the **raw bytes** as the body (no multipart FormData; the UploadThing-only quirk is gone).
+  3. `verifyUpload` → HEAD a short presigned `HeadObjectCommand` URL (5 min) → `content-length` → `{size} | null`.
+  4. `getDownloadUrl` → presigned `GetObjectCommand` (24 h).
+  5. `delete` → `DeleteObjectCommand` (idempotent 204 — no error for absent keys).
+- **`index.ts`** (deliberately NOT `'server-only'` — same pattern as prisma-client.ts): `getStorage()` factory on `STORAGE_PROVIDER`; `s3` → `S3Provider`; unset/unknown → `DisabledStorage` throwing `StorageNotConfiguredError` (composer shows honest "uploads not configured" copy).
+- **`scripts/storage-smoke.ts`** (tsx; script `db:storage-smoke`): createUpload → fetch PUT with raw bytes + `Content-Type: text/plain` header → verifyUpload → getDownloadUrl → delete. **Gate runs before any UI work** — proves the presigning contract against the live bucket.
+- **Future provider migration mechanism (designed, script when needed):** `scripts/storage-migrate.ts` iterates FILE rows, streams object from provider A → PUT to provider B, updates `fileProvider`/`fileKey` in a transaction. Domain reads only the interface — nothing else changes. (Unneeded for the UploadThing→S3 swap itself: no object ever landed under UploadThing.)
 - **Why files never pass through our server:** Vercel Functions cap request bodies at 4.5 MB (Server Actions included) — the two-stage direct-to-storage flow is mandatory, and it is exactly what the provider-agnostic FileDropzone needs.
 
 ### 2.4 Validators — `src/lib/validators/{sessions,materials}.ts`
 - `sessionInputSchema`: `courseId`, `startsAt`/`endsAt` (`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$`), `mode: z.enum(['ONLINE','IN_PERSON'], { message })`, `link` (url-or-empty, ONLINE-only via superRefine), `location` (≤200), lexical `endsAt > startsAt`. Export `istWallTimeToUtc`.
-- `materialInputSchema` (NOTE/REMARK: title 1–200, body ≤10k; LINK: title + url http(s) or internal `/`), `fileUploadInputSchema` (name ≤200, **size ≤16 MB**, mime whitelist `pdf,doc,docx,ppt,pptx,xls,xlsx,txt,md,png,jpg,jpeg,webp,zip`), `fileCompleteSchema` (fileKey + meta). All zod v4 `{ message }`.
-- UploadThing dashboard max-file-size must be ≥ 16 MB.
+- `materialInputSchema` (NOTE/REMARK: title 1–200, body ≤10k; LINK: title + url http(s) or internal `/`), `fileUploadInputSchema` (name ≤200, **size ≤16 MB**, mime whitelist `pdf,doc,docx,ppt,pptx,xls,xlsx,txt,md,png,jpg,jpeg,webp,zip`), `fileCompleteSchema` (fileKey + meta). All zod v4 `{ message }`; the 16 MB cap lives in the validators + FileDropzone (S3 has no per-file dashboard limit to configure).
 
 ### 2.5 Notifications — `src/lib/notifications/`
 - `builder.ts` (**pure**, unit-testable): `buildNotificationRows(users: {userId, prefs|null}[], event: {type,title,body?,relatedEntity?})` — pref map `NEW_MATERIAL→newMaterial`, `NEW_CLASS→newClass`, `MEETING→meeting`, `TASK_DUE→taskDue`; null prefs = all on.
@@ -180,9 +181,8 @@ Node env, `TEST_DATABASE_URL` from `.env.local`, same server-only stub. `tests/i
 - Script `"test:e2e": "playwright test"`; **runs are user-authorized per the working agreement.**
 
 ### 5.5 Deploy checklist
-- Vercel env: `DATABASE_URL`, Clerk keys, `UPLOADTHING_TOKEN`, `STORAGE_PROVIDER=uploadthing`.
+- Vercel env: `DATABASE_URL`, Clerk keys, `STORAGE_PROVIDER=s3`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (AWS bucket/IAM/CORS setup: master §24.9.1).
 - DB: `npx prisma migrate deploy` against prod URL (additive-only — safe); preview deploy on staging domain first (same dev Neon acceptable at this scale); rollback = revert dashboard nav-link commit (no destructive schema to unwind).
-- UploadThing dashboard: max-file-size ≥ 16 MB; private ACL.
 - Docs: final §24 sync + runbook.
 
 **Gates:** `npm run test` green · `npm run test:integration` green with cleanup verified · `npx playwright test` green (user-authorized) · lint/tsc/build · deploy checklist executed. **User:** full manual walkthrough both roles + loop + mobile, approve preview deploy.
@@ -197,13 +197,11 @@ Realtime push · Parent view · attendance per ClassSession · gradebook · cale
 
 ## Risks & gotchas (carry into implementation)
 
-1. **Hand-rolled UploadThing signing is the riskiest component** (documented-but-internal wire details). Mitigations: isolated single file; `storage-smoke.ts` gate before UI; pin `uploadthing@7.7.x`; provider swap is a one-file change by design. Fallback: server-mediated `utapi.uploadFiles` with the documented 4.5 MB Vercel ceiling.
-2. `x-ut-file-size` must match the exact uploaded File (dropzone sends the declared File).
-3. Signed download URLs expire (24 h) — long-open student page can 403 on click; v1-acceptable, documented.
-4. Orphaned uploads (granted but never completed) — acceptable v1; cleanup script future.
-5. `getFileUrls` deprecated — verify at smoke gate; fallback `listFiles`.
-6. `datetime-local` IST trap — applied in every session/meeting/task form + unit-tested.
-7. Proxy matcher change ships with Stage 2 FIRST — without it the bell 500s (`auth()` throws).
-8. After ProfileSection move → `rm -rf .next` before tsc (§19 ledger).
-9. Client components never import server-only modules (SessionItem can't be imported by client components — the ScheduleExplorer toggle design avoids this).
-10. `getCurrentUser` never touches `notifPrefs`.
+1. **RESOLVED 2026-09-05:** the hand-rolled UploadThing signing contract (formerly the riskiest component — bespoke internal wire details, and the free-tier ACL that blocked the gate) is gone; the S3 provider uses the standard SDK's presigned URLs. Residual S3 risks: presigned PUTs sign the **Content-Type** — the dropzone must send the declared mime exactly (it does; grant pins it); bucket **CORS** must allow the app origins or browser PUTs fail with a confusing opaque error (§24.9.1 step 3); IAM keys are long-lived — rotate + scope to `materials/*` only.
+2. Presigned signed download URLs expire (24 h) — long-open student page can 403 on click; v1-acceptable, documented.
+3. Orphaned uploads (granted but never completed) — acceptable v1; cleanup script future.
+4. `datetime-local` IST trap — applied in every session/meeting/task form + unit-tested.
+5. Proxy matcher change shipped with Stage 2 FIRST — without it the bell 500s (`auth()` throws).
+6. After ProfileSection move → `rm -rf .next` before tsc (§19 ledger).
+7. Client components never import server-only modules (SessionItem can't be imported by client components — the ScheduleExplorer toggle design avoids this).
+8. `getCurrentUser` never touches `notifPrefs`.

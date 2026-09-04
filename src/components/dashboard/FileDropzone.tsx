@@ -15,10 +15,12 @@ import { createUploadToken, completeFileUpload } from '@/lib/actions/materials';
  * agnostic by construction: ask the server for a signed grant, PUT the file
  * straight to the ingest URL (never through our server — Vercel caps bodies
  * at 4.5 MB), then confirm. XMLHttpRequest for upload progress. Must send the
- * exact File it declared (the signed grant pins the size). Mime/size
- * pre-checks mirror the server whitelist; STORAGE_NOT_CONFIGURED surfaces the
- * honest disabled copy. The title field defaults to the file name and can be
- * edited before uploading.
+ * exact File it declared (the signed grant pins the size AND the
+ * Content-Type) — the mime declared to createUploadToken is signed into the
+ * grant, so the PUT sends it as the Content-Type header with the raw bytes as
+ * the body. Mime/size pre-checks mirror the server whitelist;
+ * STORAGE_NOT_CONFIGURED surfaces the honest disabled copy. The title field
+ * defaults to the file name and can be edited before uploading.
  */
 
 type Status =
@@ -81,6 +83,9 @@ export function FileDropzone({ courseId }: { courseId: string }) {
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open(grant.method, grant.uploadUrl, true);
+        // The signed grant pins the Content-Type (S3 presigned PUTs sign the
+        // headers) — this must match what createUploadToken declared above.
+        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
             setStatus({ kind: 'uploading', progress: Math.max(3, Math.round((event.loaded / event.total) * 90)) });
@@ -91,9 +96,7 @@ export function FileDropzone({ courseId }: { courseId: string }) {
           else reject(new Error(`Upload failed (${xhr.status}).`));
         };
         xhr.onerror = () => reject(new Error('Upload failed — check your connection and try again.'));
-        const form = new FormData();
-        form.append('file', file);
-        xhr.send(form);
+        xhr.send(file); // raw bytes — no multipart wrapper (provider contract, types.ts)
       });
 
       setStatus({ kind: 'confirming' });

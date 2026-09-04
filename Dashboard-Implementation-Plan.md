@@ -140,11 +140,11 @@ apps/web (existing Next.js app)
 ### Stage 2 — Professor Core — ✅ **DONE 2026-09-05** (details absorbed into EDUCRAFT_PRODUCTION.md §24.8)
 - ~~Professor courses + roster~~ → per-course management tabs (Overview/Roster/Sessions/Materials).
 - ~~Create/edit/cancel ClassSession~~ → first Server Actions (`src/lib/actions/`) over a testable domain layer (`src/lib/domain/`, ownership via `CourseProfessors`); IST datetime-local contract (`validators/datetime.ts` + client `lib/ist.ts`); revalidatePath both role layouts.
-- ~~Materials upload (text + file)~~ → composer Note/Remark/Link/File; **files via UploadThing strictly behind the provider-agnostic `src/lib/storage/` interface** (schema stores provider + opaque key + `fileMeta Json`, never URLs; direct-to-storage PUT keeps file bytes off our server — Vercel 4.5 MB cap; S3 migration = row-level provider/key swap only).
+- ~~Materials upload (text + file)~~ → composer Note/Remark/Link/File; **files via AWS S3 strictly behind the provider-agnostic `src/lib/storage/` interface** (`S3Provider`, §24.8; schema stores provider + opaque key + `fileMeta Json`, never URLs; direct-to-storage PUT of raw bytes keeps file bytes off our server — Vercel 4.5 MB cap; future provider swap = row-level provider/key migration only).
 - ~~Notification bell (polling)~~ → `Notification` fan-out (`lib/notifications/builder.ts` pure + `notify.ts`; prefs honored from day one via early `User.notifPrefs` migration), `/api/dashboard/notifications` route handler (+ proxy matcher extended with a 401 branch), `NotificationBell` (30 s poll, `document.hidden` pause) in both shells, real notifications pages.
-- Storage smoke gate (`npm run db:storage-smoke`) implemented — **pending the real `UPLOADTHING_TOKEN`** before the file path is field-verified.
+- Storage smoke gate (`npm run db:storage-smoke`) — **RESOLVED 2026-09-05: provider switched UploadThing → AWS S3** (the free tier's `400 — "Private files are not allowed for free apps"` forced the change; the hand-rolled UploadThing signing contract + deps are deleted). Code shipped + verified (lint/tsc/build ✓); gate re-run **pending the owner's AWS setup** — bucket/IAM/CORS instructions in master §24.9.1, then `npm run db:storage-smoke`.
 
-**Exit criteria: MET (code + DB gates); visual E2E + storage token pending the owner's checks.**
+**Exit criteria: MET except the FILE path's field verification (gate blocked on AWS setup); visual E2E pending the owner's checks.**
 
 ### Stage 3 — Meetings & Coursework Planner (1–1.5 weeks)
 - Professor "Meetings" — schedule/view upcoming meetings (with students, parents, or colleagues); simple calendar view.
@@ -235,4 +235,4 @@ Grouped by domain — implement as Server Actions unless a Route Handler is spec
 - Meetings: queries/validators/domain/actions (`withWhom` enum, studentId must be one of the professor's students), `createStudentNotification(MEETING)`; `professor/meetings` real (scheduler + list + combined calendar).
 - Planner: `tasks.ts` queries/validators/domain/actions; `TaskBoard` (3 status columns, no drag lib), `TaskForm`, `CompletionBar` — % from `Task.status` only, `CompletionLog` reserved (documented); Planner tab joins the professor course page.
 - Student invisibility for meetings/tasks confirmed as v1 scope; students learn of meetings via MEETING notifications only.
-- Storage smoke gate (`npm run db:storage-smoke`) remains pending the owner's real `UPLOADTHING_TOKEN` — run it once pasted (before field-testing file uploads).
+- **RESOLVED at code level 2026-09-05 (master §24.9):** the UploadThing free-tier blocker was resolved by switching the storage provider to **AWS S3**. `S3Provider` shipped + verified (lint/tsc/build ✓). **Do not treat FILE uploads as working until the gate passes**: owner must create the S3 bucket/IAM/CORS (§24.9.1), set `STORAGE_PROVIDER=s3` + the four `S3_*` vars, and run `npm run db:storage-smoke`.

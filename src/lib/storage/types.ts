@@ -14,7 +14,8 @@
 export type StorageAcl = 'private';
 
 export type StorageUploadGrant = {
-  /** Signed ingest URL — plain PUT with multipart FormData (`file` field). */
+  /** Signed ingest URL — plain PUT of the raw file bytes; the declared
+   *  Content-Type must be sent as the request's Content-Type header. */
   uploadUrl: string;
   /** Opaque provider key — persisted in Material.fileKey. */
   fileKey: string;

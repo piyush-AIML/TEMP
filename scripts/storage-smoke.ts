@@ -1,11 +1,13 @@
 /**
- * Storage smoke gate (Dashboard Stage 2) — proves the hand-rolled UploadThing
- * signing contract against the live app BEFORE any UI exists:
- *   createUpload → client-style PUT (FormData, field `file`) → verifyUpload
- *   (HEAD, true size) → getDownloadUrl → delete.
+ * Storage smoke gate (Dashboard Stage 2) — proves the storage provider's
+ * presigned-grant contract against the live bucket BEFORE any UI exists:
+ *   createUpload → client-style PUT (raw bytes, Content-Type header) →
+ *   verifyUpload (HEAD, true size) → getDownloadUrl → delete.
  *
- * Honest skip when UPLOADTHING_TOKEN / STORAGE_PROVIDER=uploadthing are not
- * set (paste the V7 token into .env.local first). Run: npm run db:storage-smoke
+ * Honest skip when STORAGE_PROVIDER=s3 and the S3_* vars are not set
+ * (S3_REGION / S3_BUCKET / S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY in
+ * .env.local — see EDUCRAFT_PRODUCTION.md §24.9 for the AWS setup).
+ * Run: npm run db:storage-smoke
  */
 import { config as loadEnv } from 'dotenv';
 loadEnv({ path: '.env.local' });
@@ -17,8 +19,8 @@ async function main() {
   const provider = getStorage();
 
   if (provider.id === 'disabled') {
-    console.log('SKIPPED: STORAGE_PROVIDER is not "uploadthing".');
-    console.log('Set UPLOADTHING_TOKEN (UploadThing dashboard → API Keys → V7) and STORAGE_PROVIDER=uploadthing in .env.local, then re-run.');
+    console.log('SKIPPED: STORAGE_PROVIDER is not "s3".');
+    console.log('Set STORAGE_PROVIDER=s3 plus S3_REGION, S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY in .env.local, then re-run.');
     return;
   }
 
@@ -34,10 +36,14 @@ async function main() {
   });
   console.log(`   fileKey: ${grant.fileKey.slice(0, 18)}…  method: ${grant.method}`);
 
-  console.log('2. PUT to ingest URL (multipart FormData, field `file`)...');
-  const form = new FormData();
-  form.append('file', new Blob([bytes], { type: 'text/plain' }), name);
-  const putRes = await fetch(grant.uploadUrl, { method: 'PUT', body: form });
+  console.log('2. PUT to presigned URL (raw bytes, Content-Type header)...');
+  // Mirrors the browser flow: the signed grant pins the mime, so the request
+  // must send that exact Content-Type with the raw body (no multipart).
+  const putRes = await fetch(grant.uploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'text/plain' },
+    body: bytes,
+  });
   console.log(`   status: ${putRes.status} ${putRes.statusText}`);
   if (!putRes.ok) {
     throw new Error(`Ingest PUT failed: ${putRes.status} ${await putRes.text()}`);
