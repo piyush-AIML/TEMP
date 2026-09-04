@@ -1,23 +1,12 @@
 # Educraft
 
-**Five paths. One learning ecosystem.** — Educraft is a digital education platform unifying linguistics, inclusive education, psychological counseling, AI & digital technologies, and NEET/JEE preparation under one trust umbrella.
+**Five paths. One learning ecosystem.** — Educraft is a digital education platform unifying five verticals — linguistics, inclusive education, psychological counseling, AI & digital technologies, and NEET/JEE preparation — under one trust umbrella.
 
-**Current version:** V2 production (`Prod.ver-0.0.2`) — 16 pages + enquiry API, fully art-directed light/dark theme system, scroll-choreographed WebGL/SVG experience.
+Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS v4 · Three.js + React Three Fiber + Drei · lucide-react · next-themes · zod v4.
 
-## 📚 Project documentation
+## 📚 Documentation
 
-Read the docs in this order — they are kept in sync with the code and with each other:
-
-| Doc | Purpose |
-|---|---|
-| [`prod.md`](prod.md) | **Current state** — the single source of truth: architecture, design system, feature inventory, fixed-bug ledger, pending inputs |
-| [`Educraft_V3_Next_Version_Planner.md`](Educraft_V3_Next_Version_Planner.md) | **Next version planner** — all future work, tiered A–D |
-| [`Educraft_V1_Previous_State.md`](Educraft_V1_Previous_State.md) | **Previous state** — the compact V1 record |
-| [`Educraft_V2_Experience_Web_Design_Implementation_Plan.md`](Educraft_V2_Experience_Web_Design_Implementation_Plan.md) | ✅ **Archived** — the V2 design plan, fully implemented. Historical reference only; do not plan from it |
-
-## 🛠 Tech Stack
-
-Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS v4 · Three.js + React Three Fiber + Drei · lucide-react · next-themes · zod v4
+**[`EDUCRAFT_PRODUCTION.md`](EDUCRAFT_PRODUCTION.md) is the master document** — current production state, architecture, conventions, design system, fixed-bug ledger, pending inputs, the background roadmap, and the next implementation project (Student & Professor Dashboard). Read it first; it supersedes all other documentation and is kept in sync with the code. There are no other design/plan documents in this repo.
 
 ## 🚀 Getting Started
 
@@ -40,17 +29,9 @@ npm start
 
 ## 🌍 Environment Variables
 
-The site is fully static except `/api/enquiry`, so no env vars are required to run it:
-
 | Var | Purpose |
 |---|---|
 | `NEXT_PUBLIC_SITE_URL` | Canonical production domain (metadata, sitemap, OG images). Falls back to `https://educraft.com` |
 | `ENQUIRY_WEBHOOK_URL` | Where enquiries are delivered (CRM/email). Without it, enquiries are appended to `data/enquiries.jsonl` (gitignored) |
 
-## ▲ Deploying
-
-Any Next.js host works. The site builds to 29 static routes plus one serverless API route (`/api/enquiry`). On Vercel: import the repo, set the env vars above, deploy.
-
----
-
-See `prod.md` §9 for the pending pre-launch inputs (real testimonials, business details, social handles).
+The site is fully static except `POST /api/enquiry` — any Next.js host works; on Vercel import the repo, set the env vars, deploy.

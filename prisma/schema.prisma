@@ -1,0 +1,227 @@
+// Educraft Dashboard — data model (Dashboard-Implementation-Plan §2, master §24.2).
+// Vertical field stores one of the five site programme slugs
+// (linguistics | inclusive-education | wellbeing-counseling | ai-digital-tech |
+// neet-jee) — the marketing site's pillars are TS data, not a DB table, so this
+// is a validated-at-the-edge string, not an FK.
+// User.id = Clerk user id; role is mirrored write-through from Clerk publicMetadata.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  STUDENT
+  PROFESSOR
+  ADMIN
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+enum SessionMode {
+  ONLINE
+  IN_PERSON
+}
+
+enum SessionStatus {
+  SCHEDULED
+  DONE
+  CANCELLED
+}
+
+enum MaterialType {
+  NOTE
+  REMARK
+  FILE
+  LINK
+}
+
+enum NotificationType {
+  NEW_MATERIAL
+  NEW_CLASS
+  TASK_DUE
+  MEETING
+}
+
+enum MeetingParticipant {
+  STUDENT
+  PARENT
+  OTHER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+// ---------------------------------------------------------------------------
+// Core
+// ---------------------------------------------------------------------------
+
+/// Identity mirror of a Clerk user. Row is created lazily on first dashboard
+/// hit (getCurrentUser upsert) — never by the seed script.
+model User {
+  id        String   @id // Clerk user id
+  email     String   @unique
+  name      String
+  avatarUrl String?
+  role      Role // written through from Clerk publicMetadata — Clerk is the authority
+  createdAt DateTime @default(now())
+
+  professorAssignments CourseProfessors[] @relation("professorAssignments")
+  enrollments          Enrollment[]
+  materialsUploaded    Material[]
+  notifications        Notification[]
+  meetingsHosted       Meeting[]          @relation("professorMeetings")
+  meetingsAttended     Meeting[]          @relation("studentMeetings")
+  tasksCreated         Task[]
+}
+
+model Course {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  title       String
+  vertical    String // one of the five site programme slugs (validated at the edge)
+  description String?
+
+  createdAt DateTime @default(now())
+
+  professors     CourseProfessors[]
+  enrollments    Enrollment[]
+  sessions       ClassSession[]
+  materials      Material[]
+  tasks          Task[]
+  completionLogs CompletionLog[]
+}
+
+/// Many-to-many professor ↔ course (co-taught courses supported).
+model CourseProfessors {
+  course      Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+  professor   User   @relation("professorAssignments", fields: [professorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  professorId String
+
+  @@id([courseId, professorId])
+}
+
+model Enrollment {
+  id         String           @id @default(cuid())
+  student    User             @relation(fields: [studentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  studentId  String
+  course     Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId   String
+  status     EnrollmentStatus @default(ACTIVE)
+  enrolledAt DateTime         @default(now())
+
+  @@unique([studentId, courseId])
+  @@index([courseId])
+}
+
+// ---------------------------------------------------------------------------
+// Scheduling & content
+// ---------------------------------------------------------------------------
+
+model ClassSession {
+  id       String        @id @default(cuid())
+  course   Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String
+  startsAt DateTime
+  endsAt   DateTime
+  mode     SessionMode
+  link     String? // online: join URL
+  location String? // in-person: room/address
+  status   SessionStatus @default(SCHEDULED)
+
+  @@index([courseId, startsAt])
+}
+
+model Material {
+  id           String       @id @default(cuid())
+  course       Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId     String
+  uploadedBy   User         @relation(fields: [uploadedById], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  uploadedById String
+  type         MaterialType
+  title        String
+  body         String? // remark/note text
+  fileUrl      String?
+  createdAt    DateTime     @default(now())
+
+  @@index([courseId])
+}
+
+model Notification {
+  id            String           @id @default(cuid())
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId        String
+  type          NotificationType
+  title         String
+  body          String?
+  relatedEntity String? // plain reference for v1, e.g. "course:<id>" — no structured FK
+  read          Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+
+  @@index([userId, read])
+}
+
+model Meeting {
+  id          String             @id @default(cuid())
+  professor   User               @relation("professorMeetings", fields: [professorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  professorId String
+  title       String
+  withWhom    MeetingParticipant
+  student     User?              @relation("studentMeetings", fields: [studentId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  studentId   String?
+  startsAt    DateTime
+  endsAt      DateTime
+  link        String?
+  status      SessionStatus      @default(SCHEDULED)
+
+  @@index([professorId, startsAt])
+}
+
+// ---------------------------------------------------------------------------
+// Coursework planner (Stage 3)
+// ---------------------------------------------------------------------------
+
+model Task {
+  id          String     @id @default(cuid())
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+  createdBy   User       @relation(fields: [createdById], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdById String
+  title       String
+  description String?
+  dueDate     DateTime?
+  status      TaskStatus @default(TODO)
+
+  completionLog CompletionLog?
+
+  @@index([courseId, status])
+}
+
+/// Feeds the per-course completion monitor: % of tasks done.
+model CompletionLog {
+  id              String   @id @default(cuid())
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId        String
+  task            Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId          String   @unique
+  percentComplete Int      @default(0)
+  updatedAt       DateTime @updatedAt
+
+  @@index([courseId])
+}

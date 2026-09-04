@@ -234,6 +234,11 @@ export default function Navbar() {
           })}
 
           <ThemeToggleButton mounted={mounted} theme={theme} onToggle={toggleTheme} />
+          {/* Dashboard entry — /dashboard dispatches by role when signed in and
+              lands signed-out visitors on the Clerk sign-in page (proxy.ts). */}
+          <Link href='/dashboard' className='text-sm font-medium transition-colors py-2 text-ec-ink hover:text-ec-teal'>
+            Sign in
+          </Link>
           <Button size='sm' onClick={() => openModal()}>
             Enquire
           </Button>
@@ -307,7 +312,14 @@ export default function Navbar() {
               </Link>
             ))}
 
-            <div className='pt-5'>
+            <Link
+              href='/dashboard'
+              className='block px-4 py-3 mt-2 rounded-xl text-ec-ink font-semibold hover:bg-ec-sky transition-colors'
+            >
+              Sign in
+            </Link>
+
+            <div className='pt-3'>
               <Button
                 className='w-full'
                 onClick={() => {

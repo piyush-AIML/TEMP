@@ -48,6 +48,13 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
   },
 }, {
   ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"]
+}, {
+  files: ["src/generated/**"],
+  rules: {
+    // Generated Prisma client carries its own eslint-disable headers whose
+    // directives go unused (the config disables those rules globally anyway).
+    "no-unused-disable-directives": "off",
+  },
 }];
 
 export default eslintConfig;

@@ -138,9 +138,17 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className='mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4'>
           <p className='text-white/40 text-xs'>© {new Date().getFullYear()} Educraft. All rights reserved.</p>
-          <p className='text-white/40 text-xs'>
-            One ecosystem. Many paths.
-          </p>
+          <div className='flex items-center gap-6'>
+            {/* Dashboard entry — /dashboard dispatches by role when signed in and
+                lands signed-out visitors on the Clerk sign-in page (proxy.ts). */}
+            <Link
+              href='/dashboard'
+              className='text-white/60 hover:text-ec-teal-light transition-colors text-xs'
+            >
+              Sign in
+            </Link>
+            <p className='text-white/40 text-xs'>One ecosystem. Many paths.</p>
+          </div>
         </div>
       </div>
     </footer>

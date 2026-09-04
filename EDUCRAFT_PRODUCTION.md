@@ -1,0 +1,561 @@
+# Educraft — Production System
+
+## 0. Document Authority
+
+- **Authority:** Verified against the live repository on 2026-09-04 — source tree (§5) from a direct file listing, git remote `piyush-AIML/TEMP`, route set unchanged since the 2026-08-30 build — and re-verified by the full loop on 2026-09-04: `npm run lint` ✓ · `npx tsc --noEmit` ✓ · `npm run build` ✓ (29 routes, all static except `/api/enquiry`). The original body was consolidated from `prod.md` and cross-checked against the archived V2 plan and V1 record.
+- **Purpose:** The **master document** for Educraft — current production state, conventions, blockers, background roadmap, and the next implementation project (Dashboard, §24). A fresh session should be able to pick up the entire system from this file alone, without opening any other documentation.
+- **Supersedes and replaces (deleted 2026-09-04, content absorbed into this file):** `prod.md`, `README.md` (kept as a short GitHub pointer only), `Educraft_V1_Previous_State.md` (historical facts absorbed into §23), `Educraft_V2_Experience_Web_Design_Implementation_Plan.md` (implementation complete — archived; do not re-read or plan from it), and `Educraft_V3_Next_Version_Planner.md` (absorbed into §25). The Dashboard implementation plan lives on as its own file — `Dashboard-Implementation-Plan.md` (kept by user request; this doc's §24 is the synced, master-side reference for it).
+- **What is NOT source of truth here:** The V2 plan was a *design proposal*. Large parts of it were never built or were built differently than proposed — notably `ProgrammeScene` and `CTAAtmosphere` (planned WebGL scenes; the shipped system uses SVG for both, see §10), GSAP/ScrollTrigger, Lenis smooth-scroll, analytics, error monitoring, and the entire automated test suite. Nothing in the V2 plan should be treated as implemented unless it is explicitly confirmed in this document. §25 roadmap items are intent only — never current state.
+- **Open verification items (`VERIFY`):** only the business contact details in §12 and §22 remain (a stakeholder input, not a code matter). Repository slug, file tree, and route inventory are confirmed from the live repo.
+
+---
+
+## 1. Product Identity & Vision
+
+**North star:** *"Five paths. One learning ecosystem."* Educraft is a digital education platform unifying five verticals — linguistics, inclusive education, psychological counseling, AI & digital technologies, and NEET/JEE preparation — under one trust umbrella. The five pillars (**Learn · Include · Thrive · Achieve · Excel**) are not five unrelated offerings; they are the structural and visual metaphor for the entire site.
+
+**Visual metaphor system** — used consistently across SVG illustrations, 3D scenes, backgrounds, and UI patterns:
+
+| Element | Represents |
+|---|---|
+| **Path** | Progress, learning journeys, movement |
+| **Node** | Programmes, milestones, ideas |
+| **Layer** | Depth, knowledge, support |
+| **Connection** | Ecosystem, relationships, interdisciplinary learning |
+| **Growth** | Outcomes, confidence, capability |
+
+**Experience qualities:** editorial rather than template-driven; warm, human, trustworthy, intelligent; premium without being decorative for its own sake; motion-rich without being distracting; content hierarchy drives design, not the reverse.
+
+**Audiences, needs, and CTAs:**
+
+| Audience | Needs | CTA |
+|---|---|---|
+| School leaders | Institutional credibility, programme breadth, partnership model, delivery quality, measurable outcomes | "Talk to the Education Team" |
+| Parents | Safety/trust, individual student support, programme clarity, outcomes, how the journey works | "Find the right programme" |
+| Students | Energy, future-oriented learning, tangible outcomes, confidence and belonging | "Explore your path" |
+| Partners / organisations | Capability, scope, reach, partnership models, contact channel | "Partner with Educraft" |
+
+---
+
+## 2. Current Release / Verification State
+
+| | |
+|---|---|
+| **Version** | `Prod.ver-0.1.0` (V2 production, current HEAD) — 0.1.0 was the theme-aware brand-lockup swap (`public/logo.png` / `logo-dark.png` replacing the GraduationCap+wordmark lockup and `public/logo.svg`, plus Navbar, Footer, and `layout.tsx` icon updates). No route changes since 0.0.2. |
+| **Last verified** | 2026-09-04 — `npm run lint` ✓ · `npx tsc --noEmit` ✓ · `npm run build` ✓ |
+| **Route count** | 29 routes total — 16 marketing pages, 5 programme detail pages included in that count, plus system routes; all statically generated except `POST /api/enquiry` |
+| **Origin** | V1 was a single-page landing prototype (see §23). V2 fully implemented the 77-section design plan (now deleted — content absorbed; treat as archived). Deferred V2 items live in the background roadmap, §25. |
+| **Next project** | Student & Professor **Dashboard** — Stage 0 (Foundations) **and** Stage 1 (Student Core) **shipped 2026-09-04**; **Stage 2 (Professor Core) is next** (§24) |
+
+---
+
+## 3. Technology Stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Next.js **16.3.1** (App Router, Turbopack) |
+| UI | React **19**, TypeScript |
+| Styling | Tailwind CSS **4** (see §6 for the critical dynamic-class constraint) |
+| 3D | Three **0.185** + React Three Fiber **9.7** + Drei **10.7** |
+| Icons | lucide-react |
+| Theming | next-themes (`enableSystem={false}`, `defaultTheme='light'`, localStorage persistence) |
+| Validation | zod **4** (note API differences from v3 — §18) |
+| Utilities | clsx + tailwind-merge, tw-animate-css |
+| Fonts | Sora 600/700 (display) · Manrope 400/500/600 (body), both via `next/font` |
+| Node requirement | ≥ 20.9 |
+
+---
+
+## 4. Route & Application Architecture
+
+```
+/                                Homepage (12 sections, §8)
+/about                           Story, pillars, principles
+/programmes                      Index — 5 programme cards w/ graphics
+/programmes/[slug]               Detail ×5: linguistics, inclusive-education,
+                                  wellbeing-counseling, ai-digital-tech, neet-jee
+/for-schools · /for-parents · /for-students   Audience doors (shared AudiencePage)
+/methodology                     5-step method, measurement principles
+/impact                          Outcome chain, structural facts, evidence
+/insights                        Index with category filter (client)
+/insights/[slug]                 Article ×4 (SSG via generateStaticParams)
+/careers · /partnerships · /contact · /privacy · /terms
+/api/enquiry                     POST — real lead pipeline (§13)
+sitemap.xml · robots.txt         Generated (app/sitemap.ts, app/robots.ts —
+                                  the static public/robots.txt was deleted on purpose)
+/opengraph-image                 Homepage social preview (next/og)
+/programmes/[slug]/opengraph-image   Per-programme social previews
+```
+
+**Shell hierarchy:** `src/app/layout.tsx` (fonts, theme, metadata, Organization JSON-LD) → `src/app/(site)/layout.tsx` (`EnquiryModalProvider` → `CursorProvider` → `SkipLink` → `Navbar` → `main#main-content` → `Footer` → `EnquiryModal` → `FloatingEnquiryButton`). All marketing pages live under the `(site)` route group.
+
+---
+
+## 5. Repository / Source Structure
+
+Verified against a live file listing on 2026-09-04.
+
+```
+src/
+├── app/
+│   ├── api/enquiry/route.ts
+│   ├── (site)/                 ← route group; holds the entire site shell (§4) —
+│   │   │                         the homepage itself lives here as (site)/page.tsx
+│   │   ├── page.tsx (home) · about/ · careers/ · contact/ · for-parents/ ·
+│   │   │   for-schools/ · for-students/ · impact/ · insights/ · insights/[slug]/ ·
+│   │   │   methodology/ · partnerships/ · privacy/ · programmes/ ·
+│   │   │   programmes/[slug]/ · programmes/[slug]/opengraph-image.tsx · terms/
+│   ├── layout.tsx · globals.css · opengraph-image.tsx · sitemap.ts · robots.ts
+│
+├── components/
+│   ├── educraft/
+│   │   ├── landing/            Hero · Ecosystem · ProgrammeExplorer · WhyDifferent ·
+│   │   │                       StudentJourney · ProgrammeDeepDive · Impact ·
+│   │   │                       AudienceEntryPoints · Methodology · Testimonials ·
+│   │   │                       InsightsTeaser · FinalCTA   (§8)
+│   │   ├── programme/          ProgrammePage.tsx — server component (children are
+│   │   │                       client components)  (§9)
+│   │   ├── insights/           InsightsList.tsx
+│   │   ├── enquiry/            EnquiryForm.tsx · EnquiryModal.tsx (§13)
+│   │   ├── layout/             Navbar · Footer · PageHero · SkipLink
+│   │   ├── pages/              AudiencePage.tsx (shared by the 3 audience doors)
+│   │   ├── graphics/           ProgrammeGraphic · EcosystemGraphic ·
+│   │   │                       DecorativeSystems (dotted-constellation, topographic,
+│   │   │                       path-lines — the reusable backgrounds of §6)
+│   │   ├── motion/             Reveal · MagneticButton · CursorProvider (§11)
+│   │   ├── three/              core/ (CanvasShell · CameraRig · Lighting) ·
+│   │   │                       primitives/ (Node · Orbit · Connector · ParticleField ·
+│   │   │                       GeometryArtifact · GlowLayer) · scenes/ (EcosystemScene) ·
+│   │   │                       hooks/ (useSceneActive)   (§10)
+│   │   └── ui/                 Button · Card · EnquireButton · Eyebrow ·
+│   │                           FaqAccordion · FloatingEnquiryButton ·
+│   │                           SectionHeading · Stat
+│   ├── theme/                  ThemeProvider.tsx (next-themes wrapper, mounted-gated)
+│   └── (no other groups)
+│
+├── context/                    EnquiryModalContext.tsx — EnquiryModalProvider; the
+│                               modal, both forms, and FloatingEnquiryButton consume it
+├── data/                       programmes.ts (each Programme carries its own faqs[] —
+│                               there is no standalone faqs.ts) · pillars.ts ·
+│                               navigation.ts · testimonials.ts · insights.ts ·
+│                               enquiries.jsonl*  (*runtime lead log; gitignored, contains
+│                               personal data — never commit)
+├── design/                     tokens.ts · motion.ts · colors.ts · typography.ts
+├── hooks/                      useReveal · useReducedMotion · useScrollProgress ·
+│                               useParallax · useScrollLock · useSectionProgress
+├── lib/                        validation.ts · rate-limit.ts · utils.ts · pillarStyles.ts
+└── types/                      index.ts
+```
+
+Note on placement (differs from the original plan's sketch): `EnquireButton` and `FloatingEnquiryButton` live in `ui/` (not `enquiry/`), and `useSceneActive` lives under `three/hooks/` (not `src/hooks/`). Enquiry state lives in `src/context/`, not inside `components/`.
+
+**Confirmed deviations from the original V2 plan:** `scenes/ProgrammeScene.tsx` and `scenes/CTAAtmosphere.tsx` were proposed but not built as WebGL — the shipped `FinalCTA` uses SVG atmosphere on the existing single canvas, and programme pages currently ship with no 3D (background-roadmap Tier B work, §25, not yet done).
+
+---
+
+## 6. Design System
+
+**JS sources of truth:** `src/design/colors.ts` · `typography.ts` (§6.2-scale + `typeStyle()` helper) · `motion.ts` (durations 100ms–1.2s; baseline easing `cubic-bezier(0.22,1,0.36,1)`) · `tokens.ts` (4px spacing scale, radii, shadows, z-ladder base→cursor=120, layout gutters).
+
+**CSS layer (`src/app/globals.css`):**
+- `@theme inline` maps everything to runtime CSS vars that flip under `.dark`. Dark mode is art-directed, not inverted: deeper indigo canvas, brighter programme accents. (Light mode target: airy, educational, optimistic, soft sky backgrounds. Dark mode target: cinematic, atmospheric, deep indigo, subtle glow, restrained teal.)
+- Programme accent system: `--ec-p-{learn,include,thrive,achieve,excel}` + `-soft` washes → Tailwind classes `text-ec-learn`, `bg-ec-learn-soft`, etc.
+- Component classes: `container-site` (1440 max, 64/48/32/24px gutters) · `container-content` (1200) · `type-{display-xl…caption}` (clamped) · `eyebrow`(+`eyebrow-rule`) · `card-surface` · `reveal-on-scroll` · `hero-enter`/`hero-enter-fade` (delay via `--hero-delay`) · `ambient-drift`/`ambient-pulse`.
+- Global `prefers-reduced-motion` block kills all animation/transition durations and un-hides reveals — reduced motion is a CSS-level guarantee, not JS-conditional.
+
+**Critical Tailwind 4 constraint:** dynamic class construction (`` `bg-ec-${x}` ``) does **not** generate CSS at build time. All pillar→class mappings must be written literally in `src/lib/pillarStyles.ts` (`pillarTextClass`, `pillarBgClass`, `pillarSoftBgClass`, `pillarBorderClass`, `pillarAccentVar`/`pillarSoftVar` for SVG fills).
+
+**Decorative background systems** (reusable, not redrawn per-section): dotted-constellation (hero mobile fallback, ecosystem sections), topographic lines (curriculum background), path lines (footer, section transitions). Each is a shared component, not bespoke per instance.
+
+---
+
+## 7. Content & Data Architecture
+
+**Content model** (`src/types/index.ts` + `src/data/`): `Programme` (slug, pillarId, name, tagline, promise, description, whyItMatters, audience[], outcomes[], highlights[], methodology[5], curriculum[], journey[6], activities[], support[], proof[], faqs[]) is fully content-driven — adding a programme requires zero component changes. Also `Pillar`, `Testimonial`, `Insight` (7 categories), `NavigationItem`, `AudienceEntry`. Site-level content (`methodologySteps`, `studentJourneyStages`) lives in `data/pillars.ts`.
+
+**No invented statistics anywhere.** Proof is qualitative; structural facts only (5 verticals, 1 ecosystem, 4 audiences, 6 journey stages).
+
+---
+
+## 8. Homepage Architecture
+
+Narrative arc: **Understand → Explore → Trust → Imagine → Choose → Act.**
+
+| # | Section | Signature interaction | Notes |
+|---|---|---|---|
+| 01 | `Hero` | Staged entrance (0→1700ms via `--hero-delay`); scroll-linked content rise + camera pull-back + node drift (`useScrollProgress` `'full'` mode) | Headline "Five paths. One learning ecosystem." WebGL hidden on mobile → SVG `Constellation` fallback. Bottom fade + scroll cue. |
+| 02 | `Ecosystem` | Interactive SVG map: 5 nodes around a core, spokes draw on enter, hover/focus lights the connection + updates an `aria-live` right panel, click → programme page | Mobile: stacked cards. Default active = Learn. `data-cursor-label="Explore"`. |
+| 03 | `ProgrammeExplorer` | 550vh pinned scroll story (5 × 110vh): keyed crossfade panel, `ProgrammeGraphic` visual, progress rail + top bar | Mobile: horizontal snap cards. Uses `'full'` mode. |
+| 04 | `WhyDifferent` | Sticky left statement, numbered differentiators (01–05) | |
+| 05 | `StudentJourney` | 552vh pinned (6 × 92vh): path self-draws (`strokeDashoffset = 1-progress`), milestones light with icons | Mobile: vertical timeline. **Must never gain `overflow-hidden` on the section — breaks sticky pinning (§18).** |
+| 06 | `ProgrammeDeepDive` | Tabbed spotlight: curriculum modules, 5-step method, outcomes, proof line, CTAs | Client tab state, data-driven. |
+| 07 | `Impact` | Outcome chain Confidence→Engagement→Skill→Readiness (numbered cards + arrows), structural facts, "how we build evidence" (5 pillars) | Qualitative by design. |
+| 08 | `AudienceEntryPoints` | Three doors — schools=indigo, parents=teal, students=gold → audience pages | |
+| 09 | `Methodology` | Path-draw, calibrated pacing: `'visible'` mode, `draw = clamp01(progress * 1.1)`, node *i* lights at `((i+0.08)/5.5)*1.1` — completes ~84% through visible scroll | User-calibrated 2026-08-27 (was lagging scroll before the 1.1× tuning). |
+| 10 | `Testimonials` | Editorial: 1 large primary quote (parallax drift) + 2 supporting. No carousel, no autoplay | Content is SEED (§22). |
+| 11 | `InsightsTeaser` | 3 latest articles (category, reading time, date) | |
+| 12 | `FinalCTA` | Indigo close, SVG atmosphere on the existing single canvas (no second WebGL context), magnetic gold CTA | |
+
+---
+
+## 9. Programme Architecture
+
+`programme/ProgrammePage.tsx` (server component with client children):
+
+Hero (accent eyebrow + `ProgrammeGraphic`) → why it matters → audience (3 cards) → 5-step method (numbered rows) → curriculum (modules with item checklists, topographic background) → 6-stage journey cards → outcomes + activities (split) → support + proof → FAQ accordion (accessible, one-open) → indigo conversion close → related programmes (4).
+
+JSON-LD: `Course` + `BreadcrumbList`. Per-programme metadata and OG image.
+
+---
+
+## 10. WebGL / Graphics Architecture
+
+One coordinated system in `three/` (V1's `HeroScene`/`CourseOrbit3D`/`FloatingParticles` — three separate canvases — were deleted; V2 consolidated to one):
+
+- `core/CanvasShell` — frameloop pauses off-screen via `useSceneActive`; `AdaptiveDpr`; `dpr [1, 1.5]`.
+- `core/CameraRig` — scroll + pointer, eased targets.
+- `core/Lighting` — no per-node point lights; emissive materials + glow sprites instead.
+- `primitives/`: `Node` (emissive sphere + halo ring), `Orbit` (torus), `Connector` (quadratic arc line), `ParticleField` (single buffer-geometry points), `GeometryArtifact` (wireframe), `GlowLayer` (canvas radial sprite, additive).
+- `scenes/EcosystemScene` — core icosahedron + 3 orbit rings + 5 pillar nodes + connectors + artifacts + particles + Stars. **Theme-aware**: reads next-themes `resolvedTheme` and recolors accordingly.
+
+**Not shipped as WebGL** (see §5 deviations): programme-page 3D accents (planned, V3 Tier B item 11 — at most one restrained `GeometryArtifact` per hero when built, reusing existing primitives, never a per-page canvas) and a dedicated `CTAAtmosphere` scene (FinalCTA uses SVG instead, deliberately, to avoid a second WebGL context).
+
+---
+
+## 11. Motion / Interaction Architecture
+
+**Hooks (`src/hooks/`):**
+- `useScrollProgress(ref, offsetTop?, mode: 'full' | 'visible')` — rAF-throttled. `'full'` (default): 0 = enter, 1 = full exit — use for pinned sections. `'visible'`: 1 = bottom edge reaches viewport bottom — use for path-draw sequences. Exports `clamp01`, `lerp`.
+- `useReducedMotion` — single consolidated source of truth (V1 had per-scene duplicates).
+- `useScrollLock` — reference-counted; multiple lockers compose safely.
+- `useReveal({threshold, rootMargin, once})` — reveals instantly under reduced motion.
+- `useParallax`, `useSectionProgress` (IntersectionObserver steps).
+
+**Motion components (`components/educraft/motion/`):** `Reveal` (polymorphic via `createElement`; direction/delay/distance/duration) · `MagneticButton` (fine-pointer only, strength clamped) · `CursorProvider` (fine-pointer + non-reduced-motion only; ring scales over interactive elements; contextual label via `data-cursor-label`, currently used on ecosystem nodes).
+
+---
+
+## 12. Navigation / Shell / Brand
+
+**Navbar:** transparent → blurred+bordered on scroll (`h-20`→`h-16`); programmes mega menu (5 pillar rows + mini ecosystem SVG map + audience links) opens on hover + click, closes on Escape/outside-click/route-change with focus return; `aria-expanded`/`aria-controls`; route-aware active states (`aria-current`); accessible mobile menu. **Dashboard sign-in entry (added 2026-09-04, post-Stage-1 by user request):** a "Sign in" text link sits in the desktop nav (next to the Enquire CTA), the mobile menu (above Enquire), and the footer bottom bar — all pointing at `/dashboard`, which dispatches signed-in users to their role root and sends signed-out visitors to the Clerk `/sign-in` page via `proxy.ts`. Deliberately no sign-up link anywhere: sign-ups are invite-only (accounts are created in the Clerk dashboard with `publicMetadata.role`; a self-service sign-up would create role-less users that `getCurrentUser()` rejects).
+
+**Footer V2:** closing statement "Build learning journeys that last.", CTA pair, 4 nav clusters, constellation + path-lines background. No social icons — deliberately absent until real handles exist (no dead `href="#"` links).
+
+**Brand lockup** (theme-aware, swapped 2026-08-30): light mode renders `public/logo.png` (2135×736); dark mode renders `public/logo-dark.png` (2172×724) via CSS class switch (`dark:hidden` / `hidden dark:block`) — no JS/hydration gating needed. Sizes: Navbar `h-11 md:h-14`, Footer `h-14 md:h-16`. This replaced an earlier GraduationCap+wordmark lockup and the `public/logo.svg` favicon — **verified 2026-09-04: no residual references to the old lockup remain** (`layout.tsx` icon is `/logo.png`; source grep is clean).
+
+`hello@educraft.com` / `+91 80 4567 8900` / Bangalore, India appear in footer, contact page, and structured data — **VERIFY, not yet stakeholder-confirmed** (§22).
+
+---
+
+## 13. Enquiry / Lead Pipeline
+
+`POST /api/enquiry` pipeline: JSON parse → zod v4 `enquirySchema` (role enum, name/email/phone, `programmeSlug`, `contactTime`, `message`, `consent: z.literal(true)`, honeypot field `website` max length 0) → honeypot check (silent `200` without persisting) → per-IP rate limit (in-memory sliding window, 5 req / 10 min, `Retry-After` header) → delivery: `ENQUIRY_WEBHOOK_URL` fetch with 5s `AbortSignal` timeout if set, plus append to `data/enquiries.jsonl` (dir auto-created, gitignored — contains personal data), plus structured console log. **The client never determines success — the server re-validates everything.**
+
+**Staged form** (`enquiry/EnquiryForm.tsx`): 3 steps (About you → What you're looking for → Contact preferences + review) + success state. Per-step zod validation, error association, autocomplete attrs (name/email/tel), sr-only step announcements + heading focus on step change, back/continue, loading + server-error + retry states, honeypot field marked `sr-only`. Used by the modal (locked/general) and the contact page (`inline`). `EnquireButton` is the client wrapper for server-rendered pages.
+
+**Known limitation:** rate limiting is per-instance in-memory — needs a shared store (Redis/Upstash) before multi-instance deployment (§22).
+
+---
+
+## 14. SEO / Metadata
+
+`metadataBase` from `NEXT_PUBLIC_SITE_URL` (falls back to `https://educraft.com` — set the env var for the real domain). Per-route title/description/canonical. JSON-LD: `EducationalOrganization` (site-wide), `Course` + `BreadcrumbList` (programmes), `Article` (insights). `next/og` `ImageResponse` social previews for home + per-programme, pillar-accented. Sitemap covers all static + SSG routes.
+
+**Satori rule (learned the hard way):** every `div` with multiple children inside an OG image must have explicit `display: 'flex'`, or the prerender throws.
+
+**Not yet shipped:** insight-article OG images (`insights/[slug]/opengraph-image.tsx`) — the only content type currently missing a social preview (V3 Tier B item 6).
+
+---
+
+## 15. Accessibility
+
+**Shipped:** semantic landmarks, skip link, logical heading hierarchy, keyboard navigation including the mega menu (Escape/outside-click close, focus return), accessible dialogs (focus trap on `EnquiryModal`), `aria-live` panel on the Ecosystem section, `aria-current` for route-aware nav state, `aria-expanded`/`aria-controls` on menus, form errors associated with inputs, sr-only step announcements in the enquiry flow, `mounted`-gated theme toggle to avoid mismatch. Reduced motion is enforced globally at the CSS level (`prefers-reduced-motion` kills animation/transition durations and un-hides reveal content), not per-component JS branching.
+
+**Not yet verified:** a formal WCAG 2.2 AA audit pass (keyboard-only walk of mega menu + staged form, screen-reader pass, contrast check of programme accents — especially `achieve` gold on light backgrounds) is still open (V3 Tier D item 19). Treat current accessibility as *implemented-by-convention*, not *audited*.
+
+---
+
+## 16. Performance
+
+**Shipped optimizations:** single coordinated WebGL canvas (not one per section/page); frameloop pauses when a scene is off-screen (`useSceneActive`); `AdaptiveDpr` with a `[1, 1.5]` clamp; no per-node point lights (emissive + glow sprites instead); reduced-motion short-circuits animation entirely; the site is static except one API route.
+
+**Goals, not yet field-verified:** LCP < 2.5s, CLS < 0.1, INP < 200ms — these are targets carried from the original plan. No Lighthouse baseline or real-device Core Web Vitals field data has been recorded yet (V3 Tier D item 17). Do not report these numbers as achieved without measuring.
+
+---
+
+## 17. Security / Data Handling
+
+- Enquiry API re-validates everything server-side; the client cannot force a success state.
+- Honeypot field returns a silent `200` without persisting spam submissions.
+- Rate limiting is in-memory and **per-instance only** — not safe as-is for a multi-instance deployment (§22).
+- `data/enquiries.jsonl` contains personal data and is gitignored.
+- No analytics and no error monitoring (Sentry or otherwise) are currently wired in — both are Tier A roadmap items, not present today. Do not assume telemetry exists.
+- No secrets, API keys, or credentials are stored in the documented content model; environment variables are limited to `NEXT_PUBLIC_SITE_URL` and `ENQUIRY_WEBHOOK_URL` (§21).
+
+---
+
+## 18. Engineering Constraints
+
+Hard-won, do-not-regress rules (source of the fixed-bug ledger in §19):
+
+1. **`overflow-hidden` on a pinned-section ancestor breaks `position: sticky`** — it becomes the sticky element's scroll box. `StudentJourney` and `ProgrammeExplorer` must keep section-level overflow visible; overflow handling belongs only on the sticky inner element.
+2. **Hydration:** anything derived from next-themes' `theme` (or any other post-mount state) inside SSR'd markup must be gated on a `mounted` flag.
+3. **zod v4 API:** use `{ message }`, not `{ errorMap }`; `path` is `PropertyKey[]`; don't import `SafeParseReturnType` — `flattenZodErrors` takes a structural type.
+4. **R3F:** imperative scene-graph mutation inside `useFrame` needs `// eslint-disable-next-line react-hooks/immutability` — this is the canonical pattern here, not React state.
+5. **Tailwind 4:** only literal class names in source — no dynamically constructed class strings (§6).
+6. **tw-animate-css:** `animate-in` keyframes only fire on key-remount (used for stage/tab crossfades).
+7. `THREE.Clock` deprecation warning is emitted by R3F 9.7.0 internals (latest stable) — harmless, disappears with R3F's next patch. Do not upgrade to a 10.0 canary just to silence it.
+8. **Route groups never contribute URL segments** — `(dashboard)/professor/page.tsx` is served at `/professor`, and a page.tsx at a group root resolves at the group's URL root (`(dashboard)/page.tsx` collides with `(site)/page.tsx` at `/`). To own a URL prefix, use a **real folder** (`dashboard/`). Also: Clerk v7 `auth()` **throws** on any route its middleware/proxy matcher didn't cover — keep the auth matcher aligned with real routes.
+
+---
+
+## 19. Fixed Bugs & Lessons
+
+| Problem | Root Cause | Fix | Regression Rule |
+|---|---|---|---|
+| Student Journey blank zone after stage 2 | `overflow-hidden` on the section broke sticky pinning; content scrolled away while progress ran invisibly over ~4 empty screens | Removed section-level `overflow-hidden` | Never place `overflow-hidden` on a pinned/sticky section's ancestor — only on the sticky inner element |
+| Hydration mismatch (theme toggle aria-label/title) | next-themes resolves the stored theme post-mount, so SSR and client markup disagree | `mounted`-gated label | Gate any next-themes-derived (or other post-mount) value behind a `mounted` check before rendering it into SSR'd markup |
+| Enquiry persistence `ENOENT` | `data/` directory didn't exist | `mkdir` recursive inside the route handler | Never assume a write-target directory exists — create it recursively before writing |
+| Methodology path-draw never reached node 5 | Progress was measured entry→full-exit (`'full'` mode); the draw animation completed off-screen before scroll ended | Switched to `'visible'` mode + 1.1× draw acceleration + retuned node thresholds | For path-draw sequences, use `'visible'` scroll-progress mode and calibrate against actual scroll distance — don't assume a linear 0→1 mapping lands exactly at scroll end |
+| OG image prerender error | Satori requires `display: 'flex'` on every multi-child `div` inside a `next/og` `ImageResponse` | Fixed the headline wrapper | Always set explicit `display: 'flex'` on multi-child divs inside OG image markup |
+| Stale `.next/types` `tsc` errors after file deletions | Cached type validator referenced deleted files | `rm -rf .next` before typecheck/build | After deleting or renaming files, run `rm -rf .next` before `tsc --noEmit` or `next build` — don't trust cached type info |
+| Dashboard shell 404/500 after Stage 0 (auth routes "not found", `/professor` 500) | `(dashboard)` **route group** was assumed to create the `/dashboard` URL prefix; Next strips group names, so pages lived at bare `/professor` `/student` — `/dashboard/professor` matched only the proxy (404 signed-in) and bare paths ran `auth()` with no proxy coverage (Clerk v7 throws → 500) | Moved the shell into a real `src/app/dashboard/` folder; `/dashboard` role dispatch lives in `proxy.ts` (a group-root or root-level index page collides with `(site)/page.tsx` at `/`) | Route groups never add URL segments (§18 rule 8): use real folders for real URL prefixes, and keep every auth() call site covered by the proxy matcher; after structural folder moves, wipe `.next` and restart dev |
+
+---
+
+## 20. Verification / Development Workflow
+
+```bash
+npm install
+npm run dev         # local dev on :3000 (first compile ~14s is normal)
+
+# verification loop — all three must pass before shipping
+npm run lint         # eslint (react-hooks/immutability rule active)
+npx tsc --noEmit
+npm run build         # Turbopack production build (29 routes)
+
+npm start            # serve the production build
+```
+
+If stale `.next/types` causes deletion-related tsc errors: `rm -rf .next && npx tsc --noEmit && npm run build`.
+
+**Working agreement:** the user performs all website viewing/visual QA (browser access, screenshots) and reports back. The assistant never launches a browser or curls the site itself. (This is persisted in assistant memory. A stale `.claude/settings.local.json` browser-automation allow-list from an earlier session — CDP/curl/taskkill rules for a long-dead localhost:9222 debugging flow — was **deleted 2026-09-04**; no current workflow uses it.)
+
+---
+
+## 21. Deployment / Environment
+
+The site is static except `/api/enquiry` — deployable to any Next.js host.
+
+| Var | Purpose |
+|---|---|
+| `NEXT_PUBLIC_SITE_URL` | Canonical production domain (metadata, sitemap, OG images). Falls back to `https://educraft.com` |
+| `ENQUIRY_WEBHOOK_URL` | Where enquiries are delivered (CRM/email). Without it, enquiries are only appended to `data/enquiries.jsonl` + logged |
+
+On Vercel: import the repo, set the env vars above, deploy. No other env vars are required to run the site.
+
+---
+
+## 22. Current Production Blockers
+
+Pre-launch stakeholder inputs — these take precedence over all V3 roadmap work:
+
+1. **Testimonials** (`data/testimonials.ts`) — current 3 entries are clearly-marked SEED content; must be replaced with real, verified, consented quotes before launch.
+2. **Env vars** — `NEXT_PUBLIC_SITE_URL` (real domain) and `ENQUIRY_WEBHOOK_URL` (CRM/email delivery) are unset in the documented baseline.
+3. **Business details** — `hello@educraft.com`, `+91 80 4567 8900`, Bangalore, India (footer, contact page, structured data) — `VERIFY`, not yet stakeholder-confirmed.
+4. **Social handles** — intentionally absent from the footer (no dead `href="#"` links) until real handles exist.
+5. **Rate limiter** — per-instance in-memory only; needs a shared store (Redis/Upstash) before any multi-instance deployment.
+
+---
+
+## 23. Minimal Historical Context
+
+V1 was a single-page landing prototype (`src/app/page.tsx`, anchor navigation only): 3 separate R3F scenes (`HeroScene`, `CourseOrbit3D`, `FloatingParticles`), 5 course-vertical cards, a client-side-simulated enquiry modal with no backend, basic `useReveal` fades, light mode only, static `public/robots.txt` for SEO. Repository is `piyush-AIML/TEMP` (confirmed current 2026-09-04 via `git remote`).
+
+Commit chronology: `6207784` initial commit → `4f8ad7f` prototype work → `0a46152` cleanup for public deployment (removed scratch: `worklog.md`, `upload/`, `download/`) → `80ea2ad` V2 LIGHT&DARK MODE (V2 implementation begins) → `cfdb5fa` `Prod.ver-0.0.1` → `901bcbb` `Prod.ver-0.0.2` → `1405a06` doc restructure (created the four-doc set + branding SVGs; consolidated into this file on 2026-09-04) → `77b2217` `Prod.ver-0.1.0` (brand lockup, §12).
+
+| V1 | V2 (current) |
+|---|---|
+| One landing page | 16 pages + API |
+| Decorative 3D, 3 canvases | One coordinated theme-aware scene system |
+| Cards as primary pattern | Editorial modules, pinned scroll storytelling, SVG path-draws |
+| Simulated enquiry form | Production lead pipeline (§13) |
+| Basic reveal animations | Full motion system (§11) |
+| Light mode only | Art-directed light/dark theme system |
+| Hard-coded content | Content-driven UI from typed data models (§7) |
+
+V2's design principles (non-negotiable — they live on in §25): visuals must explain learning/progress/connection, never decorate for its own sake; one great scene beats three mediocre ones; avoid endless rounded cards, all-centered sections, autoplay carousels, glassmorphism, stock-looking art, and invented numbers.
+
+---
+
+## 24. Next Implementation Project — Student & Professor Dashboard
+
+> **Status:** **Stage 1 — Student Core shipped 2026-09-04** (details absorbed into §24.8 below). **Next: Stage 2 — Professor Core.** The project is an authenticated, role-based dashboard module on top of this site — the existing marketing site stays untouched. The kept roadmap plan lives in [`Dashboard-Implementation-Plan.md`](Dashboard-Implementation-Plan.md) — this section is the master-side reference, kept in sync with it (route-group note in §24.4: the file's `(marketing)` label maps to this repo's actual `(site)` group).
+> **Current live deploy (staging/preview domain):** `temp-tau-opal.vercel.app` (also used for the `Prod.ver-0.1.0` previews). Production domain still unset — see §22 blockers, env var `NEXT_PUBLIC_SITE_URL`.
+
+### 24.1 Goals & Non-Goals
+
+**Goals**
+- One codebase, two role experiences: `Student` and `Professor` (room for `Admin` later).
+- Students see: profile, enrolled courses, upcoming classes, notifications, and remarks/materials the professor has posted for their course(s).
+- Professors see: their courses, upcoming classes, a notes/updates delivery system, upcoming meetings, and a coursework planner with completion tracking.
+- Reuses the existing Next.js app, design system, and Vercel deployment — a new authenticated section (`/dashboard/...`), not a separate app.
+- Data is real (persisted), not mocked — professors post something, students see it, with reasonable latency.
+
+**Non-Goals (v1):** video conferencing/live class hosting (link out to Zoom/Meet); payments/billing; native mobile app (responsive web is enough); complex grading/LMS (quizzes, grade books) — flagged as a future phase.
+
+### 24.2 Actors & Core Entities
+
+**Actors:** Student, Professor, (future: Admin/Coordinator)
+
+| Entity | Key fields |
+|---|---|
+| `User` | id, name, email, role (`student`/`professor`/`admin`), avatarUrl, createdAt |
+| `Course` | id, title, code, vertical (maps to the site's five pillars/verticals), professorId, description |
+| `Enrollment` | id, studentId, courseId, status, enrolledAt |
+| `ClassSession` | id, courseId, startsAt, endsAt, mode (online/in-person), link/location, status |
+| `Material` | id, courseId, uploadedBy, type (note/remark/file/link), title, body, fileUrl, visibility, createdAt |
+| `Notification` | id, userId, type, title, body, relatedEntity, read (bool), createdAt |
+| `Meeting` | id, professorId, title, withWhom (student/parent/other), startsAt, endsAt, link, status |
+| `Task` (coursework planner) | id, courseId, title, description, dueDate, weight/priority, status (todo/in-progress/done), createdBy |
+| `CompletionLog` | id, courseId, taskId, percentComplete, updatedAt — feeds the "completion monitor" |
+
+Maps 1:1 onto normal relational tables (Postgres).
+
+### 24.3 Tech Stack Decisions (recommendations, not yet decided)
+
+Existing stack it must extend: Next.js 16 (App Router, Turbopack) · React 19 · TS · Tailwind 4 · zod 4 · lucide · next-themes — same repo, same Vercel project.
+
+| Concern | Recommended choice | Why / note |
+|---|---|---|
+| Auth | **Clerk** (decided 2026-09-04) | Roles via `publicMetadata` = the single source of truth, read server-side via `clerkClient()` (never session claims). See §24.8 for the resolution. |
+| Database | **PostgreSQL** via Neon or Supabase | Relational fits; generous free tiers; works with Vercel. Supabase adds built-in realtime + storage if wanted. |
+| ORM | **Prisma** | Type-safe, migrations, works with Route Handlers/Server Actions. |
+| File uploads | UploadThing or Supabase Storage | Avoids hand-rolled S3 signing for v1. |
+| Realtime notifications | **Polling + DB-backed `Notification` table first**; Supabase Realtime/Pusher only if instant push is truly needed | Don't over-engineer v1. |
+| Data fetching | RSC + Server Actions for most CRUD; TanStack Query client-side only where optimistic updates/polling are needed (notification bell) | |
+| Styling/UI | Reuse existing Tailwind 4 setup. **shadcn/ui status:** `components.json` config exists at repo root but **no shadcn deps are installed** (no radix/cva in package.json) — the site ships hand-rolled `components/educraft/ui/`. Decide: install shadcn for data-heavy widgets (tables/calendars/modals) or keep hand-rolling in the same visual language | New-york style, lucide icon library, aliases point at `@/components/ui` etc. |
+| Calendar/scheduling UI | react-big-calendar or FullCalendar | Upcoming classes / meetings views. |
+| Forms | React Hook Form + zod (professor-side forms: tasks, materials, classes) | zod v4 already in the stack; RHF is new. |
+
+> Rule of thumb: **no new framework** for the dashboard. Extend this app with a new real `dashboard/` folder — navigation, theming, deployment stay unified. (Not a route group: groups never add URL segments — see §18 rule 8.)
+
+**Stage 0 built state (2026-09-04) — versions as actually installed:** Prisma **7.10** (`prisma-client` generator emitting to `src/generated/prisma` — gitignored, regenerate via `npm run db:generate`; CLI config is `prisma7.config.ts`, which loads `.env.local` via dotenv; **driver adapter required** → `@prisma/adapter-neon` + `ws` — Node < 22 has no global `WebSocket`, wired once in `src/lib/prisma-client.ts`). Clerk **7.9** (`clerkClient()` is **async** — `await clerkClient()`; auth file is **`src/proxy.ts`** — Next 16 deprecated the `middleware.ts` filename; `createRouteMatcher` is deprecated in v7 — the role layouts' `requireRole()` already gives resource-based checks, so the matcher only gates signed-out redirects and can be dropped later). `DATABASE_URL` is a single Neon **direct** URL.
+
+### 24.4 High-Level Architecture
+
+```
+src/ (this repo — verified 2026-09-04)
+├── proxy.ts                     auth boundary (Next 16 name; middleware.ts is deprecated)
+├── app/
+│   ├── (site)/                  ← existing public site, untouched (route group — NEVER a URL prefix)
+│   ├── (auth)/  sign-in/[[...sign-in]]/
+│   ├── dashboard/               ← REAL folder (a route group here would serve /professor, not /dashboard/professor)
+│   │   ├── layout.tsx           ClerkProvider + noindex robots; no page at /dashboard itself —
+│   │   │                        role dispatch happens in proxy.ts (sign-in's fallbackRedirectUrl = /dashboard)
+│   │   ├── student/             page.tsx (overview) · courses/ · schedule/ ·
+│   │   │                        notifications/ · profile/
+│   │   └── professor/           page.tsx (overview) · courses/ · schedule/ ·
+│   │                            meetings/ · profile/   (Stage 2+: courses/[courseId]/materials ·
+│   │                            planner · students)
+│   └── api/                     Route Handlers only where needed (webhooks, file callbacks)
+├── lib/                         auth.ts · db.ts · prisma-client.ts (factory: adapter + ws) ·
+│                                validators/auth.ts (zod v4 publicMetadata schema)
+├── prisma/                      schema.prisma · seed.ts (email-keyed, idempotent — links demo data
+│                                to the real walkthrough accounts)
+└── components/                  dashboard/ (DashboardShell, PlaceholderPage, navItems) — hand-rolled
+```
+
+**Route protection:** `src/proxy.ts` (Clerk, matcher `'/dashboard/:path*'`, `signInUrl: '/sign-in'`) redirects signed-out users; every dashboard page/layout calls `requireRole()` (`lib/auth.ts`) server-side — a non-`student` hitting `/dashboard/student/*` is redirected to their own role root. `auth()` without proxy coverage **throws** (Clerk v7) — keep matchers aligned with real routes.
+
+**Data flow (professor posts a remark):** form on `professor/courses/[id]/materials` → Server Action `createMaterial()` → writes `Material`, inserts `Notification` rows for every enrolled student → student bell polls and shows it; the course page lists it under Materials & Remarks.
+
+### 24.5 Multi-Stage Roadmap
+
+| Stage | Scope | Exit criteria |
+|---|---|---|
+| **0 — Foundations** — ✅ **DONE 2026-09-04** (schema + migration live on Neon; Clerk 7.9 + roles via publicMetadata; lazy-upsert users; seed attached to the real demo accounts; shells verified working for both roles) | A logged-in student and professor each land on an empty but correctly-scoped dashboard shell — **met** |
+| **1 — Student Core** — ✅ **DONE 2026-09-04** (real-data student pages; profile, courses, per-course detail, schedule, overview — all DB reads, no mutations; absorb note in §24.8) | Profile (view/edit); My Courses; Upcoming Classes (from `ClassSession` for enrolled courses, sorted by `startsAt`); Materials & Remarks per course (read-only; seeded data until Stage 2) | Student sees real enrollment data + upcoming-class schedule end-to-end from the DB — **met** |
+| **2 — Professor Core** (1–1.5 wk) | My Courses overview with roster per course; create/edit `ClassSession` → immediately visible to enrolled students; materials/notes upload (text + file) → triggers `Notification` rows; notification bell (polling) on both dashboards | Professor schedules a class and posts a remark; the enrolled student sees both without a page reload (or on next poll) |
+| **3 — Meetings & Planner** (1–1.5 wk) | Meetings schedule/view (students/parents/colleagues) with simple calendar view; Coursework Planner (`Task`s with due dates/status); Completion Monitor (per-course % of tasks done, bar/donut chart from `CompletionLog`/`Task.status`) | Professor can plan tasks and see completion % update as tasks move to done |
+| **4 — Polish** (1 wk) | Notification preferences; empty states, loading skeletons, error boundaries; mobile pass (sidebar → bottom nav/drawer); access-control audit — students can never hit professor-only Server Actions/routes (test by hitting URLs directly) | Coherent on mobile; role boundaries enforced server-side, not just hidden in UI |
+| **5 — QA & Deploy** (0.5–1 wk) | Integration tests for critical paths (enroll → see class; post material → student notified; create task → completion updates); seed/demo data walkthrough; Vercel preview + staging DB; merge to production with the same Prisma migration; rollback plan (feature-flag the dashboard nav link if needed) | Feature live on the real domain behind auth |
+| **6 — Future / post-v1** | Realtime push (Supabase Realtime/Pusher); **Parent view** (read-only window into a student's dashboard — ties into the existing For-Parents audience door); attendance per `ClassSession`; gradebook/assessment scores; calendar sync (.ics/Google); admin console for users/courses/enrollments | — |
+
+**v1 estimate: ~5.5–7 weeks** steady/focused.
+
+### 24.6 Suggested Server-Action Surface
+
+`courses.ts`: `getMyCourses()`, `getCourseById()`, `createCourse()` (professor), `enrollStudent()` (admin/professor) · `sessions.ts`: `getUpcomingClasses()`, `createClassSession()`, `updateClassSession()`, `cancelClassSession()` · `materials.ts`: `getCourseMaterials()`, `createMaterial()`, `deleteMaterial()` · `notifications.ts`: `getMyNotifications()`, `markAsRead()`, `createNotification()` (internal, called by other actions) · `meetings.ts`: `getUpcomingMeetings()`, `createMeeting()`, `updateMeeting()` · `tasks.ts`: `getCourseTasks()`, `createTask()`, `updateTaskStatus()`, `getCourseCompletion()` · `profile.ts`: `getProfile()`, `updateProfile()`. Implement as Server Actions unless a Route Handler is genuinely needed (webhooks, file-upload callbacks).
+
+### 24.7 Suggested Component Inventory
+
+**Shared:** `DashboardShell`, `Sidebar` (role-aware), `NotificationBell`, `StatCard`, `EmptyState`, `DataTable`, `ScheduleList`, `CalendarView`
+**Student:** `EnrolledCourseCard`, `MaterialFeed`, `ProfileForm`
+**Professor:** `CourseRosterTable`, `ClassSessionForm`, `MaterialComposer`, `MeetingScheduler`, `TaskBoard` (Kanban: todo/in-progress/done), `CompletionChart`
+
+### 24.8 Decisions (resolved 2026-09-04 — Stage 0 shipped)
+
+1. **Auth provider — RESOLVED: Clerk** (accepted: vendor lock-in + per-MAU cost past free tier). Shapes the `User` model: `User.id` = Clerk user id; role = Clerk `publicMetadata` (`{"role": "student"|"professor"|"admin"}`), **single source of truth** — mirrored into DB `User.role` write-through, always read via `clerkClient()` server-side, never session token claims (claims go stale until re-sign-in). DB `User` rows sync via **lazy upsert + adopt-by-email** on first dashboard hit; Clerk webhook sync deferred to Stage 5.
+2. **Course ↔ professor cardinality — RESOLVED: many-to-many** (`CourseProfessors` join table). Co-taught courses supported; every course-ownership check goes through the join. A professor can teach across verticals.
+3. Notification delivery: polling is fine for v1 — no websockets until the lag is actually felt. (unchanged)
+4. File storage limits: provider choice deferred to Stage 2 (materials upload); nothing installed in Stage 0. (unchanged)
+5. **Isolation:** the `(dashboard)` group is fully isolated (separate layout + data fetching) so a dashboard bug can never take down the marketing pages that drive enquiries. Stage 0 makes zero marketing-page changes. (unchanged)
+
+**Stage 0 complete — absorbed from `Dashboard-Stage0-Implementation-Plan.md` (deleted 2026-09-04, same lifecycle as the archived V2 plan).** What shipped beyond the decisions above: role dispatch for `/dashboard` lives in `src/proxy.ts` (no index page — a group/root-level page collides with `(site)/page.tsx`); real folder `src/app/dashboard/` (route-group correction, §18 rule 8 + §19 ledger); demo walkthrough accounts are the owner's real Clerk users — professor `piyush.ghosal.ai@gmail.com`, student `pika38212@gmail.com` (both roled via publicMetadata; seed links demo data by these emails, not the placeholder `.test` addresses from the plan). Clerk webhook sync, file storage, `Material.visibility`, admin role, mobile drawer polish remain deferred as planned.
+
+**Stage 1 — Student Core complete (2026-09-04).** All five student routes now show real DB data; zero mutations (notification bell still Stage 2). Decisions and shipped shape:
+- **Profile** = view mirror (avatar/name/email/role/"Dashboard member since" — the DB row's `createdAt`, honestly labelled as first dashboard visit) + embedded Clerk `<UserProfile routing="hash" />` portal (path routing would navigate to a nonexistent `/user` route). Identity edits stay Clerk-owned; the mirror refreshes on the next hit. Clerk's own theme accepted for now (polish deferred to Stage 4).
+- **Query layer** in `src/lib/dashboard/` — `courses.ts` · `sessions.ts` · `materials.ts` · `profile.ts` · `format.ts` (`'server-only'`; **role-explicit names** — `getStudentEnrolledCourses`, `getStudentUpcomingSessions`, `getStudentCourseWithAccess`, `getStudentStats`, `getProfileRecord`, `getCourseMaterials` — so Stage 2's professor reads and the §24.6 mutation actions under `lib/actions/` slot alongside without collisions). Every query scopes by ACTIVE enrollment server-side via relation filters; the course-detail page 404s (notFound) for anything else. Reads only — no Server Actions yet.
+- **Access & dedupe:** `getCurrentUser` in `src/lib/auth.ts` is now wrapped in React `cache()` — a layout's `requireRole()` and its page share one Clerk fetch + one mirror-upsert per request (also closes a first-visit P2002 race between concurrent upserts).
+- **Course pages:** `/dashboard/student/courses/[courseId]` is new; `generateMetadata` and the page share the access-checked lookup through a module-level `cache()`. Next 16 async `params` awaited in both. Course verticals map to programme names + pillar accents through `src/components/dashboard/coursePillar.ts` (literal class maps only — §18 rule 5; unknown vertical → neutral sky/indigo fallback).
+- **Times:** DB stores UTC; display is Asia/Kolkata with an explicit IST label via module-cached `Intl.DateTimeFormat` instances in `format.ts`. Schedule day-grouping + Today/Tomorrow labels derive the IST calendar date through `Intl.formatToParts` — never UTC `Date` getters (a 23:30 UTC session is 05:00 the next day in IST).
+- **Seed:** 3 demo materials per course (NOTE/REMARK/LINK; internal real URLs for LINKs; FILE deferred with the Stage 2 storage decision), `uploadedById` = demo professor, staggered `createdAt`, idempotent via per-course count check (documented edge: Material has no natural unique key).
+- Verified 2026-09-04: lint ✓ · tsc ✓ · build ✓ (11 dynamic dashboard routes incl. `courses/[courseId]`); smoke-checked all query shapes against the live Neon DB. Student shell components: `StatCard`, `EmptyState`, `SessionItem`, `EnrolledCourseCard`, `MaterialFeed`, `ProfileSection`.
+
+---
+
+## 25. Background Roadmap — V3 Marketing-Site Enhancements
+
+> Absorbed from the deleted `Educraft_V3_Next_Version_Planner.md` (2026-09-04). These are the deferred V2 items for the **marketing site**, tiered by priority. They remain valid background work; the Dashboard project (§24) is the current focus and §22 blockers take precedence over everything. Nothing here is current state.
+
+### Tier A — Conversion & trust (before public launch)
+1. Wire `ENQUIRY_WEBHOOK_URL` → CRM/transactional email (Resend, HubSpot, or similar) + internal notification channel.
+2. Real testimonials + case studies; add verified outcome metrics to `/impact` only when real data exists.
+3. Privacy-conscious analytics (Plausible/PostHog) implementing the plan's event map: `page_view, programme_view, programme_cta, enquiry_started, enquiry_completed, enquiry_error, nav_open, theme_changed, scroll_depth, insight_open`. Milestone-based scroll events only — never per-frame.
+4. Error monitoring (Sentry) once public traffic exists.
+5. `NEXT_PUBLIC_SITE_URL` to production domain; re-verify sitemap/canonicals/OG.
+
+### Tier B — Experience upgrades
+6. **Insights OG images** (`insights/[slug]/opengraph-image.tsx`) — the only content type missing social previews.
+7. **Cursor labels** on more targets: explorer cards ("Explore"), insights cards ("Read"), deep-dive tabs.
+8. **Section transition washes** where light→dark boundaries feel abrupt: `PathLines`/gradient washes on dark-zone entries (FinalCTA covered; ProgrammePage indigo close could get one).
+9. **Testimonial movement:** subtle drag/scroll nudge on the primary quote — keep autoplay banned.
+10. **Smooth scroll evaluation:** test native first; only adopt Lenis if it demonstrably improves the pinned sequences, with reduced-motion + anchor + keyboard guarantees.
+11. **Programme page 3D accents:** at most one restrained `GeometryArtifact` per programme hero, reusing `three/` primitives — never a full canvas per page.
+12. **GSAP/ScrollTrigger** only if choreography outgrows the current hooks — never for fades.
+
+### Tier C — Content & growth
+13. Insights: more articles, `/insights/[category]` pages, simple search; pagination when volume demands.
+14. Headless-CMS migration path when non-technical editors need to publish — data files are already CMS-shaped.
+15. i18n evaluation (multi-language) — large; only when international expansion is real.
+
+### Tier D — Platform & QA
+16. Tests: Vitest unit (validation, utils, rate-limit) + component (accordion, staged form, mega menu, theme toggle) + Playwright E2E (enquiry flow, navigation, mobile menu, reduced-motion behavior) + visual regression (homepage, programme pages, dark mode, breakpoints).
+17. Lighthouse baseline + Core Web Vitals field data; bundle inspection; confirm LCP < 2.5s / CLS < 0.1 / INP < 200ms on real devices.
+18. Shared rate-limit store for multi-instance deploys.
+19. A11y audit pass: keyboard-only walk of mega menu + staged form, screen-reader pass, contrast check of programme accents (esp. `achieve` gold on light).
+20. Dependency hygiene: adopt the R3F patch that clears the THREE.Clock warning when it ships.
+
+### Design principles to protect (non-negotiable)
+- Visuals must explain learning/progress/connection — never decoration for its own sake.
+- One great scene beats three mediocre ones; motion needs a narrative purpose.
+- Avoid: endless rounded cards, all-centered sections, autoplay carousels, glassmorphism, stock-looking art, invented numbers.
+- Reduced-motion users get static compositions + functional transitions only (already systemic via CSS).
+
+### Checklist for starting a work session
+1. Read this file (master): §18 conventions/fixed-bug ledger, §20 verification loop, §22 blockers first.
+2. If Dashboard work: §24, then its §24.8 decisions. If marketing-site work: pick the highest unblocked §25 item.
+3. Run `npm run lint` → `npx tsc --noEmit` → `npm run build` before and after changes (§20).
+4. The user performs all website viewing/visual QA — never launch browsers or curl the site from the assistant side.
+5. When a Tier item ships, move it to a "Done in V3.x" note here with the commit hash.
