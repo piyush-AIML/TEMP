@@ -47,14 +47,12 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "no-useless-escape": "off",
   },
 }, {
-  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"]
-}, {
-  files: ["src/generated/**"],
-  rules: {
-    // Generated Prisma client carries its own eslint-disable headers whose
-    // directives go unused (the config disables those rules globally anyway).
-    "no-unused-disable-directives": "off",
-  },
+  // src/generated/** = Prisma client build output (gitignored, produced by
+  // `prisma generate` in the build script). Its own eslint-disable headers
+  // are flagged as unused by ESLint 9's config-level
+  // reportUnusedDisableDirectives (default warn) — not a rule — so the only
+  // clean treatment is to never lint generated output, like .next/.
+  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "src/generated/**"]
 }];
 
 export default eslintConfig;

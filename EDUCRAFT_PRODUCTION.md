@@ -332,10 +332,12 @@ npm run dev         # local dev on :3000 (first compile ~14s is normal)
 # verification loop — all three must pass before shipping
 npm run lint         # eslint (react-hooks/immutability rule active)
 npx tsc --noEmit
-npm run build         # Turbopack production build (29 routes)
+npm run build         # prisma generate && next build — Turbopack production build
 
 npm start            # serve the production build
 ```
+
+**`npm run build` = `prisma generate && next build`** (since 2026-09-04): the Prisma client at `src/generated/prisma/` is gitignored build output, so every build — local or Vercel — regenerates it first. `prisma generate` auto-loads `prisma7.config.ts` (Prisma 7 CLI discovers it by name; on Vercel the config's `.env.local` dotenv load no-ops and `DATABASE_URL` comes from Vercel's injected env — generate never touches the DB anyway). The generated client is also excluded from eslint (`src/generated/**` in `eslint.config.mjs` ignores — its own disable-directive headers trip ESLint 9's config-level `reportUnusedDisableDirectives`, which no rule setting can silence).
 
 If stale `.next/types` causes deletion-related tsc errors: `rm -rf .next && npx tsc --noEmit && npm run build`.
 
