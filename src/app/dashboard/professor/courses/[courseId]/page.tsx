@@ -33,6 +33,7 @@ import { TaskForm } from '@/components/dashboard/TaskForm';
 import { TaskBoard } from '@/components/dashboard/TaskBoard';
 import { TaskItem } from '@/components/dashboard/TaskItem';
 import { CompletionMonitor } from '@/components/dashboard/CompletionMonitor';
+import { EnrollStudentForm } from '@/components/dashboard/EnrollStudentForm';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 
 /**
@@ -136,7 +137,31 @@ export default async function ProfessorCoursePage({
     {
       id: 'roster',
       label: 'Roster',
-      panel: <RosterTable roster={roster} />,
+      panel: (
+        <div className='space-y-8'>
+          <section>
+            <h2 className='flex items-center gap-2 text-lg font-semibold'>
+              <Plus className='size-5 text-foreground/50' aria-hidden='true' />
+              Enroll a student
+            </h2>
+            <p className='mt-1 text-sm text-foreground/60'>
+              Enrolment is by account email — the student must have signed in to Educraft once.
+            </p>
+            <div className='card-surface mt-4 max-w-2xl rounded-3xl p-5'>
+              <EnrollStudentForm courseId={courseId} />
+            </div>
+          </section>
+          <section>
+            <h2 className='flex items-center gap-2 text-lg font-semibold'>
+              <Users className='size-5 text-foreground/50' aria-hidden='true' />
+              Enrolled students
+            </h2>
+            <div className='mt-4'>
+              <RosterTable roster={roster} />
+            </div>
+          </section>
+        </div>
+      ),
     },
     {
       id: 'sessions',

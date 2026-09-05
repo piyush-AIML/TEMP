@@ -1,22 +1,29 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { GraduationCap, UserPlus, Users } from 'lucide-react';
+import { BookPlus, BookOpen, GraduationCap, UserPlus, Users } from 'lucide-react';
 import { getCurrentUser } from '@/lib/auth';
+import { getAdminCourseList } from '@/lib/dashboard/admin';
+import { getPillarAccentForVertical } from '@/components/dashboard/coursePillar';
+import { CourseForm } from '@/components/dashboard/CourseForm';
+import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Overview' };
 
-/** Admin home (2026-09-05) — the admin area exists for invitations today;
- *  further admin tooling (users/courses/enrollments) is roadmap (Stage 6). */
+/** Admin home (2026-09-05, course slice) — invitations, course creation with
+ *  professor assignment, and the course list. Further admin tooling
+ *  (users/enrollments consoles) is roadmap (Stage 6). */
 export default async function AdminOverviewPage() {
   const session = await getCurrentUser();
+  const courses = await getAdminCourseList();
+
   return (
     <section className='mx-auto w-full max-w-5xl'>
       <div className='max-w-2xl'>
         <p className='eyebrow'>Admin</p>
         <h1 className='type-display-m mt-3'>Welcome, {session.name.split(' ')[0]}</h1>
         <p className='mt-3 text-foreground/70'>
-          Invitations are the single door into Educraft — everyone signs up by invitation, and roles are set when you
-          send one.
+          Invitations are the single door into Educraft, and courses are created here — every professor and
+          student starts from an account you set up.
         </p>
       </div>
 
@@ -51,6 +58,61 @@ export default async function AdminOverviewPage() {
           </ul>
         </div>
       </div>
+
+      <section className='mt-12'>
+        <h2 className='flex items-center gap-2 text-lg font-semibold'>
+          <BookPlus className='size-5 text-foreground/50' aria-hidden='true' />
+          Create a course
+        </h2>
+        <p className='mt-1 text-sm text-foreground/60'>
+          Assigned professors must have signed in to Educraft once — invitation acceptance alone is not enough.
+        </p>
+        <div className='card-surface mt-4 max-w-2xl rounded-3xl p-5 sm:p-6'>
+          <CourseForm />
+        </div>
+      </section>
+
+      <section className='mt-12'>
+        <h2 className='flex items-center gap-2 text-lg font-semibold'>
+          <BookOpen className='size-5 text-foreground/50' aria-hidden='true' />
+          All courses
+        </h2>
+        {courses.length === 0 ? (
+          <p className='card-surface mt-4 rounded-3xl px-6 py-6 text-sm text-foreground/60'>
+            No courses yet — create the first one above.
+          </p>
+        ) : (
+          <div className='card-surface mt-4 divide-y divide-ec-sky rounded-3xl px-6 dark:divide-ec-canvas-deep'>
+            {courses.map((course) => {
+              const accent = getPillarAccentForVertical(course.vertical);
+              return (
+                <div key={course.id} className='flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-4'>
+                  <div className='min-w-0'>
+                    <p
+                      className={cn(
+                        'text-xs font-semibold uppercase tracking-widest',
+                        accent ? accent.text : 'text-ec-indigo dark:text-white'
+                      )}
+                    >
+                      {accent ? accent.name : course.vertical}
+                    </p>
+                    <p className='mt-0.5 font-semibold'>
+                      {course.title}
+                      <span className='ml-2 text-xs font-semibold text-foreground/50'>{course.code}</span>
+                    </p>
+                    <p className='mt-0.5 truncate text-sm text-foreground/60'>
+                      {course.professorNames.join(', ') || 'No professors assigned'}
+                    </p>
+                  </div>
+                  <p className='shrink-0 text-sm font-semibold text-foreground/70'>
+                    {course.activeStudents} enrolled
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </section>
   );
 }

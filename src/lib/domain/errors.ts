@@ -12,7 +12,12 @@ export type DomainErrorCode =
   | 'NOT_FOUND'
   | 'MEETING_NOT_FOUND'
   | 'STUDENT_NOT_IN_ROSTER'
-  | 'TASK_NOT_FOUND';
+  | 'TASK_NOT_FOUND'
+  | 'USER_NOT_FOUND'
+  | 'USER_NOT_STUDENT'
+  | 'USER_NOT_PROFESSOR'
+  | 'ALREADY_ENROLLED'
+  | 'COURSE_CODE_TAKEN';
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode;
