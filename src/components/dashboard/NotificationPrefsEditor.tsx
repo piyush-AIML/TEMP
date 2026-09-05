@@ -40,6 +40,11 @@ const CHANNELS: Array<{
     label: 'One-on-one meetings',
     description: 'When a professor schedules or cancels a meeting with you.',
   },
+  {
+    key: 'enrollment',
+    label: 'Course enrollment',
+    description: 'When you are enrolled in a course, or removed from one.',
+  },
 ];
 
 export function NotificationPrefsEditor({ initial }: { initial: NotificationPrefs }) {

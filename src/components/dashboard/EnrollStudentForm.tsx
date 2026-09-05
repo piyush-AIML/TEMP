@@ -8,30 +8,27 @@ import { enrollStudent } from '@/lib/actions/courses';
 import type { ActionResult } from '@/lib/actions/types';
 
 /**
- * Professor enroll-a-student form (course slice) — lives above the Roster
- * table on the course page. Enrollment needs the student's account row, which
- * only exists after they signed in once (invite acceptance alone is not
- * enough) — the domain error says exactly that. On success the roster list
- * and the professor's meeting-student picker repaint via router.refresh()
- * (the revalidatePath in the action clears the router cache for everyone).
+ * Professor enroll-a-student form (course slice, reworked 2026-09-05) —
+ * lives above the Roster table on the course page. Enrollment needs the
+ * student's account row, which only exists after they signed in once (invite
+ * acceptance alone is not enough) — the domain error says exactly that.
+ * Emails match case-insensitively. On success the roster list and the
+ * professor's meeting-student picker repaint via router.refresh(), and the
+ * student gets an ENROLLMENT notification in their bell.
  */
 
 export function EnrollStudentForm({ courseId }: { courseId: string }) {
   const router = useRouter();
   const [state, formAction] = useActionState(enrollStudent, { ok: true } as ActionResult);
   const [email, setEmail] = useState('');
+  const [showResult, setShowResult] = useState(false);
   const errors = state.ok ? {} : (state.fieldErrors ?? {});
-  const [sawSuccess, setSawSuccess] = useState(false);
 
-  // Repaint the roster + picker once after a successful enrolment (the action
-  // already revalidated both role layouts server-side).
+  // Surface whatever the last submit said; on success repaint the roster.
   useEffect(() => {
-    if (state.ok && state.message && !sawSuccess) {
-      setSawSuccess(true);
-      setEmail('');
-      router.refresh();
-    }
-  }, [state, sawSuccess, router]);
+    if (state.ok && state.message) router.refresh();
+    setShowResult(true);
+  }, [state, router]);
 
   return (
     <div>
@@ -45,21 +42,23 @@ export function EnrollStudentForm({ courseId }: { courseId: string }) {
             value={email}
             onChange={(event) => {
               setEmail(event.target.value);
-              setSawSuccess(false);
+              setShowResult(false);
             }}
             placeholder='student@example.com'
             autoComplete='off'
             required
             className={inputClasses}
           />
-          {errors.email && <span className='mt-1.5 block text-sm text-foreground/70'>{errors.email}</span>}
+          {errors.email && showResult && (
+            <span className='mt-1.5 block text-sm text-red-600 dark:text-red-400'>{errors.email}</span>
+          )}
         </label>
         <SubmitButton />
       </form>
-      {!state.ok && state.formError && (
-        <p className='mt-2 text-sm text-foreground/70'>{state.formError}</p>
+      {showResult && !state.ok && state.formError && (
+        <p className='mt-2 text-sm text-red-600 dark:text-red-400'>{state.formError}</p>
       )}
-      {state.ok && state.message && (
+      {showResult && state.ok && state.message && (
         <p className='mt-2 rounded-xl bg-ec-sky/70 px-3.5 py-2.5 text-sm font-medium text-ec-indigo dark:bg-ec-canvas-deep dark:text-white'>
           {state.message}
         </p>

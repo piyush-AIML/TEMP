@@ -1,13 +1,18 @@
 import { z } from 'zod';
 
 /**
- * Course-setup input validation (Dashboard course slice). Enrolling a student
- * takes their account email; creating a course takes the course identity plus
- * the professor emails to assign (comma-separated in the form, an array here —
- * co-teaching is supported through CourseProfessors). The vertical must be one
- * of the five programme slugs — kept as a literal here so validators stay
- * dependency-free; keep in sync with the slugs in data/programmes.ts and the
- * keys of src/lib/pillarStyles.ts.
+ * Course-allocation input validation (Dashboard course slice, reworked
+ * 2026-09-05). Enrolling a student takes their account email; creating a
+ * course takes the course identity plus the professor emails to assign
+ * (chips in the form, an array here — co-teaching is supported through
+ * CourseProfessors). The vertical must be one of the five programme slugs —
+ * kept as a literal here so validators stay dependency-free; keep in sync
+ * with the slugs in data/programmes.ts and the keys of
+ * src/lib/pillarStyles.ts.
+ *
+ * Email contract (whole slice): emails are trimmed AND lowercased — Clerk
+ * stores primary emails lowercase, so matching is case-insensitive by
+ * normalization, never by guessing the stored casing.
  */
 
 export const COURSE_VERTICALS = [
@@ -28,28 +33,59 @@ export const verticalLabel: Record<CourseVertical, string> = {
   'neet-jee': 'NEET & JEE Prep',
 };
 
-export const enrollStudentInputSchema = z.object({
-  email: z
-    .string({ message: 'Enter the student’s email.' })
-    .trim()
-    .min(1, 'Enter the student’s email.')
-    .max(254, 'That email is too long.')
+export const MAX_PROFESSORS_PER_COURSE = 8;
+
+/** Trim + lowercase — the one email normalization for every course action. */
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+export function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const emailSchema = z
+  .string({ message: 'Enter a valid email address.' })
+  .trim()
+  .min(1, 'Enter a valid email address.')
+  .max(254, 'That email is too long.')
+  .refine((value) => EMAIL_RE.test(value), 'Enter a valid email address.')
+  .transform(normalizeEmail);
+
+/** Course code — letters/numbers with single interior dashes, upper-cased. */
+const courseCodeSchema = z
+  .string({ message: 'Give the course a code (e.g. LING-101).' })
+  .trim()
+  .min(1, 'Give the course a code (e.g. LING-101).')
+  .max(20, 'Keep the code under 20 characters.')
+  .regex(
+    /^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/,
+    'Use letters, numbers and single dashes between them (e.g. LING-101).'
+  )
+  .transform((value) => value.toUpperCase());
+
+/** A list of professor emails, deduped in order, bounded in size. */
+function emailListSchema(message: string) {
+  return z
+    .array(emailSchema)
+    .transform((emails) => [...new Set(emails)])
+    .refine((emails) => emails.length > 0, message)
     .refine(
-      (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-      'Enter a valid email address.'
-    ),
+      (emails) => emails.length <= MAX_PROFESSORS_PER_COURSE,
+      `A course can have up to ${MAX_PROFESSORS_PER_COURSE} professors at once.`
+    );
+}
+
+export const enrollStudentInputSchema = z.object({
+  email: emailSchema,
 });
 
 export type EnrollStudentInput = z.infer<typeof enrollStudentInputSchema>;
 
-export const createCourseInputSchema = z.object({
-  code: z
-    .string()
-    .trim()
-    .min(1, 'Give the course a code (e.g. LING-101).')
-    .max(20, 'Keep the code under 20 characters.')
-    .regex(/^[A-Za-z0-9-]+$/, 'Use only letters, numbers and dashes (e.g. LING-101).')
-    .transform((value) => value.toUpperCase()),
+export const courseIdentitySchema = z.object({
+  code: courseCodeSchema,
   title: z.string().trim().min(1, 'Give the course a title.').max(120, 'Keep the title under 120 characters.'),
   vertical: z.enum(COURSE_VERTICALS, { message: 'Choose a programme vertical.' }),
   description: z
@@ -58,16 +94,44 @@ export const createCourseInputSchema = z.object({
     .max(2000, 'Keep the description under 2,000 characters.')
     .optional()
     .or(z.literal('')),
-  professorEmails: z
-    .array(
-      z
-        .string()
-        .trim()
-        .min(1)
-        .max(254)
-        .refine((value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), 'Enter valid email addresses.')
-    )
-    .min(1, 'Assign at least one professor.'),
+});
+
+export type CourseIdentityInput = z.infer<typeof courseIdentitySchema>;
+
+export const createCourseInputSchema = courseIdentitySchema.extend({
+  professorEmails: emailListSchema('Assign at least one professor.'),
 });
 
 export type CreateCourseInput = z.infer<typeof createCourseInputSchema>;
+
+export const updateCourseInputSchema = courseIdentitySchema.extend({
+  courseId: z.string().min(1, 'Course id is missing.'),
+});
+
+export type UpdateCourseInput = z.infer<typeof updateCourseInputSchema>;
+
+export const addCourseProfessorsInputSchema = z.object({
+  courseId: z.string().min(1, 'Course id is missing.'),
+  emails: emailListSchema('Add at least one professor email.'),
+});
+
+export type AddCourseProfessorsInput = z.infer<typeof addCourseProfessorsInputSchema>;
+
+/** Direct-call inputs — ids are validated here, never trusted raw. */
+export const unenrollStudentInputSchema = z.object({
+  courseId: z.string().min(1),
+  studentId: z.string().min(1),
+});
+
+export type UnenrollStudentInput = z.infer<typeof unenrollStudentInputSchema>;
+
+export const removeCourseProfessorInputSchema = z.object({
+  courseId: z.string().min(1),
+  professorId: z.string().min(1),
+});
+
+export type RemoveCourseProfessorInput = z.infer<typeof removeCourseProfessorInputSchema>;
+
+export const courseIdSchema = z.object({ courseId: z.string().min(1) });
+
+export type CourseIdInput = z.infer<typeof courseIdSchema>;

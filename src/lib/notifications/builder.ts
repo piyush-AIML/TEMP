@@ -12,6 +12,7 @@ export type NotificationPrefs = {
   newClass: boolean;
   meeting: boolean;
   taskDue: boolean;
+  enrollment: boolean;
 };
 
 export const NOTIFICATION_PREF_MAP: Record<NotificationType, keyof NotificationPrefs> = {
@@ -19,6 +20,7 @@ export const NOTIFICATION_PREF_MAP: Record<NotificationType, keyof NotificationP
   NEW_CLASS: 'newClass',
   MEETING: 'meeting',
   TASK_DUE: 'taskDue',
+  ENROLLMENT: 'enrollment',
 };
 
 /**
@@ -27,13 +29,17 @@ export const NOTIFICATION_PREF_MAP: Record<NotificationType, keyof NotificationP
  * until Stage 4 ships the preference editor).
  */
 export function parseNotifPrefs(raw: unknown): NotificationPrefs {
-  if (!raw || typeof raw !== 'object') return { newMaterial: true, newClass: true, meeting: true, taskDue: true };
+  if (!raw || typeof raw !== 'object') {
+    return { newMaterial: true, newClass: true, meeting: true, taskDue: true, enrollment: true };
+  }
   const source = raw as Record<string, unknown>;
   return {
     newMaterial: source.newMaterial !== false,
     newClass: source.newClass !== false,
     meeting: source.meeting !== false,
     taskDue: source.taskDue !== false,
+    // Absent key (pre-2026-09-05 stored prefs) = ON — same drift-safe rule as the rest.
+    enrollment: source.enrollment !== false,
   };
 }
 

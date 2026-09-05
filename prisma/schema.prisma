@@ -61,6 +61,8 @@ enum NotificationType {
   NEW_CLASS
   TASK_DUE
   MEETING
+  /// Enrolled in / removed from a course (course-allocation rework 2026-09-05).
+  ENROLLMENT
 }
 
 enum MeetingParticipant {
@@ -87,10 +89,10 @@ model User {
   name      String
   avatarUrl String?
   role      Role // written through from Clerk publicMetadata — Clerk is the authority
-  /// { newMaterial, newClass, meeting, taskDue } booleans; absent = all ON.
+  /// { newMaterial, newClass, meeting, taskDue, enrollment } booleans; absent = all ON.
   /// Owned by the user only; getCurrentUser's mirror upsert NEVER touches it.
   /// (added Stage 2 — the notification builder reads it from day one; the
-  /// preference editor UI ships in Stage 4)
+  /// preference editor UI ships in Stage 4; enrollment channel added 2026-09-05)
   notifPrefs Json?
   createdAt DateTime @default(now())
 

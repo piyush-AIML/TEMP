@@ -17,7 +17,11 @@ export type DomainErrorCode =
   | 'USER_NOT_STUDENT'
   | 'USER_NOT_PROFESSOR'
   | 'ALREADY_ENROLLED'
-  | 'COURSE_CODE_TAKEN';
+  | 'NOT_ENROLLED'
+  | 'COURSE_CODE_TAKEN'
+  | 'COURSE_NOT_FOUND'
+  | 'PROFESSOR_NOT_ASSIGNED'
+  | 'PROFESSOR_RESOLUTION_FAILED'; // message enumerates email → reason (all-or-nothing resolve)
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode;

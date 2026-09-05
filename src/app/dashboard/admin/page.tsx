@@ -1,20 +1,18 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { BookPlus, BookOpen, GraduationCap, UserPlus, Users } from 'lucide-react';
+import { ArrowRight, BookOpen, GraduationCap, UserPlus, Users } from 'lucide-react';
 import { getCurrentUser } from '@/lib/auth';
 import { getAdminCourseList } from '@/lib/dashboard/admin';
-import { getPillarAccentForVertical } from '@/components/dashboard/coursePillar';
-import { CourseForm } from '@/components/dashboard/CourseForm';
-import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Overview' };
 
-/** Admin home (2026-09-05, course slice) — invitations, course creation with
- *  professor assignment, and the course list. Further admin tooling
- *  (users/enrollments consoles) is roadmap (Stage 6). */
+/** Admin home (2026-09-05; course surfaces moved to /dashboard/admin/courses
+ *  in the course-allocation rework the same day) — invitations, the courses
+ *  entry point with live totals, and the roles explainer. */
 export default async function AdminOverviewPage() {
   const session = await getCurrentUser();
   const courses = await getAdminCourseList();
+  const enrolledStudents = courses.reduce((sum, course) => sum + course.activeStudents, 0);
 
   return (
     <section className='mx-auto w-full max-w-5xl'>
@@ -22,8 +20,8 @@ export default async function AdminOverviewPage() {
         <p className='eyebrow'>Admin</p>
         <h1 className='type-display-m mt-3'>Welcome, {session.name.split(' ')[0]}</h1>
         <p className='mt-3 text-foreground/70'>
-          Invitations are the single door into Educraft, and courses are created here — every professor and
-          student starts from an account you set up.
+          Invitations are the single door into Educraft, and courses start here — every professor and student
+          begins as an account you set up, then joins the courses you create.
         </p>
       </div>
 
@@ -39,9 +37,32 @@ export default async function AdminOverviewPage() {
           <span className='mt-1 block text-sm text-foreground/60'>
             Send an email invitation for a professor or a student account.
           </span>
+          <span className='mt-4 inline-flex items-center gap-1 text-sm font-semibold text-ec-indigo dark:text-white'>
+            Invite
+            <ArrowRight className='size-4 transition-transform duration-150 group-hover:translate-x-0.5' aria-hidden='true' />
+          </span>
         </Link>
 
-        <div className='card-surface rounded-3xl p-6'>
+        <Link
+          href='/dashboard/admin/courses'
+          className='card-surface group rounded-3xl p-6 transition-colors duration-150 hover:border-ec-indigo/60 dark:hover:border-white/30'
+        >
+          <span className='flex size-11 items-center justify-center rounded-2xl bg-ec-sky text-ec-indigo dark:bg-ec-canvas-deep dark:text-white'>
+            <BookOpen className='size-5' aria-hidden='true' />
+          </span>
+          <span className='mt-4 block text-lg font-semibold'>Courses</span>
+          <span className='mt-1 block text-sm text-foreground/60'>
+            {courses.length === 0
+              ? 'No courses yet — create the first one and assign its professors.'
+              : `${courses.length} course${courses.length === 1 ? '' : 's'} · ${enrolledStudents} student${enrolledStudents === 1 ? '' : 's'} enrolled across them.`}
+          </span>
+          <span className='mt-4 inline-flex items-center gap-1 text-sm font-semibold text-ec-indigo dark:text-white'>
+            Create and manage
+            <ArrowRight className='size-4 transition-transform duration-150 group-hover:translate-x-0.5' aria-hidden='true' />
+          </span>
+        </Link>
+
+        <div className='card-surface rounded-3xl p-6 sm:col-span-2'>
           <span className='flex size-11 items-center justify-center rounded-2xl bg-ec-sky text-ec-indigo dark:bg-ec-canvas-deep dark:text-white'>
             <GraduationCap className='size-5' aria-hidden='true' />
           </span>
@@ -49,70 +70,15 @@ export default async function AdminOverviewPage() {
           <ul className='mt-2 space-y-2 text-sm text-foreground/60'>
             <li className='flex gap-2'>
               <Users className='mt-0.5 size-4 shrink-0' aria-hidden='true' />
-              Professors manage courses, classes and materials.
+              Professors manage the courses assigned to them — classes, materials, coursework and enrolments.
             </li>
             <li className='flex gap-2'>
               <GraduationCap className='mt-0.5 size-4 shrink-0' aria-hidden='true' />
-              Students see enrolled courses and posted materials.
+              Students see their enrolled courses and everything posted to them.
             </li>
           </ul>
         </div>
       </div>
-
-      <section className='mt-12'>
-        <h2 className='flex items-center gap-2 text-lg font-semibold'>
-          <BookPlus className='size-5 text-foreground/50' aria-hidden='true' />
-          Create a course
-        </h2>
-        <p className='mt-1 text-sm text-foreground/60'>
-          Assigned professors must have signed in to Educraft once — invitation acceptance alone is not enough.
-        </p>
-        <div className='card-surface mt-4 max-w-2xl rounded-3xl p-5 sm:p-6'>
-          <CourseForm />
-        </div>
-      </section>
-
-      <section className='mt-12'>
-        <h2 className='flex items-center gap-2 text-lg font-semibold'>
-          <BookOpen className='size-5 text-foreground/50' aria-hidden='true' />
-          All courses
-        </h2>
-        {courses.length === 0 ? (
-          <p className='card-surface mt-4 rounded-3xl px-6 py-6 text-sm text-foreground/60'>
-            No courses yet — create the first one above.
-          </p>
-        ) : (
-          <div className='card-surface mt-4 divide-y divide-ec-sky rounded-3xl px-6 dark:divide-ec-canvas-deep'>
-            {courses.map((course) => {
-              const accent = getPillarAccentForVertical(course.vertical);
-              return (
-                <div key={course.id} className='flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-4'>
-                  <div className='min-w-0'>
-                    <p
-                      className={cn(
-                        'text-xs font-semibold uppercase tracking-widest',
-                        accent ? accent.text : 'text-ec-indigo dark:text-white'
-                      )}
-                    >
-                      {accent ? accent.name : course.vertical}
-                    </p>
-                    <p className='mt-0.5 font-semibold'>
-                      {course.title}
-                      <span className='ml-2 text-xs font-semibold text-foreground/50'>{course.code}</span>
-                    </p>
-                    <p className='mt-0.5 truncate text-sm text-foreground/60'>
-                      {course.professorNames.join(', ') || 'No professors assigned'}
-                    </p>
-                  </div>
-                  <p className='shrink-0 text-sm font-semibold text-foreground/70'>
-                    {course.activeStudents} enrolled
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
     </section>
   );
 }

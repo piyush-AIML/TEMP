@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Bell, BellRing, Check, FileText, CalendarDays, CalendarClock, AlertTriangle, type LucideIcon } from 'lucide-react';
+import { Bell, BellRing, Check, FileText, CalendarDays, CalendarClock, AlertTriangle, GraduationCap, type LucideIcon } from 'lucide-react';
 import type { NotificationDTO } from '@/lib/dashboard/notifications';
 
 /**
@@ -20,6 +20,7 @@ const TYPE_ICON: Record<NotificationDTO['type'], LucideIcon> = {
   NEW_CLASS: CalendarDays,
   MEETING: CalendarClock,
   TASK_DUE: AlertTriangle,
+  ENROLLMENT: GraduationCap,
 };
 
 /** Approximate relative time from the client clock — no tz conversion. */

@@ -3,51 +3,43 @@
 import { useActionState, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFormStatus } from 'react-dom';
-import { BookPlus, LoaderCircle } from 'lucide-react';
-import { createCourse } from '@/lib/actions/courses';
+import { LoaderCircle, Save } from 'lucide-react';
+import { updateCourse } from '@/lib/actions/courses';
 import type { ActionResult } from '@/lib/actions/types';
 import { COURSE_VERTICALS, verticalLabel } from '@/lib/validators/courses';
-import { EmailChipInput } from '@/components/dashboard/EmailChipInput';
 
 /**
- * Admin course-creation form (course slice, reworked 2026-09-05). Code /
- * title / a consciously-chosen vertical / description plus professor emails
- * as chips (co-teaching is a CourseProfessors join). Professors must have
- * signed in once — invitation acceptance alone does not create their account
- * row; the server resolves every email and names the failures, so nothing is
- * ever half-assigned. All fields reset after a successful create so the next
- * course starts clean.
+ * Admin course-details editor (course-allocation rework 2026-09-05) — edit a
+ * course's code / title / vertical / description in place on the manage page.
+ * The code stays unique (the domain excludes this course from the check);
+ * changing it flows to every surface that renders it via the action's
+ * revalidations. Values stay put after save (this is an editor, not a
+ * creator) — only a refresh of the server-rendered header follows.
  */
 
-export function CourseForm() {
+export function CourseDetailsForm({
+  course,
+}: {
+  course: { id: string; code: string; title: string; vertical: string; description: string | null };
+}) {
   const router = useRouter();
-  const [state, formAction] = useActionState(createCourse, { ok: true } as ActionResult);
+  const [state, formAction] = useActionState(updateCourse, { ok: true } as ActionResult);
   const errors = state.ok ? {} : (state.fieldErrors ?? {});
 
-  const [code, setCode] = useState('');
-  const [title, setTitle] = useState('');
-  const [vertical, setVertical] = useState('');
-  const [description, setDescription] = useState('');
-  const [emails, setEmails] = useState<string[]>([]);
+  const [code, setCode] = useState(course.code);
+  const [title, setTitle] = useState(course.title);
+  const [vertical, setVertical] = useState(course.vertical);
+  const [description, setDescription] = useState(course.description ?? '');
   const [showResult, setShowResult] = useState(false);
 
-  // Any submit outcome becomes visible here; a successful create additionally
-  // resets the fields and refreshes the course list below. The banner hides
-  // again the moment the admin starts composing the next course.
   useEffect(() => {
-    if (state.ok && state.message) {
-      setCode('');
-      setTitle('');
-      setVertical('');
-      setDescription('');
-      setEmails([]);
-      router.refresh();
-    }
+    if (state.ok && state.message) router.refresh();
     setShowResult(true);
   }, [state, router]);
 
   return (
     <form action={formAction} className='space-y-4'>
+      <input type='hidden' name='courseId' value={course.id} />
       <div className='grid gap-4 sm:grid-cols-2'>
         <label className='block'>
           <span className='mb-1.5 block text-xs font-semibold uppercase tracking-widest text-foreground/50'>
@@ -61,7 +53,6 @@ export function CourseForm() {
               setCode(event.target.value.toUpperCase());
               setShowResult(false);
             }}
-            placeholder='LING-101'
             maxLength={20}
             required
             className={inputClasses}
@@ -80,11 +71,8 @@ export function CourseForm() {
               setShowResult(false);
             }}
             required
-            className={`${selectClasses} ${vertical === '' ? 'text-foreground/40' : ''}`}
+            className={selectClasses}
           >
-            <option value='' disabled>
-              Choose a programme vertical…
-            </option>
             {COURSE_VERTICALS.map((item) => (
               <option key={item} value={item}>
                 {verticalLabel[item]}
@@ -109,30 +97,12 @@ export function CourseForm() {
             setTitle(event.target.value);
             setShowResult(false);
           }}
-          placeholder='Linguistics & Communication Skills'
           maxLength={120}
           required
           className={inputClasses}
         />
         {errors.title && <span className='mt-1.5 block text-sm text-red-600 dark:text-red-400'>{errors.title}</span>}
       </label>
-
-      <div className='block'>
-        <span className='mb-1.5 block text-xs font-semibold uppercase tracking-widest text-foreground/50'>
-          Professors who will teach it
-        </span>
-        <EmailChipInput
-          hiddenName='professorEmails'
-          emails={emails}
-          onChange={(next) => {
-            setEmails(next);
-            setShowResult(false);
-          }}
-        />
-        {errors.professorEmails && (
-          <span className='mt-1.5 block text-sm text-red-600 dark:text-red-400'>{errors.professorEmails}</span>
-        )}
-      </div>
 
       <label className='block'>
         <span className='mb-1.5 block text-xs font-semibold uppercase tracking-widest text-foreground/50'>
@@ -164,13 +134,13 @@ export function CourseForm() {
             {state.message}
           </p>
         )}
-        <SubmitRow />
+        <SaveRow />
       </div>
     </form>
   );
 }
 
-function SubmitRow() {
+function SaveRow() {
   const { pending } = useFormStatus();
   return (
     <button
@@ -179,8 +149,8 @@ function SubmitRow() {
       className='inline-flex items-center gap-2 rounded-xl bg-ec-indigo px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-ec-indigo/90 disabled:opacity-60 dark:bg-white dark:text-ec-indigo'
     >
       {pending && <LoaderCircle className='size-4 animate-spin' aria-hidden='true' />}
-      <BookPlus className='size-4' aria-hidden='true' />
-      Create course
+      <Save className='size-4' aria-hidden='true' />
+      Save changes
     </button>
   );
 }

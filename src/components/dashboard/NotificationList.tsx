@@ -5,6 +5,7 @@ import {
   CalendarDays,
   CalendarClock,
   AlertTriangle,
+  GraduationCap,
   type LucideIcon,
 } from 'lucide-react';
 import type { NotificationDTO } from '@/lib/dashboard/notifications';
@@ -23,6 +24,7 @@ const TYPE_ICON: Record<NotificationDTO['type'], LucideIcon> = {
   NEW_CLASS: CalendarDays,
   MEETING: CalendarClock,
   TASK_DUE: AlertTriangle,
+  ENROLLMENT: GraduationCap,
 };
 
 export function NotificationList({

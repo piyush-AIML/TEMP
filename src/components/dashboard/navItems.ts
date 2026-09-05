@@ -40,5 +40,6 @@ export const PROFESSOR_NAV: DashboardNavItem[] = [
 
 export const ADMIN_NAV: DashboardNavItem[] = [
   { label: 'Overview', href: '/dashboard/admin', icon: LayoutDashboard },
+  { label: 'Courses', href: '/dashboard/admin/courses', icon: BookOpen },
   { label: 'Invite', href: '/dashboard/admin/invite', icon: UserPlus },
 ];

@@ -145,7 +145,8 @@ export default async function ProfessorCoursePage({
               Enroll a student
             </h2>
             <p className='mt-1 text-sm text-foreground/60'>
-              Enrolment is by account email — the student must have signed in to Educraft once.
+              Enrolment is by account email — the student must have signed in to Educraft once. Emails match
+              regardless of case, and the student gets a notification in their bell.
             </p>
             <div className='card-surface mt-4 max-w-2xl rounded-3xl p-5'>
               <EnrollStudentForm courseId={courseId} />
@@ -156,8 +157,12 @@ export default async function ProfessorCoursePage({
               <Users className='size-5 text-foreground/50' aria-hidden='true' />
               Enrolled students
             </h2>
+            <p className='mt-1 text-sm text-foreground/60'>
+              Removing a student ends their access to this course; they keep their history and can be enrolled
+              again anytime.
+            </p>
             <div className='mt-4'>
-              <RosterTable roster={roster} />
+              <RosterTable courseId={courseId} roster={roster} />
             </div>
           </section>
         </div>
