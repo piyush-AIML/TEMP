@@ -1,24 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { UserButton } from '@clerk/nextjs';
-import { Sun, Moon } from 'lucide-react';
+import { Menu, Moon, Sun, X } from 'lucide-react';
 import SkipLink from '@/components/educraft/layout/SkipLink';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { STUDENT_NAV, PROFESSOR_NAV, ADMIN_NAV, type DashboardNavItem } from '@/components/dashboard/navItems';
 import { NotificationBell } from '@/components/dashboard/NotificationBell';
 import { cn } from '@/lib/utils';
 
 /**
- * Role-aware dashboard shell (Stage 0-D). Hand-rolled in the site's visual
- * language — same tokens, same light/dark art direction (root ThemeProvider
- * covers these routes). Desktop: fixed sidebar. Small screens: top bar with a
- * horizontally scrollable nav — the real drawer/bottom-nav pass is Stage 4.
- * Stage 2: the header carries the polling NotificationBell next to the
- * theme toggle (both roles — the bell's own poll keeps itself fresh).
+ * Role-aware dashboard shell (Stage 0-D, drawer Stage 4). Hand-rolled in the
+ * site's visual language — same tokens, same light/dark art direction (root
+ * ThemeProvider covers these routes). Desktop: fixed sidebar. Small screens:
+ * a hamburger opens a full-height drawer under the header (the marketing
+ * Navbar's panel pattern, plus the a11y the marketing version lacks — focus
+ * moves into the drawer on open, Escape closes and returns focus to the
+ * toggle, route change closes it, body scroll locks while open). The drawer
+ * is conditionally mounted so only one nav landmark exists in the a11y tree
+ * at a time. Stage 2: the header carries the polling NotificationBell next
+ * to the theme toggle (both roles — the bell's own poll keeps itself fresh).
  */
 export default function DashboardShell({
   role,
@@ -30,6 +35,38 @@ export default function DashboardShell({
   children: React.ReactNode;
 }) {
   const nav = role === 'student' ? STUDENT_NAV : role === 'professor' ? PROFESSOR_NAV : ADMIN_NAV;
+  const pathname = usePathname();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  useScrollLock(drawerOpen);
+
+  // Close on route change (any navigation inside the app closes the drawer).
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [pathname]);
+
+  // Open: move focus to the first nav link. Close (Escape only — route
+  // change already closed above): return focus to the toggle.
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const timer = window.setTimeout(() => {
+      drawerRef.current?.querySelector('a')?.focus();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [drawerOpen]);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setDrawerOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [drawerOpen]);
 
   return (
     <div className='min-h-dvh bg-background text-foreground'>
@@ -67,7 +104,19 @@ export default function DashboardShell({
       {/* Content column */}
       <div className='lg:pl-64'>
         <header className='sticky top-0 z-30 border-b border-ec-sky bg-background/85 backdrop-blur dark:border-ec-canvas-deep'>
-          <div className='flex h-16 items-center justify-between gap-4 px-4 sm:px-6'>
+          <div className='flex h-16 items-center gap-1 px-4 sm:px-6'>
+            {/* Mobile: drawer toggle + logo. Desktop: controls only. */}
+            <button
+              ref={toggleRef}
+              type='button'
+              onClick={() => setDrawerOpen((open) => !open)}
+              aria-label={drawerOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={drawerOpen}
+              aria-controls='dashboard-mobile-menu'
+              className='inline-flex size-9 items-center justify-center rounded-2xl text-foreground/70 transition-colors duration-150 hover:bg-ec-sky/60 hover:text-foreground lg:hidden dark:hover:bg-ec-canvas-deep/60'
+            >
+              {drawerOpen ? <X className='size-5' aria-hidden='true' /> : <Menu className='size-5' aria-hidden='true' />}
+            </button>
             <Link href='/' aria-label='Educraft homepage' className='flex lg:hidden'>
               <Image src='/logo.png' alt='' width={150} height={52} className='h-8 w-auto dark:hidden' />
               <Image src='/logo-dark.png' alt='' width={150} height={52} className='hidden h-8 w-auto dark:block' />
@@ -80,13 +129,35 @@ export default function DashboardShell({
               <UserButton appearance={{ elements: { avatarBox: 'size-9' } }} />
             </div>
           </div>
-          {/* Mobile nav */}
-          <nav aria-label='Dashboard' className='flex overflow-x-auto border-t border-ec-sky px-3 py-2 dark:border-ec-canvas-deep lg:hidden'>
-            {nav.map((item) => (
-              <MobileNavLink key={item.href} item={item} />
-            ))}
-          </nav>
         </header>
+
+        {/* Mobile drawer (below the header, full remaining height). Rendered
+            only while open so hidden nav never stays in the a11y tree. */}
+        {drawerOpen && (
+          <div
+            ref={drawerRef}
+            id='dashboard-mobile-menu'
+            className='fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto border-t border-ec-sky bg-background animate-in fade-in slide-in-from-top-2 duration-200 lg:hidden dark:border-ec-canvas-deep'
+          >
+            <nav aria-label='Dashboard' className='flex min-h-full flex-col px-4 py-6'>
+              <p className='px-3 pb-2 text-xs font-semibold uppercase tracking-widest text-foreground/40'>
+                {role}
+              </p>
+              <ul className='space-y-1'>
+                {nav.map((item) => (
+                  <NavLink key={item.href} item={item} />
+                ))}
+              </ul>
+              <div className='mt-auto flex items-center gap-3 border-t border-ec-sky px-3 pt-5 dark:border-ec-canvas-deep'>
+                <Avatar user={user} />
+                <div className='min-w-0'>
+                  <p className='truncate text-sm font-semibold'>{user.name}</p>
+                  <p className='truncate text-xs text-foreground/50'>{user.email}</p>
+                </div>
+              </div>
+            </nav>
+          </div>
+        )}
 
         <main id='main-content' className='px-4 py-8 sm:px-6 lg:px-10'>
           {children}
@@ -116,25 +187,6 @@ function NavLink({ item }: { item: DashboardNavItem }) {
         {item.label}
       </Link>
     </li>
-  );
-}
-
-function MobileNavLink({ item }: { item: DashboardNavItem }) {
-  const pathname = usePathname();
-  const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-  return (
-    <Link
-      href={item.href}
-      aria-current={active ? 'page' : undefined}
-      className={cn(
-        'whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-150',
-        active
-          ? 'bg-ec-indigo text-white'
-          : 'text-foreground/70 hover:bg-ec-sky/50 hover:text-foreground dark:hover:bg-ec-canvas-deep/50'
-      )}
-    >
-      {item.label}
-    </Link>
   );
 }
 

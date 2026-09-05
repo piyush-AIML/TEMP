@@ -7,22 +7,26 @@ import {
   getProfessorStats,
   getProfessorUpcomingSessions,
 } from '@/lib/dashboard/professor';
+import { getProfessorCoursesCompletion } from '@/lib/dashboard/tasks';
 import { groupSessionsByISTDay } from '@/lib/dashboard/format';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { SessionItem } from '@/components/dashboard/SessionItem';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { ProfessorCourseCard } from '@/components/dashboard/ProfessorCourseCard';
+import { CompletionCourseRow } from '@/components/dashboard/CompletionMonitor';
 
 export const metadata: Metadata = { title: 'Overview' };
 
-/** Professor overview (Stage 2) — DB-derived stats, next classes and the
- *  course list that links into each course's management tabs. */
+/** Professor overview (Stage 2, coursework meters Stage 3) — DB-derived
+ *  stats, next classes, per-course completion, and the course list that links
+ *  into each course's management tabs. */
 export default async function ProfessorOverviewPage() {
   const session = await getCurrentUser();
-  const [stats, courses, upcoming] = await Promise.all([
+  const [stats, courses, upcoming, courseCompletion] = await Promise.all([
     getProfessorStats(session.userId),
     getProfessorCourses(session.userId),
     getProfessorUpcomingSessions(session.userId, { limit: 3 }),
+    getProfessorCoursesCompletion(session.userId),
   ]);
   const firstName = session.name.split(' ')[0];
   const nextGroups = groupSessionsByISTDay(upcoming);
@@ -75,6 +79,33 @@ export default async function ProfessorOverviewPage() {
           </div>
         )}
       </section>
+
+      {courses.length > 0 && (
+        <section className='mt-12'>
+          <div className='flex items-center justify-between gap-4'>
+            <h2 className='text-lg font-semibold'>Coursework completion</h2>
+            <Link
+              href='/dashboard/professor/courses'
+              className='inline-flex items-center gap-1 text-sm font-semibold text-ec-indigo underline-offset-2 hover:underline dark:text-white'
+            >
+              Plan coursework
+              <ArrowRight className='size-4' aria-hidden='true' />
+            </Link>
+          </div>
+          {courseCompletion.every((row) => row.total === 0) ? (
+            <p className='card-surface mt-4 rounded-3xl px-6 py-6 text-sm text-foreground/60'>
+              No tasks yet — plan coursework from any course's Planner tab and each course&apos;s
+              completion will show up here.
+            </p>
+          ) : (
+            <div className='card-surface mt-4 divide-y divide-ec-sky rounded-3xl px-6 dark:divide-ec-canvas-deep'>
+              {courseCompletion.map((row) => (
+                <CompletionCourseRow key={row.courseId} course={row} />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <section className='mt-12'>
         <div className='flex items-center justify-between gap-4'>

@@ -5,7 +5,14 @@
  * and not-owned resources).
  */
 
-export type DomainErrorCode = 'COURSE_NOT_OWNED' | 'MATERIAL_NOT_FOUND' | 'SESSION_NOT_FOUND' | 'NOT_FOUND';
+export type DomainErrorCode =
+  | 'COURSE_NOT_OWNED'
+  | 'MATERIAL_NOT_FOUND'
+  | 'SESSION_NOT_FOUND'
+  | 'NOT_FOUND'
+  | 'MEETING_NOT_FOUND'
+  | 'STUDENT_NOT_IN_ROSTER'
+  | 'TASK_NOT_FOUND';
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode;

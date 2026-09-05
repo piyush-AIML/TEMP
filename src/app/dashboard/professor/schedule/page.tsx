@@ -5,13 +5,14 @@ import { getProfessorCourses, getProfessorUpcomingSessions } from '@/lib/dashboa
 import { groupSessionsByISTDay } from '@/lib/dashboard/format';
 import { SessionItem } from '@/components/dashboard/SessionItem';
 import { SessionForm } from '@/components/dashboard/SessionForm';
+import { ScheduleViewToggle } from '@/components/dashboard/ScheduleViewToggle';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 
 export const metadata: Metadata = { title: 'Schedule' };
 
-/** Professor schedule (Stage 2) — create across any taught course, view all
- *  upcoming classes grouped by IST day. A calendar/list toggle arrives with
- *  Stage 3. */
+/** Professor schedule (Stage 2, calendar toggle Stage 3) — create across any
+ *  taught course, view all upcoming classes as an IST-day-grouped list or on
+ *  the shared month/week calendar (default stays the list). */
 export default async function ProfessorSchedulePage() {
   const session = await getCurrentUser();
   const [courses, sessions] = await Promise.all([
@@ -53,7 +54,7 @@ export default async function ProfessorSchedulePage() {
           <CalendarDays className='size-5 text-foreground/50' aria-hidden='true' />
           All upcoming classes
         </h2>
-        {dayGroups.length === 0 ? (
+        {sessions.length === 0 ? (
           <div className='mt-5'>
             <EmptyState
               icon={CalendarDays}
@@ -62,17 +63,29 @@ export default async function ProfessorSchedulePage() {
             />
           </div>
         ) : (
-          <div className='mt-5 space-y-8'>
-            {dayGroups.map((group) => (
-              <section key={group.dateKey}>
-                <h3 className='text-lg font-semibold'>{group.label}</h3>
-                <ul className='card-surface mt-3 divide-y divide-ec-sky rounded-3xl px-6 dark:divide-ec-canvas-deep'>
-                  {group.sessions.map((session) => (
-                    <SessionItem key={session.id} session={session} />
+          <div className='mt-5'>
+            <ScheduleViewToggle
+              events={sessions.map((session) => ({
+                id: session.id,
+                title: session.courseTitle,
+                startsAt: session.startsAt,
+                endsAt: session.endsAt,
+              }))}
+              list={
+                <div className='space-y-8'>
+                  {dayGroups.map((group) => (
+                    <section key={group.dateKey}>
+                      <h3 className='text-lg font-semibold'>{group.label}</h3>
+                      <ul className='card-surface mt-3 divide-y divide-ec-sky rounded-3xl px-6 dark:divide-ec-canvas-deep'>
+                        {group.sessions.map((session) => (
+                          <SessionItem key={session.id} session={session} />
+                        ))}
+                      </ul>
+                    </section>
                   ))}
-                </ul>
-              </section>
-            ))}
+                </div>
+              }
+            />
           </div>
         )}
       </section>

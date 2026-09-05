@@ -1,7 +1,16 @@
 import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ArrowLeft, CalendarDays, Users, Files, LayoutDashboard, Plus } from 'lucide-react';
+import {
+  ArrowLeft,
+  CalendarDays,
+  Users,
+  Files,
+  LayoutDashboard,
+  Plus,
+  ClipboardList,
+  ListChecks,
+} from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { getCurrentUser } from '@/lib/auth';
@@ -11,6 +20,7 @@ import {
   getCourseRoster,
 } from '@/lib/dashboard/professor';
 import { getCourseMaterials } from '@/lib/dashboard/materials';
+import { getCourseCompletion, getCourseTasks } from '@/lib/dashboard/tasks';
 import { getPillarAccentForVertical } from '@/components/dashboard/coursePillar';
 import { CourseTabs } from '@/components/dashboard/CourseTabs';
 import { RosterTable } from '@/components/dashboard/RosterTable';
@@ -19,13 +29,18 @@ import { SessionItem } from '@/components/dashboard/SessionItem';
 import { MaterialComposer } from '@/components/dashboard/MaterialComposer';
 import { MaterialFeed } from '@/components/dashboard/student/MaterialFeed';
 import { SessionForm } from '@/components/dashboard/SessionForm';
+import { TaskForm } from '@/components/dashboard/TaskForm';
+import { TaskBoard } from '@/components/dashboard/TaskBoard';
+import { TaskItem } from '@/components/dashboard/TaskItem';
+import { CompletionMonitor } from '@/components/dashboard/CompletionMonitor';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 
 /**
- * Professor course management page (Stage 2): Overview / Roster / Sessions /
- * Materials tabs. The cache() wrapper shares one ownership-checked lookup
- * between generateMetadata and the page; every panel is server-rendered once
- * and CourseTabs only switches visibility client-side.
+ * Professor course management page (Stage 2, Planner tab Stage 3):
+ * Overview / Roster / Sessions / Materials / Planner tabs. The cache()
+ * wrapper shares one ownership-checked lookup between generateMetadata and
+ * the page; every panel is server-rendered once and CourseTabs only switches
+ * visibility client-side.
  */
 const getCourseAccess = cache(async (userId: string, courseId: string) =>
   getProfessorCourseWithAccess(userId, courseId)
@@ -54,10 +69,12 @@ export default async function ProfessorCoursePage({
   if (!access) notFound();
   const { course } = access;
 
-  const [sessions, roster, materials] = await Promise.all([
+  const [sessions, roster, materials, tasks, completion] = await Promise.all([
     getProfessorCourseSessions(session.userId, courseId, { limit: 60 }),
     getCourseRoster(session.userId, courseId),
     getCourseMaterials(courseId),
+    getCourseTasks(session.userId, courseId),
+    getCourseCompletion(session.userId, courseId),
   ]);
 
   const accent = getPillarAccentForVertical(course.vertical);
@@ -86,6 +103,13 @@ export default async function ProfessorCoursePage({
         <SessionItem session={session} />
       </div>
     );
+  }
+
+  // Server-rendered task content keyed by task id — the client TaskBoard
+  // groups them into columns and adds the status/edit/delete actions.
+  const taskNodes: Record<string, React.ReactNode> = {};
+  for (const task of tasks) {
+    taskNodes[task.id] = <TaskItem task={task} />;
   }
 
   const tabs = [
@@ -170,6 +194,51 @@ export default async function ProfessorCoursePage({
             ) : (
               <div className='card-surface mt-4 rounded-3xl px-6 py-5'>
                 <MaterialFeed materials={materials} />
+              </div>
+            )}
+          </section>
+        </div>
+      ),
+    },
+    {
+      id: 'planner',
+      label: 'Planner',
+      panel: (
+        <div className='space-y-8'>
+          <section>
+            <h2 className='flex items-center gap-2 text-lg font-semibold'>
+              <Plus className='size-5 text-foreground/50' aria-hidden='true' />
+              Add a task
+            </h2>
+            <div className='card-surface mt-4 max-w-2xl rounded-3xl p-5 sm:p-6'>
+              <TaskForm courseId={courseId} />
+            </div>
+          </section>
+          <section>
+            <h2 className='flex items-center gap-2 text-lg font-semibold'>
+              <ListChecks className='size-5 text-foreground/50' aria-hidden='true' />
+              Completion
+            </h2>
+            <div className='card-surface mt-4 rounded-3xl p-5 sm:p-6'>
+              <CompletionMonitor completion={completion} />
+            </div>
+          </section>
+          <section>
+            <h2 className='flex items-center gap-2 text-lg font-semibold'>
+              <ClipboardList className='size-5 text-foreground/50' aria-hidden='true' />
+              Task board
+            </h2>
+            {tasks.length === 0 ? (
+              <div className='mt-4'>
+                <EmptyState
+                  icon={ClipboardList}
+                  title='No tasks yet'
+                  description='Tasks you plan for this course will appear here — the whole class works the same plan.'
+                />
+              </div>
+            ) : (
+              <div className='card-surface mt-4 rounded-3xl p-4 sm:p-5'>
+                <TaskBoard courseId={courseId} tasks={tasks} taskNodes={taskNodes} />
               </div>
             )}
           </section>

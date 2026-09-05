@@ -1,21 +1,24 @@
 import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ArrowLeft, CalendarDays, Files, FolderOpen } from 'lucide-react';
+import { ArrowLeft, CalendarDays, ClipboardList, Files, FolderOpen } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { getCurrentUser } from '@/lib/auth';
 import { getStudentCourseWithAccess } from '@/lib/dashboard/courses';
 import { getStudentUpcomingSessions } from '@/lib/dashboard/sessions';
 import { getCourseMaterials } from '@/lib/dashboard/materials';
+import { getStudentCourseTasks } from '@/lib/dashboard/tasks';
 import { getPillarAccentForVertical } from '@/components/dashboard/coursePillar';
 import { SessionItem } from '@/components/dashboard/SessionItem';
+import { TaskItem } from '@/components/dashboard/TaskItem';
 import { MaterialFeed } from '@/components/dashboard/student/MaterialFeed';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 
 /**
- * One enrolled course for a student (Stage 1): its upcoming classes and its
- * read-only materials & remarks. Access rule: the student must hold an ACTIVE
+ * One enrolled course for a student (Stage 1, Coursework Stage 3): its
+ * upcoming classes, its read-only coursework plan, and its read-only
+ * materials & remarks. Access rule: the student must hold an ACTIVE
  * enrollment — anything else is notFound() (no existence oracle). The cache()
  * wrapper shares one access-checked lookup between generateMetadata and the
  * page within a request.
@@ -47,8 +50,9 @@ export default async function StudentCoursePage({
   if (!access) notFound();
   const { course } = access;
 
-  const [sessions, materials] = await Promise.all([
+  const [sessions, tasks, materials] = await Promise.all([
     getStudentUpcomingSessions(session.userId, { courseId }),
+    getStudentCourseTasks(session.userId, course.id),
     getCourseMaterials(course.id),
   ]);
 
@@ -104,6 +108,30 @@ export default async function StudentCoursePage({
             <ul className='card-surface mt-5 divide-y divide-ec-sky rounded-3xl px-6 dark:divide-ec-canvas-deep'>
               {sessions.map((session) => (
                 <SessionItem key={session.id} session={session} />
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section>
+          <h2 className='flex items-center gap-2 text-lg font-semibold'>
+            <ClipboardList className='size-5 text-foreground/50' aria-hidden='true' />
+            Coursework
+          </h2>
+          {tasks.length === 0 ? (
+            <div className='mt-5'>
+              <EmptyState
+                icon={ClipboardList}
+                title='No coursework yet'
+                description='Tasks with due dates your professor plans for this course will appear here.'
+              />
+            </div>
+          ) : (
+            <ul className='card-surface mt-5 divide-y divide-ec-sky rounded-3xl px-6 dark:divide-ec-canvas-deep'>
+              {tasks.map((task) => (
+                <li key={task.id} className='py-4'>
+                  <TaskItem task={task} />
+                </li>
               ))}
             </ul>
           )}

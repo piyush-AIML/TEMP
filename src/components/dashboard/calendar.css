@@ -1,0 +1,100 @@
+/* react-big-calendar theme overrides (Dashboard Stage 3). Scoped under
+   .ec-calendar; plain CSS only (no @apply) so Tailwind's PostCSS pipeline
+   never reorders these against RBC's own stylesheet — the JS import order in
+   CalendarView.tsx (RBC css first, this file second) is the guarantee.
+
+   All colors go through the design tokens' CSS variables, which flip under
+   .dark automatically — no media queries needed here. */
+
+.ec-calendar {
+  font-size: 13px;
+}
+
+.ec-calendar .rbc-month-view,
+.ec-calendar .rbc-time-view,
+.ec-calendar .rbc-header,
+.ec-calendar .rbc-day-bg + .rbc-day-bg,
+.ec-calendar .rbc-month-row + .rbc-month-row,
+.ec-calendar .rbc-time-header + .rbc-time-content,
+.ec-calendar .rbc-time-content > * + * > *,
+.ec-calendar .rbc-timeslot-group {
+  border-color: var(--ec-border);
+}
+
+.ec-calendar .rbc-header {
+  padding: 8px 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ec-slate);
+}
+
+.ec-calendar .rbc-date-cell {
+  padding: 4px 6px;
+  color: var(--ec-slate);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.ec-calendar .rbc-today {
+  background-color: var(--ec-sky);
+}
+
+.ec-calendar .rbc-off-range {
+  opacity: 0.55;
+}
+
+.ec-calendar .rbc-event {
+  background-color: var(--ec-indigo);
+  border: 0;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 4px;
+}
+
+.ec-calendar .rbc-event:focus {
+  outline: 2px solid var(--ec-indigo-light);
+  outline-offset: 1px;
+}
+
+.ec-calendar .rbc-show-more {
+  color: var(--ec-indigo);
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.ec-calendar .rbc-time-gutter .rbc-timeslot-group {
+  border-color: transparent;
+}
+
+.ec-calendar .rbc-time-gutter .rbc-label {
+  color: var(--ec-slate);
+  font-size: 11px;
+  padding: 0 6px 0 0;
+}
+
+.ec-calendar .rbc-current-time-indicator {
+  background-color: var(--ec-error);
+}
+
+/* "Show more" popover — card surface in both themes. */
+.ec-calendar .rbc-overlay {
+  background: var(--card);
+  border: 1px solid var(--ec-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.14);
+  padding: 6px;
+}
+
+.ec-calendar .rbc-overlay-header {
+  border-bottom: 1px solid var(--ec-border);
+  color: var(--ec-slate);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

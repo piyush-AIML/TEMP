@@ -1,17 +1,23 @@
 import type { Metadata } from 'next';
 import { Bell } from 'lucide-react';
 import { getCurrentUser } from '@/lib/auth';
-import { getMyNotifications } from '@/lib/dashboard/notifications';
+import { getMyNotifications, getNotificationPrefs } from '@/lib/dashboard/notifications';
 import { NotificationList } from '@/components/dashboard/NotificationList';
 import { NotificationActions } from '@/components/dashboard/NotificationActions';
+import { NotificationPrefsEditor } from '@/components/dashboard/NotificationPrefsEditor';
 
 export const metadata: Metadata = { title: 'Notifications' };
 
-/** Student notifications page (Stage 2) — full list with unread emphasis,
- *  mark-read controls and role-aware course links. */
+/** Student notifications page (Stage 2, prefs editor Stage 4) — full list
+ *  with unread emphasis, mark-read controls, role-aware course links, and
+ *  the notification-preferences editor (every channel is a student event;
+ *  professor-facing announcements arrive in a future stage with their own). */
 export default async function StudentNotificationsPage() {
   const session = await getCurrentUser();
-  const notifications = await getMyNotifications(session.userId, 50);
+  const [notifications, prefs] = await Promise.all([
+    getMyNotifications(session.userId, 50),
+    getNotificationPrefs(session.userId),
+  ]);
   const unread = notifications.filter((item) => !item.read).length;
 
   const courseHrefFor = (relatedEntity: string | null) => {
@@ -37,6 +43,10 @@ export default async function StudentNotificationsPage() {
 
       <div className='mt-8'>
         <NotificationList notifications={notifications} courseHrefFor={courseHrefFor} />
+      </div>
+
+      <div className='mt-8'>
+        <NotificationPrefsEditor initial={prefs} />
       </div>
     </section>
   );

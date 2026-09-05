@@ -1,9 +1,9 @@
 import type { LucideIcon } from 'lucide-react';
 
 /**
- * Honest empty state for real-empty data (Stage 1) — distinct from the
- * PlaceholderPage stubs that say "lands in Stage X". Copy always says what
- * appears here and when, never invents content.
+ * Honest empty state for real-empty data (Stage 1). Copy always says what
+ * appears here and when, never invents content. (The Stage-stub
+ * PlaceholderPage was deleted in Stage 4 — every dashboard route is real.)
  */
 export function EmptyState({
   icon: Icon,

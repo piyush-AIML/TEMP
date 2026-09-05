@@ -20,7 +20,7 @@ import { config as loadEnv } from 'dotenv';
 loadEnv({ path: '.env.local' });
 
 import type { Course, User } from '../src/generated/prisma/client';
-import { MaterialType, SessionMode } from '../src/generated/prisma/enums';
+import { MaterialType, MeetingParticipant, SessionMode, TaskStatus } from '../src/generated/prisma/enums';
 import { createPrismaClient } from '../src/lib/prisma-client';
 
 const prisma = createPrismaClient();
@@ -151,6 +151,200 @@ async function findUserByEmail(email: string): Promise<User | null> {
   return prisma.user.findUnique({ where: { email } });
 }
 
+const IST_MS = 5.5 * 3600 * 1000;
+
+/** The instant whose IST wall clock reads (nowIST + daysAhead) at
+ *  hour:minute IST — machine-timezone independent. Used by the Stage 3
+ *  meetings/tasks demo rows (unlike the older session seeding above, which
+ *  builds machine-local wall times; that smell is left untouched). */
+function istTimeDaysFromNow(daysAhead: number, hour: number, minute = 0): Date {
+  const wall = new Date(Date.now() + IST_MS); // UTC fields now carry IST wall time
+  return new Date(
+    Date.UTC(wall.getUTCFullYear(), wall.getUTCMonth(), wall.getUTCDate() + daysAhead, hour, minute) -
+      IST_MS
+  );
+}
+
+/** Demo coursework per course (Stage 3): one DONE, one overdue TODO, one
+ *  upcoming TODO, one IN_PROGRESS — so the planner board has every column,
+ *  the student sees an Overdue chip, and the completion monitor lands at 25%.
+ *  dueInDays is relative to today; due times are IST midnight. */
+const COURSE_TASKS: Record<
+  string,
+  Array<{ title: string; description: string; dueInDays: number; status: TaskStatus }>
+> = {
+  'LING-101': [
+    {
+      title: 'Speaking warm-up log — week 1',
+      description: 'Daily 10-minute recordings; tick each day you completed one.',
+      dueInDays: -3,
+      status: TaskStatus.DONE,
+    },
+    {
+      title: 'Summarise one news headline aloud',
+      description: 'Pick a headline, give a 90-second spoken summary, and note two words you reached for.',
+      dueInDays: -2,
+      status: TaskStatus.TODO,
+    },
+    {
+      title: 'CEFR self-assessment checkpoint',
+      description: 'Re-rate yourself against the four skills using the pathway map, then bring it to class.',
+      dueInDays: 4,
+      status: TaskStatus.TODO,
+    },
+    {
+      title: 'Record and review a 3-minute talk',
+      description: 'Free topic. Listen back once and log three fluency gaps you noticed.',
+      dueInDays: 6,
+      status: TaskStatus.IN_PROGRESS,
+    },
+  ],
+  'INCL-201': [
+    {
+      title: 'Universal-design reading notes',
+      description: 'One page of notes on the UDL reading, in your own words.',
+      dueInDays: -3,
+      status: TaskStatus.DONE,
+    },
+    {
+      title: 'Observation journal — entry 1',
+      description: 'First real learning setting, five structured observations using the template.',
+      dueInDays: -2,
+      status: TaskStatus.TODO,
+    },
+    {
+      title: 'Adapt one lesson for choice of response',
+      description: 'Take any lesson you know well and offer learners three ways to respond.',
+      dueInDays: 4,
+      status: TaskStatus.TODO,
+    },
+    {
+      title: 'Accessibility review of a learning space',
+      description: 'Walk one classroom or meeting room with the weekly-review checklist.',
+      dueInDays: 6,
+      status: TaskStatus.IN_PROGRESS,
+    },
+  ],
+  'WBC-301': [
+    {
+      title: '4-4-6 breathing practice log',
+      description: 'Two sessions a day for the week, noted honestly — missed days count too.',
+      dueInDays: -3,
+      status: TaskStatus.DONE,
+    },
+    {
+      title: 'Daily feelings log — week 2',
+      description: 'Two lines each evening. Patterns beat guesses.',
+      dueInDays: -2,
+      status: TaskStatus.TODO,
+    },
+    {
+      title: 'Peer check-in reflection',
+      description: 'After your paired check-in, write what helped and what felt awkward.',
+      dueInDays: 4,
+      status: TaskStatus.TODO,
+    },
+    {
+      title: 'Stress-cycle mapping exercise',
+      description: 'Map one recent stressful week: triggers, body signals, and what completed the cycle.',
+      dueInDays: 6,
+      status: TaskStatus.IN_PROGRESS,
+    },
+  ],
+  'AID-401': [
+    {
+      title: 'AI sandbox install + first run',
+      description: 'Environment installed and one prompt-to-code task completed end to end.',
+      dueInDays: -3,
+      status: TaskStatus.DONE,
+    },
+    {
+      title: 'Prompt critique — bring one failure',
+      description: 'One prompt you wrote this month that failed. We learn fastest from the failures.',
+      dueInDays: -2,
+      status: TaskStatus.TODO,
+    },
+    {
+      title: 'Model evaluation reading',
+      description: 'Read the evaluation explainer and bring one question about how models are judged.',
+      dueInDays: 4,
+      status: TaskStatus.TODO,
+    },
+    {
+      title: 'Prompt-to-code task end to end',
+      description: 'From a plain-English brief to a working script — record where you got stuck.',
+      dueInDays: 6,
+      status: TaskStatus.IN_PROGRESS,
+    },
+  ],
+  'NEET-501': [
+    {
+      title: 'Mechanics mock — section A',
+      description: 'Timed section A from last weekend’s mock paper; mark it before the next session.',
+      dueInDays: -3,
+      status: TaskStatus.DONE,
+    },
+    {
+      title: 'Physics revision grid — week 1',
+      description: 'Mechanics: 40 minutes of worked problems daily; optics: revisit the diagram bank first.',
+      dueInDays: -2,
+      status: TaskStatus.TODO,
+    },
+    {
+      title: 'Chemistry formula sheet pass',
+      description: 'One clean pass over the formula sheet, annotating the three you misapply most.',
+      dueInDays: 4,
+      status: TaskStatus.TODO,
+    },
+    {
+      title: 'Full mock paper — weekend slot',
+      description: 'Leave the full paper for the weekend and analyse the mark leak afterwards.',
+      dueInDays: 6,
+      status: TaskStatus.IN_PROGRESS,
+    },
+  ],
+};
+
+/** Demo meetings for the demo professor (Stage 3) — one per withWhom kind:
+ *  STUDENT (linked to the demo student), PARENT, OTHER. */
+const DEMO_MEETINGS: Array<{
+  title: string;
+  withWhom: MeetingParticipant;
+  daysAhead: number;
+  startHour: number;
+  startMinute: number;
+  minutes: number;
+  link: string | null;
+}> = [
+  {
+    title: 'External tutor sync',
+    withWhom: MeetingParticipant.OTHER,
+    daysAhead: 2,
+    startHour: 18,
+    startMinute: 30,
+    minutes: 30,
+    link: 'https://meet.educraft.test/one-one',
+  },
+  {
+    title: 'Mock test review',
+    withWhom: MeetingParticipant.STUDENT,
+    daysAhead: 3,
+    startHour: 17,
+    startMinute: 30,
+    minutes: 45,
+    link: 'https://meet.educraft.test/one-one',
+  },
+  {
+    title: "Parent check-in — Aanya's progress",
+    withWhom: MeetingParticipant.PARENT,
+    daysAhead: 5,
+    startHour: 9,
+    startMinute: 0,
+    minutes: 45,
+    link: null,
+  },
+];
+
 async function main() {
   const foundProfessors = await Promise.all(PROFESSORS.map((p) => findUserByEmail(p.email)));
   const foundStudents = await Promise.all(STUDENTS.map((s) => findUserByEmail(s.email)));
@@ -162,6 +356,9 @@ async function main() {
     enrollments: 0,
     classSessionsCreated: 0,
     materialsCreated: 0,
+    meetingsCreated: 0,
+    tasksCreated: 0,
+    completionLogsCreated: 0,
   };
 
   // Courses (idempotent by code) + professor links (M2M).
@@ -263,6 +460,68 @@ async function main() {
           },
         });
         summary.materialsCreated += 1;
+      }
+    }
+  }
+
+  // Demo meetings (Stage 3) — created only when the professor row exists and
+  // they have no upcoming SCHEDULED meetings yet (count guard, like
+  // materials). The STUDENT meeting additionally needs the demo student.
+  if (professor) {
+    const upcomingMeetings = await prisma.meeting.count({
+      where: { professorId: professor.id, status: 'SCHEDULED', startsAt: { gte: new Date() } },
+    });
+    if (upcomingMeetings === 0) {
+      for (const meeting of DEMO_MEETINGS) {
+        if (meeting.withWhom === MeetingParticipant.STUDENT && !student) continue;
+        const startsAt = istTimeDaysFromNow(meeting.daysAhead, meeting.startHour, meeting.startMinute);
+        await prisma.meeting.create({
+          data: {
+            professorId: professor.id,
+            title: meeting.title,
+            withWhom: meeting.withWhom,
+            studentId: meeting.withWhom === MeetingParticipant.STUDENT ? student!.id : null,
+            startsAt,
+            endsAt: new Date(startsAt.getTime() + meeting.minutes * 60 * 1000),
+            link: meeting.link,
+          },
+        });
+        summary.meetingsCreated += 1;
+      }
+    }
+  }
+
+  // Demo coursework (Stage 3) — per-course count guard (Task has no natural
+  // unique key; same convention as materials). Non-TODO tasks get their
+  // CompletionLog write-through row (DONE 100 / IN_PROGRESS 50), mirroring
+  // the exact domain semantics of updateTaskStatus.
+  if (professor) {
+    for (const course of createdCourses) {
+      const existingTasks = await prisma.task.count({ where: { courseId: course.id } });
+      if (existingTasks > 0) continue;
+      const items = COURSE_TASKS[course.code] ?? [];
+      for (const item of items) {
+        const task = await prisma.task.create({
+          data: {
+            courseId: course.id,
+            createdById: professor.id,
+            title: item.title,
+            description: item.description,
+            dueDate: istTimeDaysFromNow(item.dueInDays, 0, 0),
+            status: item.status,
+          },
+        });
+        summary.tasksCreated += 1;
+        if (item.status !== TaskStatus.TODO) {
+          await prisma.completionLog.create({
+            data: {
+              courseId: course.id,
+              taskId: task.id,
+              percentComplete: item.status === TaskStatus.DONE ? 100 : 50,
+            },
+          });
+          summary.completionLogsCreated += 1;
+        }
       }
     }
   }
