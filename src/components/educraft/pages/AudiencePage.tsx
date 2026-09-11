@@ -145,7 +145,7 @@ function SchoolsDetail() {
           {steps.map((s, i) => (
             <Reveal key={s.title} delay={i * 90}>
               <div className='card-surface h-full p-6'>
-                <span className='font-[family-name:var(--font-sora)] font-bold text-3xl text-ec-teal/40'>
+                <span className='font-[family-name:var(--font-clash)] font-bold text-3xl text-ec-teal/40'>
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <h3 className='type-heading-s text-ec-indigo dark:text-white mt-3'>{s.title}</h3>
@@ -210,7 +210,7 @@ function StudentsDetail() {
             <Reveal key={s.title} delay={i * 80}>
               <div className='relative card-surface p-6 pt-8 overflow-hidden'>
                 <span className='absolute top-0 left-0 right-0 h-1 bg-ec-teal' aria-hidden='true' />
-                <span className='font-[family-name:var(--font-sora)] font-bold text-3xl text-ec-border dark:text-ec-border/60'>
+                <span className='font-[family-name:var(--font-clash)] font-bold text-3xl text-ec-border dark:text-ec-border/60'>
                   {s.stage}
                 </span>
                 <h3 className='type-heading-s text-ec-indigo dark:text-white mt-3'>{s.title}</h3>

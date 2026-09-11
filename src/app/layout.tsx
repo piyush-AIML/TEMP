@@ -1,12 +1,39 @@
 import type { Metadata } from "next";
-import { Sora, Manrope } from "next/font/google";
+import localFont from "next/font/local";
+import { Instrument_Serif, Manrope } from "next/font/google";
 import ThemeProvider from "@/components/theme/ThemeProvider";
 import "./globals.css";
 
-const sora = Sora({
-  variable: "--font-sora",
+// v4 typography (FC-04, owner ruling G2): Clash Display (Fontshare, ITF Free
+// license) is the display face; Instrument Serif italic is the single-accent-
+// word serif; Manrope stays for body/interface.
+const clash = localFont({
+  src: [
+    {
+      path: "./fonts/clash-display/clash-display-500.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/clash-display/clash-display-600.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "./fonts/clash-display/clash-display-700.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-clash",
+  display: "swap",
+});
+
+const serif = Instrument_Serif({
+  variable: "--font-serif-accent",
   subsets: ["latin"],
-  weight: ["600", "700"],
+  weight: "400",
+  style: ["italic", "normal"],
   display: "swap",
 });
 
@@ -74,7 +101,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${sora.variable} ${manrope.variable} antialiased bg-background text-foreground font-[family-name:var(--font-manrope)]`}
+        className={`${clash.variable} ${serif.variable} ${manrope.variable} antialiased bg-background text-foreground font-[family-name:var(--font-manrope)]`}
       >
         <script
           type="application/ld+json"

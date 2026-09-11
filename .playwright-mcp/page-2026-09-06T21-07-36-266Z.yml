@@ -1,0 +1,584 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=e4]:
+      - navigation "Main navigation" [ref=e5]:
+        - link "Educraft Home" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img "Educraft" [ref=e7]
+        - generic [ref=e8]:
+          - button "Programmes" [ref=e10]
+          - link "Methodology" [ref=e13] [cursor=pointer]:
+            - /url: /methodology
+          - link "Impact" [ref=e14] [cursor=pointer]:
+            - /url: /impact
+          - link "About" [ref=e15] [cursor=pointer]:
+            - /url: /about
+          - link "Insights" [ref=e16] [cursor=pointer]:
+            - /url: /insights
+          - button "Switch to dark mode" [ref=e17]
+          - link "Sign in" [ref=e20] [cursor=pointer]:
+            - /url: /dashboard
+          - button "Enquire" [ref=e21] [cursor=pointer]
+    - main [ref=e22]:
+      - generic [ref=e23]:
+        - generic [ref=e25]:
+          - generic [ref=e26]: Global Digital Education Platform
+          - heading "Five paths. One learning ecosystem." [level=1] [ref=e27]: Five paths.One learning ecosystem.
+          - paragraph [ref=e28]: From language and inclusion to wellbeing, AI literacy, and competitive exam preparation — Educraft connects the pieces that help students move forward.
+          - generic [ref=e29]:
+            - button "Explore Programmes" [ref=e30] [cursor=pointer]
+            - link "View all programmes" [ref=e33] [cursor=pointer]:
+              - /url: /programmes
+          - paragraph [ref=e34]: Five verticals · One trust umbrella · Built for schools, families, and students
+        - generic [ref=e36]: Scroll
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: One ecosystem
+          - heading "Five pillars. One connected system." [level=2] [ref=e43]
+          - paragraph [ref=e44]: Each vertical is a complete programme in its own right — not a module inside a course. Together they form one ecosystem where a learner can move between paths without starting over.
+        - generic [ref=e47]:
+          - generic [ref=e48]: Learn — Linguistics
+          - heading "Linguistics" [level=3] [ref=e50]
+          - paragraph [ref=e51]: Language that works in the real world.
+          - list [ref=e52]:
+            - listitem [ref=e53]:
+              - generic [ref=e55]:
+                - strong [ref=e56]: Conversational confidence.
+                - text: Students initiate and sustain real conversations without freezing or translating in their head first.
+            - listitem [ref=e57]:
+              - generic [ref=e59]:
+                - strong [ref=e60]: Academic writing clarity.
+                - text: Essays, summaries, and arguments that are structured, precise, and appropriate for school or university.
+          - generic [ref=e61]:
+            - link "Explore Linguistics" [ref=e62] [cursor=pointer]:
+              - /url: /programmes/linguistics
+            - button "Enquire about this programme" [ref=e65]
+        - generic [ref=e66]:
+          - link "Learn Linguistics Language that works in the real world." [ref=e68] [cursor=pointer]:
+            - /url: /programmes/linguistics
+            - generic [ref=e69]: Learn
+            - heading "Linguistics" [level=3] [ref=e72]
+            - paragraph [ref=e73]: Language that works in the real world.
+          - link "Include Inclusive Education Every learner, on a path that fits." [ref=e75] [cursor=pointer]:
+            - /url: /programmes/inclusive-education
+            - generic [ref=e76]: Include
+            - heading "Inclusive Education" [level=3] [ref=e79]
+            - paragraph [ref=e80]: Every learner, on a path that fits.
+          - link "Thrive Wellbeing & Counselling Steady minds learn better." [ref=e82] [cursor=pointer]:
+            - /url: /programmes/wellbeing-counseling
+            - generic [ref=e83]: Thrive
+            - heading "Wellbeing & Counselling" [level=3] [ref=e86]
+            - paragraph [ref=e87]: Steady minds learn better.
+          - link "Achieve AI & Digital Technologies Technology students can think with." [ref=e89] [cursor=pointer]:
+            - /url: /programmes/ai-digital-tech
+            - generic [ref=e90]: Achieve
+            - heading "AI & Digital Technologies" [level=3] [ref=e93]
+            - paragraph [ref=e94]: Technology students can think with.
+          - link "Excel NEET & JEE Preparation Prepared steadily, not last-minute." [ref=e96] [cursor=pointer]:
+            - /url: /programmes/neet-jee
+            - generic [ref=e97]: Excel
+            - heading "NEET & JEE Preparation" [level=3] [ref=e100]
+            - paragraph [ref=e101]: Prepared steadily, not last-minute.
+      - generic [ref=e103]:
+        - generic [ref=e104]:
+          - generic [ref=e105]: The five programmes
+          - heading "One journey, five paths" [level=2] [ref=e106]
+          - paragraph [ref=e107]: Swipe through the programmes.
+        - generic [ref=e108]:
+          - link "Learn learn programme illustration Linguistics Language that works in the real world. Read the full programme" [ref=e109] [cursor=pointer]:
+            - /url: /programmes/linguistics
+            - generic [ref=e110]: Learn
+            - img "learn programme illustration" [ref=e113]:
+              - generic [ref=e114]:
+                - generic [ref=e119]: Aa
+                - generic [ref=e123]: 你好
+                - generic [ref=e126]: hola
+            - heading "Linguistics" [level=3] [ref=e132]
+            - paragraph [ref=e133]: Language that works in the real world.
+            - generic [ref=e134]: Read the full programme
+          - link "Include include programme illustration Inclusive Education Every learner, on a path that fits. Read the full programme" [ref=e137] [cursor=pointer]:
+            - /url: /programmes/inclusive-education
+            - generic [ref=e138]: Include
+            - img "include programme illustration" [ref=e141]
+            - heading "Inclusive Education" [level=3] [ref=e158]
+            - paragraph [ref=e159]: Every learner, on a path that fits.
+            - generic [ref=e160]: Read the full programme
+          - link "Thrive thrive programme illustration Wellbeing & Counselling Steady minds learn better. Read the full programme" [ref=e163] [cursor=pointer]:
+            - /url: /programmes/wellbeing-counseling
+            - generic [ref=e164]: Thrive
+            - img "thrive programme illustration" [ref=e167]
+            - heading "Wellbeing & Counselling" [level=3] [ref=e185]
+            - paragraph [ref=e186]: Steady minds learn better.
+            - generic [ref=e187]: Read the full programme
+          - link "Achieve achieve programme illustration AI & Digital Technologies Technology students can think with. Read the full programme" [ref=e190] [cursor=pointer]:
+            - /url: /programmes/ai-digital-tech
+            - generic [ref=e191]: Achieve
+            - img "achieve programme illustration" [ref=e194]
+            - heading "AI & Digital Technologies" [level=3] [ref=e212]
+            - paragraph [ref=e213]: Technology students can think with.
+            - generic [ref=e214]: Read the full programme
+          - link "Excel excel programme illustration NEET & JEE Preparation Prepared steadily, not last-minute. Read the full programme" [ref=e217] [cursor=pointer]:
+            - /url: /programmes/neet-jee
+            - generic [ref=e218]: Excel
+            - img "excel programme illustration" [ref=e221]
+            - heading "NEET & JEE Preparation" [level=3] [ref=e235]
+            - paragraph [ref=e236]: Prepared steadily, not last-minute.
+            - generic [ref=e237]: Read the full programme
+      - generic [ref=e241]:
+        - generic [ref=e243]:
+          - generic [ref=e244]: Why Educraft
+          - heading "A different kind of education company." [level=2] [ref=e245]
+          - paragraph [ref=e246]: Most education offerings are collections of courses. Educraft is a connected system — five specialist verticals sharing one philosophy, one standard of evidence, and one view of the learner.
+        - generic [ref=e247]:
+          - generic [ref=e248]:
+            - generic [ref=e249]: "01"
+            - generic [ref=e250]:
+              - heading "One ecosystem, not five silos" [level=3] [ref=e251]
+              - paragraph [ref=e252]: Programmes are designed to work together. A student building language confidence can also access wellbeing support; an exam aspirant can pause for counselling without leaving the system. Learners move between paths without starting over.
+          - generic [ref=e253]:
+            - generic [ref=e254]: "02"
+            - generic [ref=e255]:
+              - heading "Specialists in every room" [level=3] [ref=e256]
+              - paragraph [ref=e257]: Each vertical is led by people trained for it — language specialists, certified special educators, licensed counsellors, technologists, and exam mentors. Nobody is improvising outside their field.
+          - generic [ref=e258]:
+            - generic [ref=e259]: "03"
+            - generic [ref=e260]:
+              - heading "Families are partners, not spectators" [level=3] [ref=e261]
+              - paragraph [ref=e262]: Goals are agreed with families, not announced to them. Structured check-ins, plain-language reports, and home strategies keep parents genuinely part of the journey.
+          - generic [ref=e263]:
+            - generic [ref=e264]: "04"
+            - generic [ref=e265]:
+              - heading "Progress you can actually see" [level=3] [ref=e266]
+              - paragraph [ref=e267]: "Portfolios, dashboards, and benchmarked checkpoints replace vague reassurance. Every programme answers the same question with evidence: what can the student do now that they could not do before?"
+          - generic [ref=e268]:
+            - generic [ref=e269]: "05"
+            - generic [ref=e270]:
+              - heading "Wellbeing woven in, not bolted on" [level=3] [ref=e271]
+              - paragraph [ref=e272]: Steadiness is designed into every programme — realistic targets, study-rest cycles, and access to counselling. We treat sustainable learning as a performance advantage, not a soft option.
+      - generic [ref=e274]:
+        - generic [ref=e275]: The student journey
+        - 'heading "Six stages, one direction: forward." [level=2] [ref=e276]'
+        - list [ref=e277]:
+          - listitem [ref=e278]:
+            - generic [ref=e283]: Stage 01
+            - heading "Curious" [level=3] [ref=e284]
+            - paragraph [ref=e285]: Every journey starts with a question — a language to learn, an exam to face, a way of learning that finally fits.
+          - listitem [ref=e286]:
+            - generic [ref=e293]: Stage 02
+            - heading "Supported" [level=3] [ref=e294]
+            - paragraph [ref=e295]: An assessment, a plan, and a specialist who knows their name. The path stops feeling abstract.
+          - listitem [ref=e296]:
+            - generic [ref=e300]: Stage 03
+            - heading "Practising" [level=3] [ref=e301]
+            - paragraph [ref=e302]: Weekly sessions turn effort into habit — speaking, building, solving, or practising calm.
+          - listitem [ref=e303]:
+            - generic [ref=e308]: Stage 04
+            - heading "Confident" [level=3] [ref=e309]
+            - paragraph [ref=e310]: Checkpoints make progress visible. The student starts raising their hand, shipping projects, taking tests in stride.
+          - listitem [ref=e311]:
+            - generic [ref=e315]: Stage 05
+            - heading "Capable" [level=3] [ref=e316]
+            - paragraph [ref=e317]: Skills transfer to real settings — classrooms, exams, conversations, and the life beyond them.
+          - listitem [ref=e318]:
+            - generic [ref=e325]: Stage 06
+            - heading "Ready" [level=3] [ref=e326]
+            - paragraph [ref=e327]: The student owns their toolkit and knows what comes next. The ecosystem stays with them.
+      - generic [ref=e329]:
+        - generic [ref=e330]:
+          - generic [ref=e331]: Inside a programme
+          - heading "What a programme actually contains" [level=2] [ref=e332]
+          - paragraph [ref=e333]: "Every vertical is a complete experience: curriculum, method, outcomes, and evidence. Open one and look inside."
+        - generic [ref=e334]:
+          - generic [ref=e335]:
+            - button "Learn Linguistics" [pressed] [ref=e336]:
+              - generic [ref=e338]:
+                - generic [ref=e339]: Learn
+                - generic [ref=e340]: Linguistics
+            - button "Include Inclusive Education" [ref=e341]:
+              - generic [ref=e343]:
+                - generic [ref=e344]: Include
+                - generic [ref=e345]: Inclusive Education
+            - button "Thrive Wellbeing & Counselling" [ref=e346]:
+              - generic [ref=e348]:
+                - generic [ref=e349]: Thrive
+                - generic [ref=e350]: Wellbeing & Counselling
+            - button "Achieve AI & Digital Technologies" [ref=e351]:
+              - generic [ref=e353]:
+                - generic [ref=e354]: Achieve
+                - generic [ref=e355]: AI & Digital Technologies
+            - button "Excel NEET & JEE Preparation" [ref=e356]:
+              - generic [ref=e358]:
+                - generic [ref=e359]: Excel
+                - generic [ref=e360]: NEET & JEE Preparation
+          - generic [ref=e361]:
+            - generic [ref=e362]:
+              - generic [ref=e363]:
+                - generic [ref=e364]: Learn — Linguistics
+                - heading "Linguistics" [level=3] [ref=e365]
+              - img "learn programme illustration" [ref=e366]:
+                - generic [ref=e367]:
+                  - generic [ref=e372]: Aa
+                  - generic [ref=e376]: 你好
+                  - generic [ref=e379]: hola
+            - paragraph [ref=e385]: Students leave able to hold real conversations, write with clarity, and read confidently in their target language — not just pass a grammar test.
+            - heading "Curriculum" [level=4] [ref=e386]
+            - generic [ref=e387]:
+              - generic [ref=e388]:
+                - text: Foundations
+                - paragraph [ref=e389]: Core vocabulary, pronunciation, and sentence patterns — the load-bearing structure every conversation rests on.
+              - generic [ref=e390]:
+                - text: Fluency building
+                - paragraph [ref=e391]: "Speaking and listening at speed: the gap between \"knowing\" a language and \"using\" it closes here."
+              - generic [ref=e392]:
+                - text: Academic literacy
+                - paragraph [ref=e393]: "Reading and writing for study: the skills that carry students through exams and into university."
+              - generic [ref=e394]:
+                - text: Global communication
+                - paragraph [ref=e395]: Presenting ideas with confidence and understanding cultural context.
+            - generic [ref=e396]:
+              - generic [ref=e397]:
+                - heading "The method" [level=4] [ref=e398]
+                - list [ref=e399]:
+                  - listitem [ref=e400]:
+                    - generic [ref=e401]: "1"
+                    - generic [ref=e402]:
+                      - strong [ref=e403]: Understand.
+                      - text: A level-mapped assessment identifies where the student really is — not where their age or grade suggests.
+                  - listitem [ref=e404]:
+                    - generic [ref=e405]: "2"
+                    - generic [ref=e406]:
+                      - strong [ref=e407]: Map.
+                      - text: We set a personal pathway with milestone targets for each of the four skills.
+                  - listitem [ref=e408]:
+                    - generic [ref=e409]: "3"
+                    - generic [ref=e410]:
+                      - strong [ref=e411]: Learn.
+                      - text: Weekly conversation-first sessions build fluency through real materials, role-play, and guided discussion.
+                  - listitem [ref=e412]:
+                    - generic [ref=e413]: "4"
+                    - generic [ref=e414]:
+                      - strong [ref=e415]: Measure.
+                      - text: Regular checkpoint tasks track progress against level descriptors, with feedback the student can act on.
+                  - listitem [ref=e416]:
+                    - generic [ref=e417]: "5"
+                    - generic [ref=e418]:
+                      - strong [ref=e419]: Grow.
+                      - text: "The pathway adjusts: targets raise as confidence grows, and new challenge areas are introduced deliberately."
+              - generic [ref=e420]:
+                - heading "What changes" [level=4] [ref=e421]
+                - list [ref=e422]:
+                  - listitem [ref=e423]:
+                    - generic [ref=e427]:
+                      - strong [ref=e428]: Conversational confidence.
+                      - text: Students initiate and sustain real conversations without freezing or translating in their head first.
+                  - listitem [ref=e429]:
+                    - generic [ref=e433]:
+                      - strong [ref=e434]: Academic writing clarity.
+                      - text: Essays, summaries, and arguments that are structured, precise, and appropriate for school or university.
+                  - listitem [ref=e435]:
+                    - generic [ref=e439]:
+                      - strong [ref=e440]: Strong comprehension.
+                      - text: Reading and listening stamina for textbooks, lectures, news, and everyday speech — not just graded materials.
+                  - listitem [ref=e441]:
+                    - generic [ref=e445]:
+                      - strong [ref=e446]: Public communication.
+                      - text: Presentations and discussions delivered with composure, structure, and a personal voice.
+            - generic [ref=e447]:
+              - paragraph [ref=e448]:
+                - strong [ref=e449]: "Evidence:"
+                - text: Specialist educators — Every instructor is trained in second-language teaching methods, not just fluent in the language.
+              - generic [ref=e450]:
+                - button "Enquire" [ref=e451]
+                - link "Full programme" [ref=e452] [cursor=pointer]:
+                  - /url: /programmes/linguistics
+      - generic [ref=e456]:
+        - generic [ref=e457]:
+          - generic [ref=e458]: Outcomes & evidence
+          - heading "What \"better learning\" looks like here" [level=2] [ref=e459]
+          - paragraph [ref=e460]: We do not claim transformation with adjectives. We structure impact — and we can show, at every step, how it is built and how it is measured.
+        - generic [ref=e461]:
+          - generic [ref=e462]:
+            - generic [ref=e463]: "01"
+            - heading "Confidence" [level=3] [ref=e467]
+            - paragraph [ref=e468]: Students who can see their own progress start to trust their ability to learn — the foundation everything else stands on.
+          - generic [ref=e469]:
+            - generic [ref=e470]: "02"
+            - heading "Engagement" [level=3] [ref=e474]
+            - paragraph [ref=e475]: Learning designed around real interests and visible wins becomes something students want to return to.
+          - generic [ref=e476]:
+            - generic [ref=e477]: "03"
+            - heading "Skill" [level=3] [ref=e481]
+            - paragraph [ref=e482]: Capability demonstrated through portfolios, projects, and benchmarked checkpoints — not asserted in a brochure.
+          - generic [ref=e483]:
+            - generic [ref=e484]: "04"
+            - heading "Readiness" [level=3] [ref=e488]
+            - paragraph [ref=e489]: "The destination: a student prepared for exams, conversations, applications, and whatever comes after school."
+        - generic [ref=e490]:
+          - generic [ref=e491]:
+            - generic [ref=e492]: "5"
+            - generic [ref=e493]: Vertical programmes
+            - generic [ref=e494]: One per pillar
+          - generic [ref=e495]:
+            - generic [ref=e496]: "1"
+            - generic [ref=e497]: Connected ecosystem
+            - generic [ref=e498]: Shared philosophy & evidence
+          - generic [ref=e499]:
+            - generic [ref=e500]: "4"
+            - generic [ref=e501]: Audiences served
+            - generic [ref=e502]: Schools · Parents · Students · Partners
+          - generic [ref=e503]:
+            - generic [ref=e504]: "6"
+            - generic [ref=e505]: Journey stages
+            - generic [ref=e506]: Curious to ready
+        - generic [ref=e507]:
+          - heading "How we build evidence" [level=3] [ref=e509]
+          - generic [ref=e510]:
+            - generic [ref=e512]:
+              - heading "People" [level=4] [ref=e513]
+              - paragraph [ref=e514]: Specialists with recognised qualifications lead every vertical — language educators, certified special educators, licensed counsellors, technologists, exam mentors.
+            - generic [ref=e516]:
+              - heading "Process" [level=4] [ref=e517]
+              - paragraph [ref=e518]: "Documented methods: individualised plans, level-mapped pathways, safeguarding protocols, and structured review cadences."
+            - generic [ref=e520]:
+              - heading "Evidence" [level=4] [ref=e521]
+              - paragraph [ref=e522]: Portfolios, dashboards, and checkpoints give families visible proof of progress at every review — no impressions.
+            - generic [ref=e524]:
+              - heading "Partnerships" [level=4] [ref=e525]
+              - paragraph [ref=e526]: "We work with schools and families as partners: coordinated goals, shared reporting, and one consistent view of the learner."
+            - generic [ref=e528]:
+              - heading "Outcomes" [level=4] [ref=e529]
+              - paragraph [ref=e530]: Every claim traces back to a structured outcome — what the student can now do, and what it unlocks next.
+      - generic [ref=e532]:
+        - generic [ref=e533]:
+          - generic [ref=e534]: Who are you?
+          - heading "Every journey starts from somewhere different" [level=2] [ref=e535]
+          - paragraph [ref=e536]: Three doors into the same ecosystem — pick the one that describes you, and the conversation starts on your terms.
+        - generic [ref=e537]:
+          - generic [ref=e539]:
+            - heading "For Schools" [level=3] [ref=e545]
+            - paragraph [ref=e546]: "Five specialist verticals delivered under one partnership: linguistics, inclusive education, wellbeing, AI & digital literacy, and NEET/JEE preparation — with shared reporting, safeguarding, and a single point of contact."
+            - list [ref=e547]:
+              - listitem [ref=e548]: One partner across five specialist verticals
+              - listitem [ref=e550]: Consistent reporting and progress visibility
+              - listitem [ref=e552]: Safeguarding-first policies aligned to school standards
+              - listitem [ref=e554]: "Flexible delivery: in-school, after-school, or blended"
+            - link "For Schools" [ref=e556] [cursor=pointer]:
+              - /url: /for-schools
+          - generic [ref=e560]:
+            - heading "For Parents" [level=3] [ref=e567]
+            - paragraph [ref=e568]: Understand exactly what your child is learning, how progress is measured, and where they are headed — with regular updates, honest feedback, and a support network that includes you.
+            - list [ref=e569]:
+              - listitem [ref=e570]: Regular, plain-language progress updates
+              - listitem [ref=e572]: Visible learning plans and goals
+              - listitem [ref=e574]: Guidance resources for supporting learning at home
+              - listitem [ref=e576]: Confidential wellbeing support when it is needed
+            - link "For Parents" [ref=e578] [cursor=pointer]:
+              - /url: /for-parents
+          - generic [ref=e582]:
+            - heading "For Students" [level=3] [ref=e587]
+            - paragraph [ref=e588]: Start with what you are curious about and build from there — real projects, real conversations, real progress you can see. Learning that connects to the life you want next.
+            - list [ref=e589]:
+              - listitem [ref=e590]: Programmes built around real skills, not just textbooks
+              - listitem [ref=e592]: Small groups where your voice matters
+              - listitem [ref=e594]: Portfolio projects that show what you can do
+              - listitem [ref=e596]: Mentors who actually know your name
+            - link "For Students" [ref=e598] [cursor=pointer]:
+              - /url: /for-students
+      - generic [ref=e602]:
+        - generic [ref=e603]:
+          - generic [ref=e604]: How it works
+          - heading "Five steps, one method" [level=2] [ref=e605]
+          - paragraph [ref=e606]: Every programme — whatever the vertical — runs on the same five-step method. It is why the ecosystem stays coherent as it grows.
+        - 'img "A path through five steps: understand, map, learn, measure, grow" [ref=e608]':
+          - generic [ref=e611]: "1"
+          - generic [ref=e614]: "2"
+          - generic [ref=e617]: "3"
+          - generic [ref=e620]: "4"
+          - generic [ref=e623]: "5"
+        - generic [ref=e626]:
+          - generic [ref=e628]:
+            - text: "01"
+            - heading "Understand" [level=3] [ref=e629]
+            - paragraph [ref=e630]: We learn about the student — their level, needs, and context — before prescribing anything.
+          - generic [ref=e632]:
+            - text: "02"
+            - heading "Map" [level=3] [ref=e633]
+            - paragraph [ref=e634]: We identify the right pathway and set a plan with clear milestones, agreed with the family.
+          - generic [ref=e636]:
+            - text: "03"
+            - heading "Learn" [level=3] [ref=e637]
+            - paragraph [ref=e638]: We deliver the programme through structured sessions led by specialists in that vertical.
+          - generic [ref=e640]:
+            - text: "04"
+            - heading "Measure" [level=3] [ref=e641]
+            - paragraph [ref=e642]: We track progress with evidence — checkpoints, portfolios, dashboards — not impressions.
+          - generic [ref=e644]:
+            - text: "05"
+            - heading "Grow" [level=3] [ref=e645]
+            - paragraph [ref=e646]: "We adjust and continue: targets raise, methods adapt, and the journey keeps compounding."
+        - link "Read the full methodology" [ref=e648] [cursor=pointer]:
+          - /url: /methodology
+      - generic [ref=e652]:
+        - generic [ref=e653]:
+          - generic [ref=e654]: Voices
+          - heading "What families say" [level=2] [ref=e655]
+          - paragraph [ref=e656]: Real experiences from students and parents across the ecosystem.
+        - generic [ref=e657]:
+          - figure "P Parent of a Grade 9 student Family perspective · Linguistics programme Linguistics" [ref=e660]:
+            - blockquote [ref=e664]: “For the first time, we could actually see what our daughter was learning — the reports showed her progress in plain language, and the plan changed when she did. That partnership is what made the difference for us.”
+            - generic [ref=e665]:
+              - generic [ref=e666]: P
+              - generic [ref=e667]:
+                - generic [ref=e668]: Parent of a Grade 9 student
+                - generic [ref=e669]: Family perspective · Linguistics programme
+              - link "Linguistics" [ref=e670] [cursor=pointer]:
+                - /url: /programmes/linguistics
+          - generic [ref=e671]:
+            - figure "N NEET aspirant Student perspective · NEET & JEE Preparation" [ref=e673]:
+              - blockquote [ref=e674]: “The weekly tests felt hard at first. But after a few months I stopped being scared of mock papers — I knew my weak chapters, I knew what to practise, and the exam stopped feeling like a gamble.”
+              - generic [ref=e675]:
+                - generic [ref=e676]: "N"
+                - generic [ref=e677]:
+                  - generic [ref=e678]: NEET aspirant
+                  - generic [ref=e679]: Student perspective · NEET & JEE Preparation
+            - figure "P Parent of a Grade 6 student Family perspective · Inclusive Education" [ref=e681]:
+              - blockquote [ref=e682]: “What convinced us was the individualised plan. It named specific goals, it had review dates, and every check-in showed evidence of progress. Our son started asking for his sessions — that never happened before.”
+              - generic [ref=e683]:
+                - generic [ref=e684]: P
+                - generic [ref=e685]:
+                  - generic [ref=e686]: Parent of a Grade 6 student
+                  - generic [ref=e687]: Family perspective · Inclusive Education
+      - generic [ref=e689]:
+        - generic [ref=e690]:
+          - generic [ref=e691]: Insights
+          - heading "Ideas from inside the ecosystem" [level=2] [ref=e692]
+          - paragraph [ref=e693]: Practical thinking on learning science, wellbeing, AI literacy, and exam readiness — written for families and educators.
+        - generic [ref=e694]:
+          - link "Learning science 6 min read What Actually Makes Practice Stick Not all practice is equal. The difference between repetition that builds skill and repetition that wastes time comes down to a few learnable design choices. Aug 18, 2026" [ref=e696] [cursor=pointer]:
+            - /url: /insights/what-actually-makes-practice-stick
+            - generic [ref=e697]:
+              - generic [ref=e698]: Learning science
+              - generic [ref=e699]: 6 min read
+            - heading "What Actually Makes Practice Stick" [level=3] [ref=e703]
+            - paragraph [ref=e704]: Not all practice is equal. The difference between repetition that builds skill and repetition that wastes time comes down to a few learnable design choices.
+            - generic [ref=e705]: Aug 18, 2026
+          - 'link "AI literacy 7 min read AI in the Classroom: Teaching Judgement, Not Just Usage The question is no longer whether students will use AI — they already do. It is whether they will use it with understanding and judgement. Aug 5, 2026" [ref=e710] [cursor=pointer]':
+            - /url: /insights/ai-in-the-classroom-teaching-judgement
+            - generic [ref=e711]:
+              - generic [ref=e712]: AI literacy
+              - generic [ref=e713]: 7 min read
+            - 'heading "AI in the Classroom: Teaching Judgement, Not Just Usage" [level=3] [ref=e717]'
+            - paragraph [ref=e718]: The question is no longer whether students will use AI — they already do. It is whether they will use it with understanding and judgement.
+            - generic [ref=e719]: Aug 5, 2026
+          - link "Student wellbeing 5 min read Exam Season Without Burnout Steadiness is a performance strategy. The students who handle exam season best are rarely the ones who push hardest — they are the ones who plan, recover, and adjust. Jul 22, 2026" [ref=e724] [cursor=pointer]:
+            - /url: /insights/exam-season-without-burnout
+            - generic [ref=e725]:
+              - generic [ref=e726]: Student wellbeing
+              - generic [ref=e727]: 5 min read
+            - heading "Exam Season Without Burnout" [level=3] [ref=e731]
+            - paragraph [ref=e732]: Steadiness is a performance strategy. The students who handle exam season best are rarely the ones who push hardest — they are the ones who plan, recover, and adjust.
+            - generic [ref=e733]: Jul 22, 2026
+        - link "Browse all insights" [ref=e738] [cursor=pointer]:
+          - /url: /insights
+      - generic [ref=e744]:
+        - generic [ref=e745]: Begin here
+        - heading "The next step is a conversation." [level=2] [ref=e746]
+        - paragraph [ref=e747]: Whether you are a school leader exploring partnerships, a parent evaluating options, or a student ready to start — tell us where you are, and we will help you find the path that fits.
+        - generic [ref=e748]:
+          - button "Start a Conversation" [ref=e749] [cursor=pointer]
+          - link "Browse Programmes" [ref=e752] [cursor=pointer]:
+            - /url: /programmes
+        - paragraph [ref=e753]: No commitment — just a conversation about where a learner could go.
+    - contentinfo [ref=e754]:
+      - generic [ref=e756]:
+        - generic [ref=e757]:
+          - paragraph [ref=e758]: Educraft
+          - heading "Build learning journeys that last." [level=2] [ref=e759]
+          - paragraph [ref=e760]: Five paths. One connected ecosystem. Whatever a learner needs next, there is a route that starts here.
+          - generic [ref=e761]:
+            - link "Start a Conversation" [ref=e762] [cursor=pointer]:
+              - /url: /contact
+            - link "Explore Programmes" [ref=e763] [cursor=pointer]:
+              - /url: /programmes
+        - generic [ref=e764]:
+          - generic [ref=e765]:
+            - link "Educraft Home" [ref=e766] [cursor=pointer]:
+              - /url: /
+              - img "Educraft" [ref=e767]
+            - paragraph [ref=e768]: A global digital education platform with five interconnected learning verticals — linguistics, inclusive education, wellbeing, AI & digital technologies, and NEET/JEE preparation.
+            - list [ref=e769]:
+              - listitem [ref=e770]: hello@educraft.com
+              - listitem [ref=e774]: +91 80 4567 8900
+              - listitem [ref=e777]: Bangalore, India
+          - navigation "Programmes" [ref=e781]:
+            - heading "Programmes" [level=3] [ref=e782]
+            - list [ref=e783]:
+              - listitem [ref=e784]:
+                - link "Linguistics" [ref=e785] [cursor=pointer]:
+                  - /url: /programmes/linguistics
+              - listitem [ref=e786]:
+                - link "Inclusive Education" [ref=e787] [cursor=pointer]:
+                  - /url: /programmes/inclusive-education
+              - listitem [ref=e788]:
+                - link "Wellbeing & Counselling" [ref=e789] [cursor=pointer]:
+                  - /url: /programmes/wellbeing-counseling
+              - listitem [ref=e790]:
+                - link "AI & Digital Technologies" [ref=e791] [cursor=pointer]:
+                  - /url: /programmes/ai-digital-tech
+              - listitem [ref=e792]:
+                - link "NEET & JEE Preparation" [ref=e793] [cursor=pointer]:
+                  - /url: /programmes/neet-jee
+          - navigation "Audiences and company" [ref=e794]:
+            - heading "Audiences" [level=3] [ref=e795]
+            - list [ref=e796]:
+              - listitem [ref=e797]:
+                - link "For Schools" [ref=e798] [cursor=pointer]:
+                  - /url: /for-schools
+              - listitem [ref=e799]:
+                - link "For Parents" [ref=e800] [cursor=pointer]:
+                  - /url: /for-parents
+              - listitem [ref=e801]:
+                - link "For Students" [ref=e802] [cursor=pointer]:
+                  - /url: /for-students
+            - heading "Company" [level=3] [ref=e803]
+            - list [ref=e804]:
+              - listitem [ref=e805]:
+                - link "About" [ref=e806] [cursor=pointer]:
+                  - /url: /about
+              - listitem [ref=e807]:
+                - link "Methodology" [ref=e808] [cursor=pointer]:
+                  - /url: /methodology
+              - listitem [ref=e809]:
+                - link "Impact" [ref=e810] [cursor=pointer]:
+                  - /url: /impact
+              - listitem [ref=e811]:
+                - link "Insights" [ref=e812] [cursor=pointer]:
+                  - /url: /insights
+              - listitem [ref=e813]:
+                - link "Careers" [ref=e814] [cursor=pointer]:
+                  - /url: /careers
+              - listitem [ref=e815]:
+                - link "Partnerships" [ref=e816] [cursor=pointer]:
+                  - /url: /partnerships
+              - listitem [ref=e817]:
+                - link "Contact" [ref=e818] [cursor=pointer]:
+                  - /url: /contact
+          - navigation "Legal" [ref=e819]:
+            - heading "Legal" [level=3] [ref=e820]
+            - list [ref=e821]:
+              - listitem [ref=e822]:
+                - link "Privacy Policy" [ref=e823] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=e824]:
+                - link "Terms of Service" [ref=e825] [cursor=pointer]:
+                  - /url: /terms
+        - generic [ref=e826]:
+          - paragraph [ref=e827]: © 2026 Educraft. All rights reserved.
+          - generic [ref=e828]:
+            - link "Sign in" [ref=e829] [cursor=pointer]:
+              - /url: /dashboard
+            - paragraph [ref=e830]: One ecosystem. Many paths.
+    - button "Enquire Now" [ref=e831]
+  - alert [ref=e834]

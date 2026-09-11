@@ -45,7 +45,7 @@ export default function TestimonialsSection() {
                     &ldquo;{primary.quote}&rdquo;
                   </blockquote>
                   <figcaption className='mt-8 flex items-center gap-4'>
-                    <div className='w-12 h-12 rounded-full bg-ec-sky dark:bg-ec-canvas-deep flex items-center justify-center font-[family-name:var(--font-sora)] font-bold text-ec-indigo dark:text-white'>
+                    <div className='w-12 h-12 rounded-full bg-ec-sky dark:bg-ec-canvas-deep flex items-center justify-center font-[family-name:var(--font-clash)] font-bold text-ec-indigo dark:text-white'>
                       {primary.name.charAt(0)}
                     </div>
                     <div>
@@ -83,7 +83,7 @@ export default function TestimonialsSection() {
                       &ldquo;{t.quote}&rdquo;
                     </blockquote>
                     <figcaption className='mt-5 flex items-center gap-3'>
-                      <div className='w-9 h-9 rounded-full bg-ec-sky dark:bg-ec-canvas-deep flex items-center justify-center font-[family-name:var(--font-sora)] font-bold text-sm text-ec-indigo dark:text-white'>
+                      <div className='w-9 h-9 rounded-full bg-ec-sky dark:bg-ec-canvas-deep flex items-center justify-center font-[family-name:var(--font-clash)] font-bold text-sm text-ec-indigo dark:text-white'>
                         {t.name.charAt(0)}
                       </div>
                       <div>

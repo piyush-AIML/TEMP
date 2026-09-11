@@ -6,7 +6,7 @@ Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS v4 
 
 ## 📚 Documentation
 
-**[`EDUCRAFT_PRODUCTION.md`](EDUCRAFT_PRODUCTION.md) is the master document** — current production state, architecture, conventions, design system, fixed-bug ledger, pending inputs, the background roadmap, and the next implementation project (Student & Professor Dashboard). Read it first; it supersedes all other documentation and is kept in sync with the code. There are no other design/plan documents in this repo.
+**[`EDUCRAFT_MASTER_SYSTEM.md`](EDUCRAFT_MASTER_SYSTEM.md) is the master document** (the constitution) — product identity, technology stack, architecture laws, engineering constraints, and the workflow engine every session runs. **[`EDUCRAFT_SUBSTATE.md`](EDUCRAFT_SUBSTATE.md) is the live work queue** — every actionable item with its state, execution specs, dependency waves, and session ledger. Read the master first; the owner's live instruction outranks both. Superseded documentation is archived in [`docs-archive/`](docs-archive/).
 
 ## 🚀 Getting Started
 

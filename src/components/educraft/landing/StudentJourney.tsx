@@ -48,7 +48,7 @@ export default function StudentJourney() {
                 The student journey
               </span>
               <div className='flex items-center gap-5 mb-4'>
-                <span className='font-[family-name:var(--font-sora)] font-bold text-7xl text-ec-teal/25 dark:text-ec-teal/30'>
+                <span className='font-[family-name:var(--font-clash)] font-bold text-7xl text-ec-teal/25 dark:text-ec-teal/30'>
                   {stage.stage}
                 </span>
                 <StageIcon className='w-10 h-10 text-ec-teal' aria-hidden='true' />

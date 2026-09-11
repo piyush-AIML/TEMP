@@ -16,28 +16,22 @@ interface SystemProps {
   colorClassName?: string;
 }
 
-/** System A — very subtle gradient mesh wash. */
+/**
+ * System A — subtle gradient mesh wash.
+ * v2 (FC-05): two slow transform-only radial layers drift on their own cycles
+ * (GPU-safe, no layout reads). Layer 1 follows `colorClassName` via
+ * currentColor; layer 2 is the teal accent through the theme token. Reduced
+ * motion freezes both (global animation kill). API unchanged.
+ */
 export function GradientMesh({ className = '', colorClassName = 'text-ec-indigo' }: SystemProps) {
   return (
-    <svg
-      className={`absolute inset-0 w-full h-full pointer-events-none ${colorClassName} ${className}`}
-      viewBox='0 0 1200 800'
-      fill='none'
+    <div
       aria-hidden='true'
+      className={`absolute inset-0 overflow-hidden pointer-events-none ${colorClassName} ${className}`}
     >
-      <defs>
-        <radialGradient id='mesh-a' cx='30%' cy='20%' r='60%'>
-          <stop offset='0%' stopColor='currentColor' stopOpacity='0.06' />
-          <stop offset='100%' stopColor='currentColor' stopOpacity='0' />
-        </radialGradient>
-        <radialGradient id='mesh-b' cx='75%' cy='70%' r='55%'>
-          <stop offset='0%' stopColor='#00B3B8' stopOpacity='0.05' />
-          <stop offset='100%' stopColor='#00B3B8' stopOpacity='0' />
-        </radialGradient>
-      </defs>
-      <rect width='1200' height='800' fill='url(#mesh-a)' />
-      <rect width='1200' height='800' fill='url(#mesh-b)' />
-    </svg>
+      <div className='gradient-mesh-layer gradient-mesh-layer-a' />
+      <div className='gradient-mesh-layer gradient-mesh-layer-b' />
+    </div>
   );
 }
 

@@ -24,6 +24,12 @@ export const shadows = {
   elevated: '0 16px 48px rgba(14, 19, 48, 0.14)',
   gold: '0 4px 20px rgba(244, 185, 66, 0.3)',
   teal: '0 4px 20px rgba(0, 179, 184, 0.25)',
+  // v4 layered elevation (FC-03): key = tight contact edge, ambient = broad
+  // depth, layered = both composed. Per-theme tinting lives in globals.css
+  // (--ec-shadow-*) — these are the light-theme reference values.
+  key: '0 2px 6px rgba(10, 14, 40, 0.07)',
+  ambient: '0 24px 60px -16px rgba(10, 14, 40, 0.18)',
+  layered: '0 2px 6px rgba(10, 14, 40, 0.06), 0 24px 60px -16px rgba(10, 14, 40, 0.16)',
 } as const;
 
 /** Z-order ladder — one canonical scale for the whole app. */

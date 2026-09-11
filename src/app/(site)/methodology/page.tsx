@@ -35,7 +35,7 @@ export default function MethodologyPage() {
                 delay={i * 90}
                 className='grid grid-cols-[4rem_1fr] gap-6 py-8 border-b border-ec-border last:border-b-0'
               >
-                <span className='w-12 h-12 rounded-2xl bg-ec-teal text-white flex items-center justify-center font-[family-name:var(--font-sora)] font-bold text-xl'>
+                <span className='w-12 h-12 rounded-2xl bg-ec-teal text-white flex items-center justify-center font-[family-name:var(--font-clash)] font-bold text-xl'>
                   {i + 1}
                 </span>
                 <div>

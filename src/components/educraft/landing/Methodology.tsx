@@ -69,7 +69,7 @@ export default function MethodologySection() {
                     x={NODE_X[i]}
                     y='76'
                     textAnchor='middle'
-                    fontFamily='var(--font-sora)'
+                    fontFamily='var(--font-clash)'
                     fontWeight='700'
                     fontSize='16'
                     fill={lit ? '#ffffff' : 'var(--ec-teal)'}

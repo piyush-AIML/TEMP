@@ -1,7 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+/* FC-06 (gate G1 — Option B): dark: variants also resolve inside .dark-anchor
+   cinematic zones — the flagship act is theme-independent dark, so its subtree
+   behaves as an embedded dark island in BOTH themes. */
+@custom-variant dark (&:is(.dark *, .dark-anchor *));
 
 /* ---------------------------------------------------------------------------
    Theme tokens (Tailwind 4). Runtime CSS vars flip under .dark for an
@@ -26,9 +29,10 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
 
-  --font-sans: var(--font-sora);
-  --font-display: var(--font-sora);
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-clash);
   --font-body: var(--font-manrope);
+  --font-serif: var(--font-serif-accent);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -74,6 +78,15 @@
   --color-ec-warning: var(--ec-warning);
   --color-ec-error: var(--ec-error);
   --color-ec-info: var(--ec-info);
+
+  /* v4 premium surfaces (FC-03) — hairline rules, dark-zone glass, layered shadows */
+  --color-ec-hairline: var(--ec-hairline);
+  --color-ec-hairline-strong: var(--ec-hairline-strong);
+  --color-ec-glass: var(--ec-glass-bg);
+  --color-ec-glass-strong: var(--ec-glass-bg-strong);
+  --shadow-ec-key: var(--ec-shadow-key);
+  --shadow-ec-ambient: var(--ec-shadow-ambient);
+  --shadow-ec-layered: var(--ec-shadow-layered);
 
   /* Motion easings (plan §26) — generates ease-out-soft etc. */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -123,6 +136,20 @@
   --ec-error: #dc2626;
   --ec-info: #2563eb;
 
+  /* v4 premium surfaces (FC-03) */
+  --ec-hairline: rgba(18, 23, 46, 0.1);
+  --ec-hairline-strong: rgba(18, 23, 46, 0.18);
+  --ec-shadow-key: 0 2px 6px rgba(10, 14, 40, 0.07);
+  --ec-shadow-ambient: 0 24px 60px -16px rgba(10, 14, 40, 0.18);
+  --ec-shadow-layered: 0 2px 6px rgba(10, 14, 40, 0.06),
+    0 24px 60px -16px rgba(10, 14, 40, 0.16);
+  /* Dark-surface glass (G1 anchor zones) — theme-independent by design;
+     these sit on cinematic dark canvases in both themes. */
+  --ec-glass-bg: rgba(255, 255, 255, 0.06);
+  --ec-glass-bg-strong: rgba(255, 255, 255, 0.09);
+  --ec-glass-border: rgba(255, 255, 255, 0.14);
+  --ec-glass-highlight: rgba(255, 255, 255, 0.08);
+
   --background: #ffffff;
   --foreground: #12172e;
   --card: #ffffff;
@@ -144,9 +171,14 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Dark — cinematic, atmospheric, deeper indigo (plan §44)
+   Dark — cinematic, atmospheric, deeper indigo (plan §44).
+   .dark-anchor (FC-06, gate G1 — Option B) shares this night palette verbatim:
+   the cinematic anchor zones are theme-independent dark islands resolving these
+   tokens in both themes (in real dark mode the re-declaration on the zone
+   element is value-identical — harmless).
 --------------------------------------------------------------------------- */
-.dark {
+.dark,
+.dark-anchor {
   color-scheme: dark;
 
   --ec-indigo: #3b4896;
@@ -183,6 +215,14 @@
   --ec-warning: #fbbf24;
   --ec-error: #f87171;
   --ec-info: #60a5fa;
+
+  /* v4 premium surfaces (FC-03) — darker, deeper shadows on the indigo night */
+  --ec-hairline: rgba(232, 236, 251, 0.12);
+  --ec-hairline-strong: rgba(232, 236, 251, 0.22);
+  --ec-shadow-key: 0 2px 6px rgba(0, 0, 0, 0.32);
+  --ec-shadow-ambient: 0 24px 60px -16px rgba(0, 0, 0, 0.55);
+  --ec-shadow-layered: 0 2px 6px rgba(0, 0, 0, 0.28),
+    0 24px 60px -16px rgba(0, 0, 0, 0.5);
 
   --background: #0b0f1e;
   --foreground: #e8ecfb;
@@ -256,50 +296,58 @@
   }
 
   /* Type scale (plan §6.2) — mirrors src/design/typography.ts */
+  /* v4 +1 notch (FC-03): the hero-scale display step; face swap lands in FC-04 */
+  .type-display-2xl {
+    font-family: var(--font-clash);
+    font-weight: 700;
+    font-size: clamp(3.75rem, 7.5vw + 1rem, 7.5rem);
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+  }
   .type-display-xl {
-    font-family: var(--font-sora);
+    font-family: var(--font-clash);
     font-weight: 700;
     font-size: clamp(3rem, 6.5vw + 0.75rem, 5.25rem);
     line-height: 0.95;
     letter-spacing: -0.03em;
   }
   .type-display-l {
-    font-family: var(--font-sora);
+    font-family: var(--font-clash);
     font-weight: 700;
     font-size: clamp(2.5rem, 5vw + 1rem, 4.25rem);
     line-height: 1;
     letter-spacing: -0.025em;
   }
   .type-display-m {
-    font-family: var(--font-sora);
+    font-family: var(--font-clash);
     font-weight: 700;
     font-size: clamp(2.125rem, 4vw + 0.75rem, 3.25rem);
     line-height: 1.04;
     letter-spacing: -0.02em;
   }
   .type-heading-xl {
-    font-family: var(--font-sora);
+    font-family: var(--font-clash);
     font-weight: 700;
     font-size: clamp(2rem, 3.5vw + 0.5rem, 2.75rem);
     line-height: 1.08;
     letter-spacing: -0.015em;
   }
   .type-heading-l {
-    font-family: var(--font-sora);
+    font-family: var(--font-clash);
     font-weight: 700;
     font-size: clamp(1.75rem, 2.75vw + 0.5rem, 2.25rem);
     line-height: 1.12;
     letter-spacing: -0.01em;
   }
   .type-heading-m {
-    font-family: var(--font-sora);
+    font-family: var(--font-clash);
     font-weight: 700;
     font-size: clamp(1.5rem, 2vw + 0.5rem, 1.75rem);
     line-height: 1.18;
     letter-spacing: -0.005em;
   }
   .type-heading-s {
-    font-family: var(--font-sora);
+    font-family: var(--font-clash);
     font-weight: 700;
     font-size: clamp(1.25rem, 1.5vw + 0.5rem, 1.375rem);
     line-height: 1.22;
@@ -346,6 +394,84 @@
     background: var(--card);
     border: 1px solid var(--ec-border);
     border-radius: var(--radius-xl);
+  }
+
+  /* v4 premium surfaces (FC-03) — dark-zone glass panel (G1 anchor zones).
+     Theme-independent by design; hairline top edge via the inset highlight. */
+  .glass-surface {
+    background: var(--ec-glass-bg);
+    border: 1px solid var(--ec-glass-border);
+    box-shadow: inset 0 1px 0 0 var(--ec-glass-highlight);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+  .glass-surface-strong {
+    background: var(--ec-glass-bg-strong);
+  }
+
+  /* Cinematic anchor zone wrapper (FC-06, gate G1 — Option B) — flags a
+     flagship section as theme-independent dark: night color-scheme, canvas
+     surface, ink text default. The palette arrives from the comma-grouped
+     .dark/.dark-anchor token block above; no .dark ancestor required, and
+     dark: variants fire inside (see the custom-variant at the top). */
+  .dark-anchor {
+    color-scheme: dark;
+    background: var(--ec-canvas);
+    color: var(--ec-ink);
+  }
+
+  /* v4 atmosphere (FC-05) */
+  /* Fixed film grain — overlay rung: above nav, below modals + cursor */
+  .grain-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    pointer-events: none;
+    opacity: 0.04;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23grain)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+  .dark .grain-overlay {
+    opacity: 0.05;
+  }
+
+  /* GradientMesh v2 layers (DecorativeSystems System A) */
+  .gradient-mesh-layer {
+    position: absolute;
+    inset: -25%;
+    will-change: transform;
+  }
+  .gradient-mesh-layer-a {
+    background: radial-gradient(closest-side at 32% 22%, currentColor, transparent 68%);
+    opacity: 0.11;
+    animation: gradient-drift-a 22s ease-in-out infinite alternate;
+  }
+  .gradient-mesh-layer-b {
+    background: radial-gradient(
+      closest-side at 74% 68%,
+      color-mix(in srgb, var(--ec-teal) 60%, transparent),
+      transparent 66%
+    );
+    opacity: 0.1;
+    animation: gradient-drift-b 28s ease-in-out infinite alternate;
+  }
+
+  /* Shared light↔dark boundary wash (SectionWash) */
+  .section-wash {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: clamp(6rem, 12vh, 12rem);
+    pointer-events: none;
+  }
+  .section-wash-top {
+    top: 0;
+    background: linear-gradient(to bottom, var(--background), transparent);
+  }
+  .section-wash-bottom {
+    bottom: 0;
+    background: linear-gradient(to top, var(--background), transparent);
   }
 }
 
@@ -416,6 +542,24 @@
   }
   50% {
     opacity: 1;
+  }
+}
+
+/* GradientMesh v2 drift (FC-05) — transform-only, alternate slow cycles */
+@keyframes gradient-drift-a {
+  from {
+    transform: translate3d(-3%, -2%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3%, 4%, 0) scale(1.08);
+  }
+}
+@keyframes gradient-drift-b {
+  from {
+    transform: translate3d(2%, 3%, 0) scale(1.06);
+  }
+  to {
+    transform: translate3d(-3%, -3%, 0) scale(1);
   }
 }
 

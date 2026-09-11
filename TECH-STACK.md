@@ -1,6 +1,6 @@
 # Educraft — Tech Stack
 
-One Next.js codebase: a public marketing site (`(site)` route group) + an authenticated role-based dashboard (`/dashboard` for students & professors). Versions are as installed (2026-09-05) — see `package.json` for ranges and `EDUCRAFT_PRODUCTION.md` for the full architecture.
+One Next.js codebase: a public marketing site (`(site)` route group) + an authenticated role-based dashboard (`/dashboard` for students & professors). Versions are as installed (2026-09-05) — see `package.json` for ranges and `EDUCRAFT_MASTER_SYSTEM.md` (§3–§8) for the full architecture.
 
 ## Core framework
 
@@ -68,7 +68,7 @@ One Next.js codebase: a public marketing site (`(site)` route group) + an authen
 
 ## Key environment variables
 
-`NEXT_PUBLIC_SITE_URL` · `ENQUIRY_WEBHOOK_URL` (optional) · `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` · `DATABASE_URL` · `STORAGE_PROVIDER` + `S3_REGION` / `S3_BUCKET` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` — full docs in `.env.example` and `EDUCRAFT_PRODUCTION.md` §21 / §24.9.
+`NEXT_PUBLIC_SITE_URL` · `ENQUIRY_WEBHOOK_URL` (optional) · `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` · `DATABASE_URL` · `STORAGE_PROVIDER` + `S3_REGION` / `S3_BUCKET` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` — full docs in `.env.example` and `EDUCRAFT_MASTER_SYSTEM.md` §8.
 
 ## Tooling
 

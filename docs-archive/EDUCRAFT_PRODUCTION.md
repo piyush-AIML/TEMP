@@ -2,11 +2,18 @@
 
 ## 0. Document Authority
 
-- **Authority:** Verified against the live repository on 2026-09-04 — source tree (§5) from a direct file listing, git remote `piyush-AIML/TEMP`, route set unchanged since the 2026-08-30 build — and re-verified by the full loop on 2026-09-04: `npm run lint` ✓ · `npx tsc --noEmit` ✓ · `npm run build` ✓ (29 routes, all static except `/api/enquiry`). The original body was consolidated from `prod.md` and cross-checked against the archived V2 plan and V1 record.
-- **Purpose:** The **master document** for Educraft — current production state, conventions, blockers, background roadmap, and the next implementation project (Dashboard, §24). A fresh session should be able to pick up the entire system from this file alone, without opening any other documentation.
-- **Supersedes and replaces (deleted 2026-09-04, content absorbed into this file):** `prod.md`, `README.md` (kept as a short GitHub pointer only), `Educraft_V1_Previous_State.md` (historical facts absorbed into §23), `Educraft_V2_Experience_Web_Design_Implementation_Plan.md` (implementation complete — archived; do not re-read or plan from it), and `Educraft_V3_Next_Version_Planner.md` (absorbed into §25). The Dashboard implementation plan lives on as its own file — `Dashboard-Implementation-Plan.md` (kept by user request; this doc's §24 is the synced, master-side reference for it).
-- **What is NOT source of truth here:** The V2 plan was a *design proposal*. Large parts of it were never built or were built differently than proposed — notably `ProgrammeScene` and `CTAAtmosphere` (planned WebGL scenes; the shipped system uses SVG for both, see §10), GSAP/ScrollTrigger, Lenis smooth-scroll, analytics, error monitoring, and the entire automated test suite. Nothing in the V2 plan should be treated as implemented unless it is explicitly confirmed in this document. §25 roadmap items are intent only — never current state.
-- **Open verification items (`VERIFY`):** only the business contact details in §12 and §22 remain (a stakeholder input, not a code matter). Repository slug, file tree, and route inventory are confirmed from the live repo.
+- **Authority:** Verified against the live repository on 2026-09-04 — source tree (§5) from a direct file listing, git remote `piyush-AIML/TEMP`, route set unchanged since the 2026-08-30 build — and re-verified by the full loop on 2026-09-04/2026-09-05 across every dashboard stage: `npm run lint` ✓ · `npx tsc --noEmit` ✓ · `npm run build` ✓ (29 marketing routes static except `/api/enquiry`; dashboard routes dynamic). The original body was consolidated from `prod.md` and cross-checked against the archived V2 plan and V1 record.
+- **Purpose:** The **master document** for Educraft — current production state, conventions, blockers, background roadmap, and the two implementation projects (Dashboard, §24; Marketing Site UI-UX Upgrade, §28). A fresh session should be able to pick up the entire system from this file alone, without opening any other documentation.
+- **Two-document system (introduced 2026-09-07):** this file is the *global master* — everything permanent (code state, architecture, conventions, ledgers, decision records, project specs). [`PROJECT_STATE.md`](PROJECT_STATE.md) is the *sub-state file* — the volatile layer: live snapshot (commit/deploy/accounts/env), per-track status, open owner checks, session checklist. **Governance R1 (owner-set 2026-09-07) — master-first:** whenever new information is introduced — a fact, a decision, shipped work, a correction, or a rule change — it is written into **this file first** (at its proper section); sub-state files are then created/updated/synced from it. This file must never lag the repo (the stale-commit row that §2 carried before 2026-09-07 was exactly a master-lag failure).
+- **Supersedes and replaces (content absorbed, originals deleted):** `prod.md`, `README.md` (kept as a short GitHub pointer only), `Educraft_V1_Previous_State.md` (facts → §23), `Educraft_V2_Experience_Web_Design_Implementation_Plan.md` (archived; do not re-read or plan from it), `Educraft_V3_Next_Version_Planner.md` (→ §25) — all 2026-09-04 — and, 2026-09-07: `AGENT_CONTEXT.md` (verified internals → §5.1/§6/§12; rules → §18; decisions & recipes → §27), `ARCHITECTURE_REVIEW.md` (→ §26 hygiene ledger, statused), `Dashboard-Implementation-Plan.md` + `Dashboard-Stages-2-5-Implementation-Plan.md` (→ §24; Stage 5 execution detail → §24.10), and the three marketing-upgrade docs `UI-UX UPGRADE.md`, `landing_page_redesign_agent_prompt.md`, `site_sections_ui_upgrade_agent_prompt.md` (requirements distilled, reality-annotated and re-grounded → §28). `README.md` and `TECH-STACK.md` remain as short pointers (untouched).
+- **What is NOT source of truth here:** The V2 plan was a *design proposal*. Large parts of it were never built or were built differently than proposed — notably `ProgrammeScene` and `CTAAtmosphere` (planned WebGL scenes; the shipped system uses SVG for both, see §10), GSAP/ScrollTrigger, Lenis smooth-scroll, analytics, error monitoring, and the entire automated test suite. Nothing in the V2 plan should be treated as implemented unless it is explicitly confirmed in this document. §25 roadmap items and §28 upgrade requirements are intent only — never current state.
+- **Open verification items (`VERIFY`):** only the business contact details in §12 and §22 remain (a stakeholder input, not a code matter). Repository slug, file tree, and route inventory are confirmed from the live repo. Commit/deploy/account state: see `PROJECT_STATE.md` §1.
+- **Document governance rules (owner-set 2026-09-07):**
+  - **R1 — Master-first updates.** New information lands in this file first; sub-state files sync from it. (Full statement in the two-document-system bullet above.)
+  - **R2 — Sub-state files may multiply.** When a topic outgrows `PROJECT_STATE.md` (a third project track, a long-running QA campaign, a new workstream), create additional sub-state files — each must (a) open with a pointer to this file and its purpose, (b) cross-link its sibling sub-state files, and (c) be registered in this section. All sub-state files revolve around this master and defer to it on any conflict.
+  - **R3 — Rule-change protocol.** When new information would change a core rule — this document's conventions (§18), its decisions (§27), a project spec, the working agreements (§20), or the doc governance itself — do **not** reject it outright. Raise it to the owner for an opinion (with a neutral statement of the proposed change and any concerns), and if the owner agrees, amend the rules to the new information and record the change here with its date.
+  - **Living-docs registry:** `EDUCRAFT_PRODUCTION.md` (this master) · `PROJECT_STATE.md` (sub-state, created 2026-09-07) · `README.md` + `TECH-STACK.md` (pointers, untouched). New sub-state files register here (R2c).
+  - **Planned supersession (owner announcement, 2026-09-07):** the owner will enforce a **new knowledge-management system with a fully new architecture**. When its material/rules are provided: adopt them as authoritative, change any older rules (incl. this document system's R1–R3) that conflict, and update assistant memory to obey the new system. Existing-project information is ported into the new system **only where it mismatches** the new system's content — no wholesale copying; reconciliation, not migration. Ambiguous conflict points are arbitrated by the owner before changes are applied.
 
 ---
 
@@ -41,11 +48,11 @@
 
 | | |
 |---|---|
-| **Version** | `Prod.ver-0.1.0` (V2 marketing baseline) — 0.1.0 was the theme-aware brand-lockup swap (`public/logo.png` / `logo-dark.png` replacing the GraduationCap+wordmark lockup and `public/logo.svg`, plus Navbar, Footer, and `layout.tsx` icon updates). No marketing route changes since 0.0.2. Dashboard work is committed by the owner under `Prod-version:0.1.x` tags — latest **`6f91f33` `Prod-version:0.1.2 -- Course Allocation`** (2026-09-05: the course-setup slice — the §24.6 `courses.ts` spec, §24.8; preceded by `7276481` `-- Minor UI changes`, the StatCard follow-up; both pushed live). |
+| **Version** | `Prod.ver-0.1.0` was the theme-aware brand-lockup swap (`public/logo.png` / `logo-dark.png` replacing the GraduationCap+wordmark lockup and `public/logo.svg`, plus Navbar, Footer, and `layout.tsx` icon updates); no marketing route changes since 0.0.2. Dashboard work is committed by the owner under `Prod-version:0.1.x` tags — latest **`29c96a6` `Prod-version:0.1.3 -- Course Allocation & Student Enrollment Rework`** (2026-09-05: the §24.8 course-setup rework — enrollment notifications, normalized emails, hardened course domain, full admin course management; preceded by `6f91f33` `0.1.2 -- Course Allocation` and `7276481` `-- Minor UI changes`, all pushed live). **Live commit/deploy/account state lives in [`PROJECT_STATE.md`](PROJECT_STATE.md) §1 — update it there, not here.** |
 | **Last verified** | 2026-09-05 (Stage 4 loop) — `npm run lint` ✓ · `npx tsc --noEmit` ✓ · `npm run build` ✓ |
 | **Route count** | 29 routes total — 16 marketing pages, 5 programme detail pages included in that count, plus system routes; all statically generated except `POST /api/enquiry` |
 | **Origin** | V1 was a single-page landing prototype (see §23). V2 fully implemented the 77-section design plan (now deleted — content absorbed; treat as archived). Deferred V2 items live in the background roadmap, §25. |
-| **Next project** | Student & Professor **Dashboard** — Stages 0–1 **shipped 2026-09-04**, Stage 2 (Professor Core) **shipped 2026-09-05**, Stage 3 (Meetings & Planner) **shipped 2026-09-05**, Stage 4 (Polish) **shipped 2026-09-05**, course-setup slice **shipped 2026-09-05**; **Stage 5 (QA & Deploy) is next** (§24) |
+| **Next projects** | **Track A — Dashboard Stage 5 (QA & Deploy): next** — Stages 0–4 + the course-setup rework shipped (commit `29c96a6` / 0.1.3; per-stage records §24.8; Stage 5 scope §24.5, detailed execution plan §24.10). **Track B — Marketing Site UI-UX Upgrade: spec only, no code started** — requirements distilled, reality-annotated and re-grounded in §28; owner product decisions pending. Live status of both tracks: [`PROJECT_STATE.md`](PROJECT_STATE.md) §2–§3 |
 
 ---
 
@@ -65,6 +72,8 @@
 | Utilities | clsx + tailwind-merge, tw-animate-css |
 | Fonts | Sora 600/700 (display) · Manrope 400/500/600 (body), both via `next/font` |
 | Node requirement | ≥ 20.9 |
+
+**Deliberately NOT installed — do not assume anything on this list exists** (verified 2026-09-07 against `package.json`): framer-motion / motion / GSAP / ScrollTrigger / Lenis / Floating UI / Radix / shadcn / react-countup / react-hook-form / Redux and similar. Motion is hand-rolled (§11); `components.json` exists at the repo root but **no shadcn deps are installed** — the site ships hand-rolled `components/educraft/ui/` (open shadcn decision: §24.3). No analytics, no Sentry/error monitoring, and no test frameworks yet (Vitest + Playwright are planned for Dashboard Stage 5, §24.10). Docs that propose these libraries (e.g. §28's upgrade briefs) must not be trusted to mean they exist — adoption needs (a) a concrete gap against the custom system, (b) owner approval, and (c) pinning stays CSS `sticky` (never a GSAP pin).
 
 ---
 
@@ -153,6 +162,16 @@ Note on placement (differs from the original plan's sketch): `EnquireButton` and
 
 **Confirmed deviations from the original V2 plan:** `scenes/ProgrammeScene.tsx` and `scenes/CTAAtmosphere.tsx` were proposed but not built as WebGL — the shipped `FinalCTA` uses SVG atmosphere on the existing single canvas, and programme pages currently ship with no 3D (background-roadmap Tier B work, §25, not yet done).
 
+### 5.1 Shared component & UI inventory (props/API, verified 2026-09-06)
+
+**Buttons — `components/educraft/ui/Button.tsx`:** `buttonVariants({variant, size, className})`; variants `primary` (gold bg, indigo text, glow — the main CTA), `secondary` (teal outline → teal fill on hover), `ghost`, `solid` (indigo); sizes `sm/md/lg`. Exports `Button` (button + `loading` spinner), `ButtonLink` (plain `<a>`), `ButtonNextLink` (Next `<Link>`). Micro-interaction language: `hover:-translate-y-0.5`, child icons move via `group-hover:translate-x-1`, press `active:scale-[0.98]`; `focus-visible` outline indigo/teal.
+
+**Small primitives (`ui/`):** `Card` (thin `card-surface` wrapper — 27 lines; currently **0 importers**, see §26 C1) · `Eyebrow` (teal default; CSS class `eyebrow` + `eyebrow-rule` = 1.5rem rule via `::before`) · `SectionHeading` `{eyebrow,title,subtext,align:'center'|'left',as:'h2'|'h3'}` wrapped in `Reveal`, centered default (`max-w-3xl mx-auto text-center`), left for editorial rhythm (Testimonials) · `Stat` `{value,label,sub?,accentClassName?}` — **always renders label + optional sub under the value, never a bare digit** · `FaqAccordion` (one-open, `aria-expanded`/`aria-controls` + `role=region`, grid-rows 0fr↔1fr animation, Plus rotates 45°) · `EnquireButton` (client wrapper opening the modal) · `FloatingEnquiryButton` (fixed bottom/right modal trigger).
+
+**Enquiry modal system:** `src/context/EnquiryModalContext.tsx` — provider + `openModal(lockedCourseSlug?)`/`closeModal()`/`isOpen`/`lockedCourseSlug`; body scroll locked while open (reference-counted `useScrollLock`). `enquiry/EnquiryModal.tsx` renders the modal; `EnquiryForm.tsx` is the staged form (used inline on `/contact` too). Success is decided server-side only (§13).
+
+**Interior-page pieces:** `layout/PageHero.tsx` `{eyebrow,title,lead,variant:'light'|'indigo',align}` (indigo variant = gold eyebrow + GradientMesh/Constellation) · `pages/AudiencePage.tsx` renders all three audience routes from `audienceEntries` data · `insights/[slug]/page.tsx` is SSG via `generateStaticParams` (per-article metadata, Article JSON-LD, related articles). lucide icons are renderable inside SVG markup (`x/y/width/height` props — see StudentJourney).
+
 ---
 
 ## 6. Design System
@@ -168,6 +187,41 @@ Note on placement (differs from the original plan's sketch): `EnquireButton` and
 **Critical Tailwind 4 constraint:** dynamic class construction (`` `bg-ec-${x}` ``) does **not** generate CSS at build time. All pillar→class mappings must be written literally in `src/lib/pillarStyles.ts` (`pillarTextClass`, `pillarBgClass`, `pillarSoftBgClass`, `pillarBorderClass`, `pillarAccentVar`/`pillarSoftVar` for SVG fills).
 
 **Decorative background systems** (reusable, not redrawn per-section): dotted-constellation (hero mobile fallback, ecosystem sections), topographic lines (curriculum background), path lines (footer, section transitions). Each is a shared component, not bespoke per instance.
+
+### 6.1 Verified design tokens (values from live `globals.css` + `design/*`, 2026-09-06)
+
+Brand colors (light → dark; tokens flip under `.dark` — never hardcode hex in components):
+
+| Token | Light | Dark | Used for |
+|---|---|---|---|
+| `--ec-indigo` | `#1e2a78` | `#3b4896` | brand primary / headings / solid buttons |
+| `--ec-teal` | `#00b3b8` | `#00b3b8` | secondary accent, path draws, links |
+| `--ec-gold` | `#f4b942` | `#f4b942` | primary CTA bg, captions (`--ec-gold-dark` `#c58f1b` in light for text) |
+| `--ec-canvas` / `-soft` / `-deep` | `#fff` / `#f6f9fc` / `#eaf3fb` | `#0b0f1e` / `#10152a` / `#141b38` | section canvas rhythm |
+| `--ec-ink` / `--ec-slate` | `#12172e` / `#5b6478` | `#e8ecfb` / `#9aa3c0` | headings / body-muted |
+| `--ec-border` / `--ec-focus` | `#e4e9f2` / `#1e2a78` | `#232b4d` / `#7c86c9` | dividers / focus outline |
+| `--background`/`--card` etc. | white-based | deep indigo (`--card #12172e`) | page/card surfaces (drives `card-surface`) |
+
+Pillar accents — `--ec-p-{learn,include,thrive,achieve,excel}` + `-soft` (light main = the accessible "strong" variant; dark mode brightens for contrast on indigo):
+
+| Pillar | Light main | Light soft | Dark main | Dark soft |
+|---|---|---|---|---|
+| learn (teal) | `#00898d` | `#dff5f6` | `#3fcbcf` | `#122a34` |
+| include (blue) | `#3b7dd8` | `#e7effb` | `#7fa8e8` | `#16233d` |
+| thrive (violet) | `#6f5cb8` | `#efebfa` | `#a795e8` | `#1d1934` |
+| achieve (gold) | `#c58f1b` | `#fbf0d9` | `#f8cd73` | `#2b2312` |
+| excel (indigo) | `#1e2a78` | `#e8ebf8` | `#7c86c9` | `#161c3a` |
+
+Classes: `text-ec-learn`, `bg-ec-thrive-soft`, `border-ec-achieve`, … — only via the literal maps in `src/lib/pillarStyles.ts` (§18 rule 5). SVG fills use `pillarAccentVar[id]`/`pillarSoftVar[id]` (CSS var strings). Semantic `--ec-success/warning/error/info` brighten in dark; `color-scheme` set per theme.
+
+### 6.2 Typography, tokens & containers (verified)
+
+- Fonts: Sora (display 700) / Manrope (body 400–600) via `next/font` → `--font-sora` / `--font-manrope`.
+- Type scale (globals classes matching `design/typography.ts`): `.type-display-xl` `clamp(3rem…5.25rem)` lh .95 down to `.type-heading-s` `clamp(1.25rem…1.375rem)` lh 1.22; body `body-l 1.25rem/1.55` · `body-m 1.0625rem/1.6` · `body-s .875rem/1.5` · `caption .75rem/1.3` (500). Use classes or `typeStyle('displayXL')` — never arbitrary font sizes. Reading measure ≈55ch.
+- `design/tokens.ts`: 4px spacing scale `[0,4,8,12,16,24,32,48,64,80,96,128,160,192]`; radii `sm .5rem … 2xl 2rem, pill`; shadows `subtle/card/elevated/gold/teal` (indigo-tinted); **z-ladder `base 0 · raised 10 · sticky 30 · nav 50 · overlay 90 · modal 100 · cursor 120`**; gutters 24/32/48/64; breakpoints 640/768/1024/1280/1440.
+- Container classes: `.container-site` (1440 max, gutters step up at 768/1024/1440) · `.container-content` (1200).
+- Utility/keyframe classes (globals): `reveal-on-scroll` (+`.revealed`, `reveal-delay`) · `hero-enter` / `hero-enter-fade` (delay via `--hero-delay`) · `ambient-drift` / `ambient-pulse` · `no-scrollbar` · global smooth scroll + slim custom scrollbar · `:focus-visible` outline `var(--ec-focus)` 2px/2px.
+- Decorative system components (`graphics/DecorativeSystems.tsx`, aria-hidden, theme-aware `currentColor`): **A GradientMesh** (soft radial wash — hero/PageHero indigo) · **B Constellation** (dotted map — ecosystem sections) · **C TopographicLines** (rings — curriculum/Impact) · **D GridPattern** (engineering grid — sparing) · **E PathLines** (journey dashes — footer/transitions). Usage: `<Constellation className="opacity-60" colorClassName="text-ec-teal" />`. Do not redraw per section.
 
 ---
 
@@ -234,6 +288,8 @@ One coordinated system in `three/` (V1's `HeroScene`/`CourseOrbit3D`/`FloatingPa
 - `useParallax`, `useSectionProgress` (IntersectionObserver steps).
 
 **Motion components (`components/educraft/motion/`):** `Reveal` (polymorphic via `createElement`; direction/delay/distance/duration) · `MagneticButton` (fine-pointer only, strength clamped) · `CursorProvider` (fine-pointer + non-reduced-motion only; ring scales over interactive elements; contextual label via `data-cursor-label`, currently used on ecosystem nodes).
+
+**Motion language conventions:** hover micro-interactions 150–250 ms with `ease-out-soft`; keyed content swaps = `animate-in … duration-300` on remount (§18 rule 6); scroll choreography = direct progress mapping (no tween library); buttons hover-lift + child-icon `group-hover` shifts.
 
 ---
 
@@ -308,6 +364,10 @@ Hard-won, do-not-regress rules (source of the fixed-bug ledger in §19):
 6. **tw-animate-css:** `animate-in` keyframes only fire on key-remount (used for stage/tab crossfades).
 7. `THREE.Clock` deprecation warning is emitted by R3F 9.7.0 internals (latest stable) — harmless, disappears with R3F's next patch. Do not upgrade to a 10.0 canary just to silence it.
 8. **Route groups never contribute URL segments** — `(dashboard)/professor/page.tsx` is served at `/professor`, and a page.tsx at a group root resolves at the group's URL root (`(dashboard)/page.tsx` collides with `(site)/page.tsx` at `/`). To own a URL prefix, use a **real folder** (`dashboard/`). Also: Clerk v7 `auth()` **throws** on any route its middleware/proxy matcher didn't cover — keep the auth matcher aligned with real routes.
+9. **Server/client discipline** — DB reads live in `'server-only'` modules (`lib/dashboard/`) with role-explicit names (`getStudent*` / `getProfessor*`); mutations are thin Server Actions (`lib/actions/`, `'use server'`) that only `requireRole` → zod-v4 validate → call a plain domain fn in `lib/domain/` (explicit userId params, `DomainError` codes, ownership checks, `$transaction`, P2002 mapping) → `revalidatePath` both role layouts. Client components never import server-only modules (the `'server-only'` package guardrail fails the build). Dashboard 404s via `notFound()` for non-owned resources — never an existence oracle ("Course not found." for missing AND not-owned).
+10. **Time handling** — DB stores UTC; UI displays Asia/Kolkata wall time via `lib/ist.ts` + module-cached `Intl.DateTimeFormat`; `<input type="datetime-local">` values are IST wall times validated lexicographically and converted with `istWallTimeToUtc`. Never derive calendar dates from UTC `Date` getters (a 23:30 UTC session is 05:00 the next IST day).
+11. **Code style & ESLint 9** — single quotes, no semicolons, PascalCase default-export components, feature folders, sparse meaningful comments (match neighbors). Config: `next/core-web-vitals` + `next/typescript` presets with many rules OFF (no-unused-vars, exhaustive-deps, purity, set-state-in-effect, no-explicit-any, display-name…); the active rules that bite are `react-hooks/refs` (**no ref reads during render** — pass ref objects to components that read them in effects, or mirror to state) and `react-hooks/immutability` (R3F `useFrame` — canonical `// eslint-disable-next-line` pattern, not React state). `no-console` is off (console output is expected in dev flows).
+12. **`.next` & tsconfig** — `tsconfig.json` includes both `.next/types/**` and `.next/dev/types/**`; an interrupted dev run can corrupt `.next/dev/types/*.d.ts` → `tsc` syntax errors until the `.next` wipe (with the dev server stopped — §20). Never treat `.next` as disposable while a dev server is live.
 
 ---
 
@@ -345,6 +405,10 @@ If stale `.next/types` causes deletion-related tsc errors: `rm -rf .next && npx 
 
 **Working agreement:** the user performs all website viewing/visual QA (browser access, screenshots) and reports back. The assistant never launches a browser or curls the site itself. (This is persisted in assistant memory. A stale `.claude/settings.local.json` browser-automation allow-list from an earlier session — CDP/curl/taskkill rules for a long-dead localhost:9222 debugging flow — was **deleted 2026-09-04**; no current workflow uses it.)
 
+**Operational traps (2026-09-06):** (1) `react-hooks/refs` forbids render-time ref reads — popover/anchor code must use ref objects or state-held elements (§18 rule 11). (2) Interrupted `npm run dev` corrupts `.next/dev/types/*.d.ts` → `tsc` fails until the wipe (server stopped). (3) A floating card positioned in one coordinate space while its containing block is another clips silently — position in the space you anchor to (viewport space is the safe default).
+
+**Reporting format for completed work (required):** changed files ↔ requirement mapping; removals + content-loss audit; motion before/after per section; responsive/perf results; content decisions needing the owner flagged explicitly. Never claim done without the verification loop green.
+
 ---
 
 ## 21. Deployment / Environment
@@ -369,6 +433,7 @@ Pre-launch stakeholder inputs — these take precedence over all V3 roadmap work
 3. **Business details** — `hello@educraft.com`, `+91 80 4567 8900`, Bangalore, India (footer, contact page, structured data) — `VERIFY`, not yet stakeholder-confirmed.
 4. **Social handles** — intentionally absent from the footer (no dead `href="#"` links) until real handles exist.
 5. **Rate limiter** — per-instance in-memory only; needs a shared store (Redis/Upstash) before any multi-instance deployment.
+6. **Role-less sign-in trap (auth flow) — UNRESOLVED, reported 2026-09-05 by the owner during demo prep.** Signing in with an email that has no Clerk account succeeds anyway: the Clerk instance is in **Open mode**, not Restricted, so uninvited emails create accounts — and Clerk-created accounts carry no `publicMetadata.role`. The `/dashboard` proxy dispatch then silently redirects to `/` (`src/proxy.ts` — `parsed.success ? ROLE_LANDING[...] : '/'`), the Clerk session stays live, and the marketing site has no sign-out affordance — so the next visit to `/sign-in` is blocked by the active session and the user is stranded until they clear site cookies. Deep links into `/dashboard/<role>` by a role-less user hit a 500 instead (getCurrentUser throws its role-missing setup error inside `requireRole`). **Agreed fix direction (not implemented):** (a) instance-level — Clerk Dashboard → User & Authentication → Restrictions → enable **Restricted (invite-only) mode**, so unregistered emails can never create accounts and sign-in fails honestly at the Clerk page; (b) app-level — role-less dispatch shows an honest "no role — Educraft access is by invitation" page with a Sign out button (proxy `/dashboard` branch + `requireRole` redirect instead of the throw), so no session can strand regardless of instance mode. Known related fact: junk role-less accounts created this way must be deleted manually in Clerk Dashboard → Users.
 
 ---
 
@@ -394,8 +459,8 @@ V2's design principles (non-negotiable — they live on in §25): visuals must e
 
 ## 24. Next Implementation Project — Student & Professor Dashboard
 
-> **Status:** Stages 2–4 shipped 2026-09-05 (§24.8): Professor Core · AWS S3 storage (smoke gate passed; browser E2E remains the owner's check) · invite flow + minimal admin area · Stage 3 Meetings & Planner · **Stage 4 Polish — SHIPPED 2026-09-05** (mobile drawer, student notification-preferences editor, first loading/error/not-found boundaries, access-control audit clean — §24.8). **Course-setup slice — SHIPPED 2026-09-05** (the long-open gap is closed: professor "Enroll student" on the Roster tab + admin course creation with professor assignment; the seed is no longer the only writer of `CourseProfessors`/`Enrollment` rows — §24.8), **then reworked in the working tree the same day** (owner-reported usage flaws → enrollment notifications, normalized emails, hardened domain, and the full post-creation management surface — see the final §24.8 block). **Next: Stage 5 — QA & Deploy** (§24.5). The project is an authenticated, role-based dashboard module on top of this site — the existing marketing site stays untouched. The kept roadmap plan lives in [`Dashboard-Implementation-Plan.md`](Dashboard-Implementation-Plan.md) — this section is the master-side reference, kept in sync with it (route-group note in §24.4: the file's `(marketing)` label maps to this repo's actual `(site)` group).
-> **Current live deploy (staging/preview domain):** `temp-tau-opal.vercel.app` — running `6f91f33` (Stages 3–4 + course-setup slice) since 2026-09-05, owner-verified working after deploy (an earlier local 404 report was stale-dev-server artifact, not code — §20 operational note). Production domain still unset — see §22 blockers, env var `NEXT_PUBLIC_SITE_URL`.
+> **Status:** Stages 2–4 shipped 2026-09-05 (§24.8): Professor Core · AWS S3 storage (smoke gate passed; browser E2E remains the owner's check) · invite flow + minimal admin area · Stage 3 Meetings & Planner · **Stage 4 Polish — SHIPPED 2026-09-05** (mobile drawer, student notification-preferences editor, first loading/error/not-found boundaries, access-control audit clean — §24.8). **Course-setup slice — SHIPPED 2026-09-05** (the long-open gap is closed: professor "Enroll student" on the Roster tab + admin course creation with professor assignment; the seed is no longer the only writer of `CourseProfessors`/`Enrollment` rows — §24.8), **then reworked the same day** (owner-reported usage flaws → enrollment notifications, normalized emails, hardened domain, and the full post-creation management surface — see the final §24.8 block) **and committed as `29c96a6` / `Prod-version:0.1.3`**. **Next: Stage 5 — QA & Deploy** (§24.5 scope; execution detail absorbed into §24.10 from the deleted Stages-2-5 plan file). The project is an authenticated, role-based dashboard module on top of this site — the existing marketing site stays untouched. **Live status, open owner checks and deploy state: [`PROJECT_STATE.md`](PROJECT_STATE.md) §2.** (Route-group history note, §24.4: early plan labels used `(marketing)`; this repo's actual group is `(site)`, and the shell is a real `dashboard/` folder.)
+> **Current live deploy (staging/preview domain):** `temp-tau-opal.vercel.app` — running `29c96a6` (0.1.3, incl. the course-setup rework) since 2026-09-05, owner-verified working after deploy (an earlier local 404 report was stale-dev-server artifact, not code — §20 operational note). Production domain still unset — see §22 blockers, env var `NEXT_PUBLIC_SITE_URL`. **Current deploy state: `PROJECT_STATE.md` §1.**
 
 ### 24.1 Goals & Non-Goals
 
@@ -595,7 +660,7 @@ src/ (this repo — verified 2026-09-04)
      ]
    }
    ```
-   Save the access key + secret into `.env.local` (`S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY`).
+   Save the access key + secret into `.env.local` (`S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY`). Keys are long-lived — rotate them periodically; the inline policy keeps the blast radius to `materials/*`.
 3. **CORS** on the bucket — browsers PUT directly to the presigned URL, so the origin must be allowed (`AllowedHeaders: *` is required so the browser may send the pinned `Content-Type`):
    ```json
    [{ "AllowedOrigins": ["http://localhost:3000", "https://temp-tau-opal.vercel.app", "https://educraft.com"],
@@ -604,6 +669,24 @@ src/ (this repo — verified 2026-09-04)
    ```
 4. Set `STORAGE_PROVIDER=s3` in `.env.local`; run `npm run db:storage-smoke` — **PASSED 2026-09-05**; then do the browser check (professor → course → Materials → File tab → upload → student sees signed download link) — the remaining owner action. **Gotcha:** the dev server only reads `.env.local` at boot — restart `npm run dev` after env changes or the UI shows the stale "STORAGE_PROVIDER is not set" disabled copy.
 5. **Vercel:** set the same five env vars in the project settings. Files already uploaded (none — the old gate never landed an object) would need a provider/key-row migration script; not needed now.
+
+## 24.10 Stage 5 — QA & Deploy: detailed execution plan (absorbed 2026-09-07 from the deleted Stages-2-5 plan doc)
+
+The integration tests drive the `lib/domain/` layer directly (no Clerk) — the §24.8 thin-actions + testable-domain architecture is what makes this possible.
+
+**DevDeps (add once):** `npm i -D vitest@^5 @vitejs/plugin-react@^6 jsdom @playwright/test@^1.62 @clerk/testing@^2.2`
+
+**Vitest unit — `vitest.config.mts`:** `defineConfig` from `vitest/config`; `plugins: [react()]`; alias `@` → `./src`; alias `'server-only'` → `tests/stubs/server-only.ts` (empty module — the `server-only` package throws outside RSC and `format.ts` imports it); jsdom default, `// @vitest-environment node` per-file for pure modules. Specs: `format.test.ts` (IST boundaries — 23:30 UTC → next IST day, Today/Tomorrow, range format) · `validators.test.ts` (datetime-local regex, lexical refine, mime/size caps) · `notifications-builder.test.ts` (pref filtering, null = all-on) · `pillar.test.ts` (5 verticals + unknown) · `storage.test.ts` (mock provider drives persist/complete domain logic; `DisabledStorage` typed error). Script `"test": "vitest run"`.
+
+**Vitest integration (opt-in, NOT default CI) — `vitest.integration.config.ts`:** node env; `TEST_DATABASE_URL` from `.env.local`; same server-only stub. `tests/integration/course-loop.test.ts`: seed a unique trio (`it-{ts}@test.local`) → professor domain creates session/material → student queries see them → **student userId calling professor domain → denied** (role boundary at the domain layer) → notification rows exist only for the enrolled student → `getCourseCompletion` math → cleanup (cascades). Script `"test:integration"`.
+
+**Playwright — `playwright.config.ts`:** webServer `npm run dev` (`reuseExistingServer: !process.env.CI`); projects: `setup` (`testMatch: auth.setup.ts`) → `student` / `professor` / `boundaries` (deps on setup; `storageState` under `playwright/.auth/`, **gitignored**). `auth.setup.ts`: **`clerkSetup()` belongs in the project file, NOT globalSetup** (env vars don't propagate otherwise — the #1 documented failure mode); `clerk.signIn({ page, signInParams: { strategy: 'password', identifier, password } })` per role with env creds `E2E_*_PASSWORD` in `.env.local`; `setupClerkTestingToken({ page })` only for the one real-UI spec. Dev Clerk instance only — never production keys. Specs: `auth.spec.ts` (signed-out `/dashboard` → `/sign-in`; UI sign-in once; role dispatch) · `loop.spec.ts` (professor creates class + NOTE → student sees the class on schedule + material on the course page + bell badge ≤ 30 s + mark-read clears) · `boundaries.spec.ts` (student GET professor routes → redirected; signed-out GET `/api/dashboard/notifications` → 401 JSON) · `mobile.spec.ts` (390×844). Script `"test:e2e": "playwright test"` — **runs are user-authorized per the working agreement (§20)**.
+
+**Deploy checklist:** Vercel env = `DATABASE_URL`, Clerk keys, `STORAGE_PROVIDER=s3`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (bucket/IAM/CORS already done, §24.9.1) · `npx prisma migrate deploy` against the prod URL (additive-only — safe) · preview deploy on the staging domain first (same dev Neon acceptable at this scale) · rollback = revert the dashboard nav-link commit (no destructive schema to unwind). Docs: final §24 sync + runbook update in `PROJECT_STATE.md`.
+
+**Gates:** `npm run test` ✓ · `npm run test:integration` ✓ (cleanup verified) · `npx playwright test` ✓ (user-authorized) · lint/tsc/build ✓ · deploy checklist executed. **User:** full manual walkthrough of both roles + the professor→student loop + mobile; approve the preview deploy.
+
+**Stage 6 backlog (post-v1, §24.5):** realtime push · Parent view · attendance per `ClassSession` · gradebook/assessment scores · calendar sync (.ics/Google) · full admin console · CompletionLog student-side progress · S3 storage-migration + orphaned-upload cleanup scripts.
 
 ## 25. Background Roadmap — V3 Marketing-Site Enhancements
 
@@ -644,8 +727,195 @@ src/ (this repo — verified 2026-09-04)
 - Reduced-motion users get static compositions + functional transitions only (already systemic via CSS).
 
 ### Checklist for starting a work session
-1. Read this file (master): §18 conventions/fixed-bug ledger, §20 verification loop, §22 blockers first.
-2. If Dashboard work: §24, then its §24.8 decisions. If marketing-site work: pick the highest unblocked §25 item.
+1. Read this file (master): §18 conventions/fixed-bug ledger, §20 verification loop, §22 blockers first — then [`PROJECT_STATE.md`](PROJECT_STATE.md) for the live snapshot, open checks, and the active stage.
+2. If Dashboard work: §24, its §24.8 decisions, and §24.10 for Stage 5. If marketing-site UI-UX upgrade work: §28 spec (read §28.1–28.2 corrections first) + PROJECT_STATE.md §3. Otherwise pick the highest unblocked §25 Tier item.
 3. Run `npm run lint` → `npx tsc --noEmit` → `npm run build` before and after changes (§20).
 4. The user performs all website viewing/visual QA — never launch browsers or curl the site from the assistant side.
-5. When a Tier item ships, move it to a "Done in V3.x" note here with the commit hash.
+5. When a Tier item ships, move it to a "Done in V3.x" note here with the commit hash. When new information arrives (a §24/§28 stage completes, a decision lands, state changes): write it into **this file first** (governance R1, §0), then sync `PROJECT_STATE.md` status rows and open checks.
+
+---
+
+## 26. Architecture Hygiene Ledger
+
+> Absorbed 2026-09-07 from the deleted `ARCHITECTURE_REVIEW.md` (2026-09-04, analysis only — no code changed). The review's verdict: the project is **clean and unusually disciplined**; nothing below is a blocker — a list of hygiene items and forward-looking improvements, most of them cheap. Findings are statused as of 2026-09-07; statuses marked *verified* were re-checked against the live config on that date.
+
+**Clean areas (do not touch):** `(site)` route-group organization; feature-folder components 1:1 with homepage sections; `three/` core/primitives/scenes/hooks split with a single canvas; `design/` JS tokens + `globals.css` runtime vars; data-driven content (`types` → `data` → components); `@/*` alias discipline; decorative systems consolidated in `DecorativeSystems.tsx`; CSS-level reduced-motion.
+
+### A. Correctness / deployment risk
+
+| # | Finding | Status (2026-09-07) |
+|---|---|---|
+| A1 | `data/enquiries.jsonl` append breaks on serverless (Vercel FS is ephemeral/read-only) — the JSONL is a **dev-only** fallback; the webhook must be the sole production channel (§13/§21) | OPEN — resolve at/ before launch; linked to §22 |
+| A2 | Naming collision root `data/` (runtime log) vs `src/data/` (content) — rename the runtime dir (e.g. `runtime/`) if it survives | OPEN / low — the log is unchanged today |
+| A3 | Favicon is a ~601 KB PNG (`layout.tsx` sets `icons.icon` to `/logo.png`); ship a small `favicon.ico`/`.svg` | OPEN / cosmetic |
+
+### B. Tooling config gotchas
+
+| # | Finding | Status (2026-09-07) |
+|---|---|---|
+| B1 | ESLint flat-config `ignores` is not global — it still sits inside the trailing rules object (`eslint.config.mjs:55`, *verified*) so preset configs still match `.next`; move to a standalone leading block and add `.playwright-mcp/` | OPEN / 5 min |
+| B2 | `tsconfig.json` still includes `.next/dev/types/**/*.ts` (*verified*) — dropping it would end most of the stale-`.next`-type `tsc` ritual (§19/§20); keep `.next/types` | OPEN / 5 min |
+| B3 | `.env.example` missing while `.gitignore` carves it out | RESOLVED — exists, documents S3/Clerk/etc. |
+| B4 | `components.json` (shadcn stub) exists with no shadcn deps installed | OPEN — decision parked in §24.3; don't leave it half-adopted |
+
+### C. Dead / near-dead code (importers re-checked 2026-09-07)
+
+| # | Item | Status |
+|---|---|---|
+| C1 | `components/educraft/ui/Card.tsx` — **0 importers** (the `card-surface` CSS class is what's used) | OPEN — delete or adopt |
+| C2 | `hooks/useSectionProgress.ts` — **0 consumers** (docs once listed it as shipped; §11 still inventories it) | OPEN — delete or wire into a real section-step feature |
+| C3 | 2× `Educraft Branding Showcase*.svg` at repo root (~237 KB each, unreferenced) — dedupe/move/delete | OPEN / root clutter |
+| C4 | `.playwright-mcp/` — MCP snapshot scratch, untracked | OPEN — add to `.gitignore` |
+
+In use, keep: `useScrollLock` (2 consumers), `useParallax` (1).
+
+### D. Organization consistency (low priority)
+
+- Providers split by convention: `EnquiryModalProvider` in `src/context/` vs `ThemeProvider` in `src/components/theme/` — pick one home (a top-level `src/providers/`) before adding another provider.
+- `three/hooks/useSceneActive.ts` lives under the feature while all other hooks sit in `src/hooks/` — fine as locality; choose once.
+- No barrel/index files anywhere — fine at current counts; revisit if the dashboard component set grows further.
+- `tsconfig` loose spots: `strict: true` but `noImplicitAny: false`, `allowJs: true` on a 100% TS codebase — tighten during the Tier D QA pass (§25 T16–T19).
+
+### E. Size watchlist (from the review, 2026-09-04)
+
+`data/programmes.ts` 1,247 lines (split `programmes/*.ts` per slug if programmes grow) · `EnquiryForm.tsx` 528 (stage subcomponents if it grows) · `globals.css` 489 (fine below ~700) · `Navbar.tsx` 395 (extract `navbar/*` subcomponents if it grows again).
+
+### F. Suggested priority (review's order, adjusted)
+
+P1: B1, B2, C1, C2 (5–10 min each) → P2: D1 (do with any future provider work), A3, A2, C3, C4 → P3: A1 before launch; E/D4 during the §25 Tier D QA pass. The review's forward-looking dashboard advice (keep the root layout and `(site)` static; never add auth/DB to the root layout; scope the auth matcher) was **satisfied by design** (§24.4: dashboard isolated in a real folder behind `src/proxy.ts`).
+
+---
+
+## 27. Design Decisions & Rationale (decisions, not accidents)
+
+> Absorbed 2026-09-07 from the deleted `AGENT_CONTEXT.md` (§14–§15). Made with the owner across V2 and the dashboard builds. Treat as constraints unless the owner overrides — and record any override in this file.
+
+| Decision | Rationale | If you want to change it |
+|---|---|---|
+| **Custom motion system — no framer-motion / GSAP / Lenis** | Bundle discipline + one story for all animation: CSS tokens + rAF scroll hooks + IO reveals cover every shipped interaction; pinned scrub is smooth by construction (one progress value). §25 Tier B defers libraries until the hooks are outgrown — "never for fades" | Propose the concrete gap, get owner approval, add the dep in §3, keep CSS `sticky` pinning |
+| **CSS `sticky` pinning for scroll stories** (no GSAP pin / no scroll-jacking) | Zero-JS layout primitive; resilient to fonts/images loading; the §18 rule 1 exists because this was hard-won (blank-zone bug history, §19) | Revisit only if choreography genuinely outgrows sticky; never via `overflow-hidden` workarounds |
+| **One WebGL canvas, hero only** | Perf: frameloop pauses off-screen, dpr clamped; marketing stays fast/static; two canvases = GPU competition (explicitly avoided at FinalCTA) | Programme-page 3D = §25 Tier B 11 (max one restrained artifact, reuse primitives) — owner-gated |
+| **Content = typed TS data files, no CMS** | Adding a programme/article is a data edit with zero component changes; types are the schema; CMS deferred until non-technical editors exist | CMS later (§25 Tier C 14); keep the data-first shapes |
+| **No invented statistics** | Trust law of the brand: proof qualitative, numbers = structural facts only; fake charts would be an authenticity failure | Real, verified data supplied by the owner first — never decorative series (applies to §28 B6 proposals too) |
+| **Ecosystem info = flow-layout `aria-live` panel** (default Learn, swaps per node) | Keyboard/screen-reader-safe, touch-safe, no pointer-corridor class of bugs; deliberate a11y choice | A floating-popover redesign (§28 B1) must keep aria parity + corridor handling + reduced motion; owner-approved direction only |
+| **Marketing fully static & auth-free** (only `/api/enquiry` dynamic) | Speed + blast-radius isolation: marketing never touches Clerk/Prisma; the dashboard is isolated so its bugs cannot take down enquiries | Keep the boundaries; new marketing routes stay static where possible |
+| **Invite-only sign-ups; role = Clerk `publicMetadata` read server-side** | Controlled growth; roles can't be self-asserted; Clerk is the authority, DB mirrors lazily | Instance Restricted mode + role-less page = agreed fix for §22 blocker #6 — not yet implemented |
+| **Enquiry: staged form, server re-validation, honeypot, per-IP rate limit** | Client never trusted; spam handled cheaply; JSONL is the offline ledger | Webhook delivery (CRM) = §25 Tier A; shared rate-limit store before multi-instance |
+| **Art-directed dark mode (token flip, not inversion)** | Two designed themes from one token set; `.dark` overrides only what must change | New colors = add light + dark token pairs in globals + `colors.ts` (any §28 "dark cinematic" direction must respect this — §28 H8) |
+| **Light-mode accents are accessible "strong" variants** | WCAG AA on white (e.g. achieve gold `#c58f1b`); dark mode brightens for contrast on indigo | Never "brighten for looks" the light-mode mains |
+| **One container/type/spacing system** (`container-site`, `type-*` clamps, 4px scale, z-ladder) | One cadence; sections vary by composition, not arbitrary grids/values | Per-section one-offs degrade the "one site" feel the §28 briefs demand |
+| **Reduced motion enforced globally at CSS level (+ hook early-reveals)** | Systemic guarantee, not per-component hope; verified with the OS toggle | New motion must degrade under the same rule |
+| **Hand-rolled UI (no shadcn/radix)** | One visual language straight from the marketing tokens; data-heavy dashboard widgets deliberately simple | shadcn decision still open in §24.3 — a real gap (complex tables/calendars) would re-open it |
+| **Docs discipline: this master + `PROJECT_STATE.md`** | A fresh session can reconstruct the system from docs alone; state deltas never churn the master | When the repo moves, update these two files rather than adding another doc |
+
+### 27.1 Practical recipes (patterns the codebase already follows)
+
+- **Add a programme:** 1) entry in `data/programmes.ts` (all fields incl. `faqs[]`) + pillar colour exists; 2) a `ProgrammeGraphic` branch per pillar; 3) nothing else — nav mega, footer and pages are data-driven. Programme-page 3D stays off by policy.
+- **Add an insight:** data entry (slug unique) → auto SSG; no component change.
+- **Add a homepage section:** new `landing/X.tsx` (client only if interactive) using `SectionHeading`/`Reveal`/tokens → insert into `page.tsx` with a numbering comment → renumber later comments.
+- **Add a pillar accent:** extend `colors.ts` (`programmeColors`) + globals `--ec-p-*`/`-soft` (light+dark) + `pillarStyles.ts` maps + the `PillarId` union in `types/index.ts` — then re-verify every literal map compiles (Tailwind 4).
+- **Dashboard CRUD:** schema migration → `lib/validators/` schema → `lib/domain/` fn (ownership + transactions + DomainError) → `lib/actions/` Server Action (`requireRole`) → UI (form/table) → `revalidatePath` both role layouts → seed extension if demo data wanted.
+- **Anything visual:** tokens/classes over inline values; motion via §11 layers; content via data files; verify contrast in light AND dark (accents flip).
+
+---
+
+## 28. Next Project — Marketing Site UI-UX Upgrade (spec; NOT started)
+
+> **Status:** Requirements only. Three owner-supplied docs (`UI-UX UPGRADE.md` v1.0 — below-hero master plan; `landing_page_redesign_agent_prompt.md` — hero brief; `site_sections_ui_upgrade_agent_prompt.md` — below-hero brief) were consolidated here on 2026-09-07 and deleted. Live track status & pending owner decisions: [`PROJECT_STATE.md`](PROJECT_STATE.md) §3. Nothing in this section is implemented.
+
+### 28.1 Provenance & how to read this spec
+
+All three source docs were written **from screenshots of the live site without repo access**. Their section names, stack assumptions (e.g. "Framer Motion already a dependency", `--pillar-*` tokens), and several diagnoses are wrong. This section re-grounds every requirement in the real codebase (§5, §8, §11, §12 — names verified). Where a brief's *diagnosis* is wrong, its *intent* is kept but the implementation note says what not to change. Where a proposal duplicates something that already exists or is already a deliberate decision (§27), it says so and defers to the owner. **Do not re-derive "problems" from the old screenshots — §8's architecture table is the authority on what each section currently does.** The source briefs' own precedence rule ("the source brief wins on conflict") is superseded by this section.
+
+### 28.2 Verified-reality correction table (brief claim → actual state)
+
+| Screenshot-doc claim | Actual state (verified) |
+|---|---|
+| "Framer Motion already a dependency" / "one `useInView` fade idiom" | No animation libraries at all — custom hooks + CSS (§3, §11). `Reveal` is a deliberate base layer under per-section scroll choreography. |
+| Section names ("Five Pillars / Learn–01/05 / Why Educraft / Inside a Programme / Outcomes & Evidence / Who Are You? / How It Works") | Those are eyebrow copy. Real files: `Ecosystem` / `ProgrammeExplorer` / `WhyDifferent` / `ProgrammeDeepDive` / `Impact` / `AudienceEntryPoints` / `Methodology` (§8). Plans must use real names + files. |
+| "Static side card that never changes" (Ecosystem) | The panel is `aria-live` and reactively swaps content (default Learn) — *flow layout* (reserves space), not static. |
+| "Learn–01/05 duplicates pillar content — delete" | `ProgrammeExplorer` is a flagship pinned story with its own payload, single-sourced from `programmes.ts`. Removal is a **product decision**, not cleanup (§28 B2). |
+| "Same content authored three times" | Single sourcing already exists; sections render the same data differently. |
+| "Stat digits with no labels (5·1·4·6)" | `Stat` renders value + label + sub for every digit (§5.1). |
+| "Journey = six separately-triggered steps" | One continuous `useScrollProgress` value already drives path + milestones + narrative. |
+| "How It Works duplicates the same steps in two components" | One component, one array, two idioms (path + card row) — deliberate today (§28 B8). |
+| "Shared site-wide progress-dot rail exists" | Rails are internal to `ProgrammeExplorer` only — there is no site-wide dot rail to re-index. |
+| "Backgrounds need consolidation (`AmbientBackdrop`)" | Already consolidated in `DecorativeSystems.tsx` (5 systems, §6.2). |
+| Proposed hex palette (`#2DD4BF…`) and `--pillar-*` vars | Real accents are WCAG-conscious strong variants (`--ec-p-*`, §6.1) via `pillarStyles.ts`. |
+| Proposed data/token files (`lib/motion-tokens.ts`, `lib/pillars.ts`, `journey-stages.ts`…) | Already exist under real names (`design/motion.ts`, `data/pillars.ts`, `data/programmes.ts` — the latter carries `faqs[]` and `journey[6]`) — don't duplicate. |
+| "Learn–01/05" + "Inside a Programme" full-bleed "slides" with "right vertical dot rail" | Both are desktop **pinned scroll stories** (550vh / 552vh) with keyed crossfade panels + mobile horizontal-snap variants. |
+
+### 28.3 Scope boundaries & hard constraints (from the briefs, kept)
+
+- **Two workstreams:** *hero* (`landing_page_redesign_agent_prompt.md` scope — hero, nav, logo/slogan, dropdown) and *below-hero* (everything under the hero; the hero brief's items are off-limits to it). No workstream touches the other's scope; **Testimonials** is never restyled beyond spacing/rhythm.
+- Removals must clear their route/anchor/nav references; no dead links; every changed file must map to a numbered requirement; no unrelated files reformatted.
+- **Ground rules that override brief text:** (1) no new dependency without owner approval + a concrete gap (§28.6, §27 table); (2) motion stays on the custom system unless outgrown — never "for fades"; (3) pinning stays CSS `sticky`; (4) reduced-motion stays systemic; (5) no invented statistics (applies to B6); (6) §18 rules apply (literal Tailwind classes, sticky/overflow law, mounted-gating).
+
+### 28.4 Requirement register
+
+**Hero workstream** — real targets: `landing/Hero.tsx`, `three/scenes/EcosystemScene.tsx` + primitives (§10), `layout/Navbar.tsx`, brand lockup (§12), `data/navigation.ts`.
+
+- **H1 — Hero composition: three-zone with the animation truly centered** (brief: left content / central animation / right content; responsive grid, no brittle absolute positioning; collapses cleanly at tablet/mobile). CURRENT: split composition — copy left, scene right at 58% ≥lg, content-over-scene mobile with the SVG `Constellation` fallback. Implementation note: `Hero` + scene layout are grid-driven today; a centered 3-zone is a layout retune of the existing hero, not a rebuild.
+- **H2 — Replace the toy/space visual language with semantic programme objects.** CURRENT: `EcosystemScene` = core icosahedron + 3 orbit rings + 5 pillar nodes (emissive spheres + halo) + connectors + artifacts + particles; programme-specific imagery on marketing is pillar-accented **SVG** (`ProgrammeGraphic`). Requirement: each major node should read as one of the five real programmes with readable names where practical — reuse `three/` primitives, single canvas only, never a per-page canvas; programme identity comes from `data/programmes.ts` (never invented subject names). A design-direction change to the scene — owner-gated look & feel.
+- **H3 — Lighting/material quality.** CURRENT: deliberately emissive + glow sprites, no per-node lights, `AdaptiveDpr` `[1,1.5]`, frameloop pause off-screen (§10, §27). Requirement: key/fill/rim feel, depth separation, restrained bloom, matte/glass/resin variety — achievable within the stack (env lighting, texture-based) but must keep the perf guarantees; measure before/after (§16 targets, §25 T17).
+- **H4 — Mouse-light effect** (pointer acts as a soft localized light over dark text areas; eased lag; disabled for reduced-motion/touch). NEW feature. Implementation note: do with CSS vars + rAF on the custom system — no dependency needed; never per-frame DOM churn.
+- **H5 — Brand slogan under the logo:** exact text **"Empowering Schools, Empowering Students"**, styled as a brand signature (letter-spacing, opacity — not body text). Placement decision needed (desktop nav logo block + hero? mobile?) and theme handling (logo has light/dark PNG variants). NOTE: footer's closing line ("Build learning journeys that last.") is separate and unchanged.
+- **H6 — Navigation order: About first.** CURRENT order: Programmes (mega), Methodology, Impact, About, Insights (§12). Change = reorder `data/navigation.ts` for desktop AND mobile; keep the mega menu.
+- **H7 — Program dropdown "jump" bug.** The brief describes the menu as unusable (page jumps when entering it). CURRENT (verified 2026-09-06, §12): hover + click open, Escape/outside-click/route-change close with focus return, `aria-expanded`/`aria-controls`, route-aware active states — **no corridor bug in the current build**. Action: verify live first; if a jump reproduces, fix the root cause per the brief's checklist (anchor `href="#"`, focus-restore, containing-block/overflow, pointer gaps, scroll-lock, remount-on-hover) — never timeouts alone; keep the a11y contract.
+- **H8 — Visual direction: "dark, cinematic, premium" landing.** CONFLICT with the art-directed **light-default** theme (§6, §27: two designed themes, token flip). Product decision required: dark-only hero environment vs theme-aware-leaning-dark hero vs dark-first site-wide — and how it composes with light-mode marketing below the fold. Flagged in §28.7 D1.
+
+**Below-hero workstream** — real targets from §8: `Ecosystem`, `ProgrammeExplorer`, `WhyDifferent`, `StudentJourney`, `ProgrammeDeepDive`, `Impact`, `AudienceEntryPoints`, `Methodology`, `Testimonials` (all `landing/*.tsx`).
+
+- **B1 — Ecosystem interactive diagram.** Brief: radial layout computed from array length; floating popover anchored to the active node replaces the static side panel; popover morphs node→node, closes when nothing is active; touch tap-pin; CTAs ("Explore X" / "Enquire") in the popover; pointer-safe hover corridor; reduced-motion = cross-fade only. CURRENT: hardcoded 5-node `POSITIONS` around a core; `aria-live` flow panel (a11y-approved, §27); whole-node links to programme pages; mobile stacked cards. Notes: (a) any popover must keep or exceed aria parity, add corridor handling + reduced-motion; (b) "6th pillar = zero code change" is heavier than the brief assumed (PillarId union + literal maps in ~6 files — §27.1 recipe); (c) compute-radial is a genuine simplification only if 6+ verticals are planned — otherwise a visual choice. Owner-gated feature (D2-ish), highest-value item in the brief.
+- **B2 — Remove `ProgrammeExplorer` ("Learn — 01/05").** CURRENT: flagship 550vh pinned story, single-sourced. **Product decision, not cleanup** (the section is one of the homepage's two signature interactions). If kept — no change. If removed: delete component + `page.tsx` entry + any anchors; content is single-sourced so nothing is lost; mobile horizontal-snap variant goes with it.
+- **B3 — `WhyDifferent` polish** (editorial 01–05 list stays): thin left-accent rule per row (neutral — NOT pillar colors), hover dims sibling rows to ~60%, staggered `Reveal` entrance per row. Fits the existing system; low risk.
+- **B4 — `StudentJourney` 3-zone.** Brief: left time meter + center winding path + right confidence meter, all on ONE scroll-progress value; floating stage label anchored to the active node; mobile collapses to a still-progressive column. CURRENT: 2-col (left keyed narrative + right path), one `useScrollProgress` `'full'` value already drives path/milestones/narrative; 552vh pinned; mobile vertical timeline. Adding the two meters + anchor-linked stage label is a real extension of the existing single-value architecture (adds visual readouts — no desync possible); must obey §18 rule 1 (no `overflow-hidden`) and keep the mobile timeline. Floating-label primitive does not exist yet — see §28.6.
+- **B5 — Remove `ProgrammeDeepDive` ("Inside a Programme").** CURRENT: tabbed spotlight — curriculum modules, 5-step method, outcomes, proof line, CTAs — the homepage's in-depth layer; its curriculum content ALSO exists on the per-programme pages (§9). Content-loss flag is answered (content is not unique) — but removal removes the homepage depth story. **Product decision** (D2).
+- **B6 — `Impact` ("Outcomes & Evidence") treatment.** Brief: four distinct icons + per-card mini-visualizations + asymmetric featured layout + labeled digits. CURRENT: four numbered cards **do share one `TrendingUp` icon** (real defect); `Stat` already always labels digits (brief's "bare digits" claim is wrong); all proof is qualitative by brand law. Actionable: distinct lucide icons per outcome + asymmetric/featured layout — without inventing data. Charts/sparklines need REAL verified metrics (owner decision D4; tied to §22 blocker 2 + §25 Tier A 2) — banned until then.
+- **B7 — `AudienceEntryPoints` ("Who Are You") compactness.** CURRENT: three full-height door cards linking to **real audience pages** (`/for-schools|parents|students` via `AudiencePage`). The brief proposed tabs, unaware pages exist — collapsing three navigational doors into tabs changes IA. Options: compact-but-keep-doors (reduce card mass, keep per-audience accents — indigo/teal/gold exist) or true tabs (only if the audience pages are retired — owner decision D3).
+- **B8 — `Methodology` ("How It Works") dedupe.** CURRENT: one component, one array, two idioms — calibrated scroll path-draw (5 nodes, `'visible'` mode, 1.1× tuning, §8 row 09) + the 5-card row below (deliberate today). Brief: merge into one scroll-linked component with the step description inline at the active node. Legitimate simplification — but the card row also serves non-scroll users and mobile; the path calibration (hard-won, §19) must not regress. **Product/design decision** (D5) then implementation reuses B4's pattern.
+- **B9 — `Testimonials` / everything else:** spacing/rhythm harmonization only (§28.3). Note §22 blocker 1 (SEED content) still applies — unrelated to this project.
+
+### 28.5 Build sequence (dependency-ordered; effort from the briefs, compressed)
+
+S0 — **Audit/re-ground** (0.5–1 d): map every requirement above onto live code; confirm §28.2 corrections still hold; visual QA stays owner-side (§20). S1 — **Owner decisions** (§28.7) gate everything. S2 — **Shared primitives** where a real gap exists after decisions: mouse-light (H4); floating-info behavior + meters (B1/B4) — decide custom vs gated library (§28.6). S3 — **Hero workstream** H1–H7 (1–2 wk incl. scene direction). S4 — **Below-hero low-risk polish**: B3, B9 (0.5 d). S5 — **Below-hero feature work**: B1, B4, B6, B8 (+ removals B2/B5/B7 only if decided) (1–1.5 wk). S6 — **Responsive + reduced-motion + perf pass** (Lighthouse before/after; CLS/LCP targets §16). S7 — **Acceptance audit** vs §28.8 + completion report in the §20 reporting format. Total ≈ 2–4 focused weeks across both workstreams; marketing stays static + the verification loop (§20) stays green at every stage.
+
+### 28.6 Dependency adoption gates
+
+All of the following are ABSENT today (verified 2026-09-07) and were proposed by the briefs; each needs owner approval + a demonstrated gap against the custom system (§27), and none may change pinning to a JS pin:
+
+| Candidate | Brief wanted it for | Current-stack equivalent | Gate note |
+|---|---|---|---|
+| GSAP + ScrollTrigger | pinned scrub (§2.3, "How It Works") | `useScrollProgress` + CSS `sticky` already ships both pinned stories | Outgrown only if new choreography proves it; never for fades. (License fact: GSAP incl. all plugins became 100% free for commercial use in April 2025 — cost is no longer an argument for or against) |
+| Framer Motion | `AnimatePresence`/`layoutId` popover morph | keyed-remount crossfades (`tw-animate-css`, §18 rule 6); Reveal | Morph-between-anchors is the one candidate real gap (B1/B4) |
+| Lenis | inertia smooth-scroll | native scroll today | Evaluate native first (§25 Tier B 10) |
+| Floating UI | popover flip/shift positioning | no popover exists yet | Only if B1/B4 popovers are approved and hand-rolled positioning proves weak |
+| Radix `Tabs` | audience tabs (B7) | `ProgrammeDeepDive` tab pattern is hand-rolled + accessible today | Only if B7 tabs are approved |
+| react-countup | stat count-up (B6) | none | Cosmetic; skip unless requested; numbers stay real |
+
+### 28.7 Product decisions awaiting the owner (mirrored in `PROJECT_STATE.md` §3)
+
+D1 **Hero direction** (H8): how "dark, cinematic" composes with the light-default art-directed theme. *Recommendation:* theme-aware hero leaning dark + premium materials — the site keeps its two designed themes.
+D2 **Section removals** (B2 `ProgrammeExplorer`, B5 `ProgrammeDeepDive`): *Recommendation:* keep both (they are the homepage's flagship interactions and single-sourced), pursue B1/B4 upgrades instead.
+D3 **Audience doors vs tabs** (B7): *Recommendation:* keep the three real pages; compact the cards.
+D4 **Impact metrics** (B6): charts only with real, verified data — until then distinct icons + asymmetric layout only. *Recommendation:* no invented numbers, ever.
+D5 **How-It-Works merge** (B8): *Recommendation:* merge the card row into the scroll-linked description only if mobile + reduced-motion + keyboard access stay first-class; else keep both idioms.
+D6 **Slogan placement** (H5): where "Empowering Schools, Empowering Students" renders (nav logo area and/or hero) and its dark/light behavior.
+D7 **Dependency adoptions** per §28.6 — default is *no new dependencies*.
+
+### 28.8 Consolidated acceptance criteria (briefs' checklists, deduped)
+
+- Hero: 3-zone centered composition at desktop, deliberate stacked mobile order (message → animation → support → CTA); no brittle absolute positioning.
+- Exact slogan text appears beneath the logo with intentional brand typography.
+- Nav: About first (desktop + mobile); dropdown stable across viewport widths — moving the pointer from trigger into the menu causes **no scroll-position change**; keyboard/Escape behavior intact.
+- Scene: no empty-planet/toy visual language as the dominant metaphor; objects carry programme meaning from real data; lighting has key/fill/rim + depth; colors restrained (teal/indigo/warm-accent discipline); camera slow (~8–15 s major rotations); reduced-motion static fallback.
+- Mouse-light: subtle, smooth (eased lag), limited radius, text readability preserved, disabled for reduced-motion + no-pointer devices.
+- Ecosystem: popover anchored to node (no fixed side panel), morphs between nodes, none visible when nothing is active, touch tap-pin + dismiss, CTAs reachable, aria parity ≥ current `aria-live` panel, corridor-safe, reduced-motion cross-fade.
+- Journey: one shared progress value drives meters + path + label (verified in code); mobile still progressive.
+- Impact: four distinct icons, no bare digits (labels always), asymmetric layout, no invented data.
+- Who Are You / How It Works: per D3/D5 decisions with all original copy reachable and description in exactly one DOM location.
+- Global: no two adjacent sections in scope share one template; one easing/timing vocabulary; generic fade-up no longer the default for rebuilt sections; background continuity through the page; no horizontal overflow at any breakpoint; reduced-motion verified with the OS toggle on; every changed file maps to a requirement; build/type-check/lint green. Owner visual QA + acceptance sign-off closes the project.
+
+### 28.9 Resources (condensed from the briefs' directories)
+
+Inspiration/moodboards: Awwwards (Culture & Education), SiteInspire (minimal/typography), Lapa Ninja, Godly (cinematic-scroll restraint), Mobbin (tab/segmented patterns) — pull 3–5 comparables per stage into the ticket before building. Assets (all CC0/MIT/OFL-commercial-safe, verify per item): Poly Pizza, Quaternius, Kenney, Poly Haven (HDRIs) — only if H2/H3 need external geometry/textures; lucide-react covers icon needs (distinct per-pillar/per-metric icons — §28 B6). License gate: free-tier exports with watermarks (Spline) are not acceptable for a client deliverable.

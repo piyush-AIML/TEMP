@@ -82,7 +82,7 @@ function LinguisticsArt() {
           x='200'
           y='216'
           textAnchor='middle'
-          fontFamily='var(--font-sora)'
+          fontFamily='var(--font-clash)'
           fontWeight='700'
           fontSize='44'
           fill={pillarAccentVar[id]}
@@ -94,13 +94,13 @@ function LinguisticsArt() {
       {/* Small floating bubbles */}
       <g className='ambient-drift' style={{ animationDelay: '-4s' }}>
         <circle cx='94' cy='96' r='26' fill='var(--card)' stroke={pillarAccentVar[id]} strokeWidth='1.5' />
-        <text x='94' y='103' textAnchor='middle' fontFamily='var(--font-sora)' fontWeight='700' fontSize='18' fill={pillarAccentVar[id]}>
+        <text x='94' y='103' textAnchor='middle' fontFamily='var(--font-clash)' fontWeight='700' fontSize='18' fill={pillarAccentVar[id]}>
           你好
         </text>
       </g>
       <g className='ambient-drift' style={{ animationDelay: '-8s' }}>
         <circle cx='304' cy='92' r='22' fill='var(--card)' stroke={pillarAccentVar[id]} strokeWidth='1.5' />
-        <text x='304' y='99' textAnchor='middle' fontFamily='var(--font-sora)' fontWeight='700' fontSize='16' fill={pillarAccentVar[id]}>
+        <text x='304' y='99' textAnchor='middle' fontFamily='var(--font-clash)' fontWeight='700' fontSize='16' fill={pillarAccentVar[id]}>
           hola
         </text>
       </g>

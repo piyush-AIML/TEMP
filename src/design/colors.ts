@@ -74,3 +74,20 @@ export const programmeColors = {
 } as const;
 
 export type PillarColorKey = keyof typeof programmeColors;
+
+/**
+ * v4 premium-surface tokens (FC-03) — hairline rules and dark-zone glass.
+ * Hailines flip per theme (light: ink-tinted · dark: ink-light-tinted); glass
+ * tokens are dark-surface values by design (G1 anchor zones) and theme-independent.
+ * Mirrored into globals.css as --ec-hairline / --ec-glass-*.
+ */
+export const surface = {
+  hairline: { light: 'rgba(18, 23, 46, 0.1)', dark: 'rgba(232, 236, 251, 0.12)' },
+  hairlineStrong: { light: 'rgba(18, 23, 46, 0.18)', dark: 'rgba(232, 236, 251, 0.22)' },
+  glass: {
+    bg: 'rgba(255, 255, 255, 0.06)',
+    bgStrong: 'rgba(255, 255, 255, 0.09)',
+    border: 'rgba(255, 255, 255, 0.14)',
+    highlight: 'rgba(255, 255, 255, 0.08)',
+  },
+} as const;

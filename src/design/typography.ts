@@ -1,14 +1,17 @@
 import type { CSSProperties } from 'react';
 
 /**
- * Educraft V2 — typography system (plan §6).
- * Sora (700) for display/headings, Manrope (400–600) for interface and body.
+ * Educraft v4 — typography system (plan §6; FC-04, ruling G2).
+ * Clash Display (Fontshare, ITF Free — self-hosted) for display/headings,
+ * Instrument Serif (italic — single accent word per headline) and
+ * Manrope (400–600) for interface and body.
  * Sizes are responsive clamps per plan §6.2; apply via the `typeStyle()` helper
  * or the `.type-*` component classes in globals.css.
  */
 
 export const fonts = {
-  display: 'var(--font-sora)',
+  display: 'var(--font-clash)',
+  serif: 'var(--font-serif-accent)',
   body: 'var(--font-manrope)',
 } as const;
 
@@ -37,6 +40,8 @@ const body = (fontSize: string, lineHeight: number, fontWeight = 400): TypeStyle
 
 /** Plan §6.2 scale: name → px target. */
 export const typeScale = {
+  // v4 +1 notch (FC-03) — the hero-scale display step; face swap lands in FC-04
+  display2XL: display('clamp(3.75rem, 7.5vw + 1rem, 7.5rem)', 0.92, '-0.035em'), // 120
   displayXL: display('clamp(3rem, 6.5vw + 0.75rem, 5.25rem)', 0.95, '-0.03em'), // 84
   displayL: display('clamp(2.5rem, 5vw + 1rem, 4.25rem)', 1.0, '-0.025em'), // 68
   displayM: display('clamp(2.125rem, 4vw + 0.75rem, 3.25rem)', 1.04, '-0.02em'), // 52

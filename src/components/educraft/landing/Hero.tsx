@@ -16,7 +16,9 @@ const EcosystemScene = dynamic(() => import('../three/scenes/EcosystemScene'), {
  * headline → copy → CTA) and a scroll-linked transformation: the scene
  * pulls back, the headline rises, and the hero hands over to the
  * ecosystem section. Reduced motion renders the static composition
- * instantly (CSS handles the animation removal).
+ * instantly (CSS handles the animation removal). FC-06 (gate G1 — Option B):
+ * the hero is the proof section for the cinematic anchor zone — dark-anchor
+ * makes it theme-independent dark (same composition in both themes).
  */
 export default function Hero() {
   const { ref, progress } = useScrollProgress<HTMLElement>();
@@ -31,7 +33,7 @@ export default function Hero() {
   return (
     <section
       ref={ref}
-      className='relative min-h-[100svh] flex items-center overflow-hidden bg-gradient-to-b from-ec-sky via-background to-background'
+      className='dark-anchor relative min-h-[100svh] flex items-center overflow-hidden bg-gradient-to-b from-ec-sky via-background to-background'
     >
       {/* Atmosphere — enters first (plan §4.2) */}
       <div className='hero-enter-fade absolute inset-0 pointer-events-none' style={heroDelay(0)}>

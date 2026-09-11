@@ -19,7 +19,7 @@ export default function Stat({ value, label, sub, accentClassName, className }: 
     <div className={cn('text-center', className)}>
       <div
         className={cn(
-          'font-[family-name:var(--font-sora)] font-bold type-display-m text-ec-indigo dark:text-white',
+          'font-[family-name:var(--font-clash)] font-bold type-display-m text-ec-indigo dark:text-white',
           accentClassName
         )}
       >

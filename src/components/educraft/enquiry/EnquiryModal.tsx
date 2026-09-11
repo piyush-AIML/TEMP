@@ -83,7 +83,7 @@ export default function EnquiryModal() {
         {/* Header */}
         <div className='flex items-center justify-between mb-6'>
           <div>
-            <h2 className='font-[family-name:var(--font-sora)] font-bold text-xl text-ec-indigo dark:text-white'>
+            <h2 className='font-[family-name:var(--font-clash)] font-bold text-xl text-ec-indigo dark:text-white'>
               {lockedCourseSlug ? 'Course Enquiry' : 'Get in Touch'}
             </h2>
             <p className='text-ec-slate text-sm mt-1'>

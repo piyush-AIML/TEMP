@@ -5,6 +5,7 @@ import SkipLink from '@/components/educraft/layout/SkipLink';
 import EnquiryModal from '@/components/educraft/enquiry/EnquiryModal';
 import FloatingEnquiryButton from '@/components/educraft/ui/FloatingEnquiryButton';
 import CursorProvider from '@/components/educraft/motion/CursorProvider';
+import GrainOverlay from '@/components/educraft/motion/GrainOverlay';
 
 /**
  * Site shell (Stage 3) — every marketing page gets the global frame:
@@ -24,6 +25,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           <Footer />
           <EnquiryModal />
           <FloatingEnquiryButton />
+          <GrainOverlay />
         </div>
       </CursorProvider>
     </EnquiryModalProvider>

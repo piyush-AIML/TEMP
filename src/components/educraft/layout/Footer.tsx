@@ -76,7 +76,7 @@ export default function Footer() {
 
           {/* Programmes */}
           <nav aria-label='Programmes'>
-            <h3 className='font-[family-name:var(--font-sora)] font-semibold text-sm uppercase tracking-wider text-ec-gold mb-4'>
+            <h3 className='font-[family-name:var(--font-clash)] font-semibold text-sm uppercase tracking-wider text-ec-gold mb-4'>
               Programmes
             </h3>
             <ul className='space-y-2.5'>
@@ -92,7 +92,7 @@ export default function Footer() {
 
           {/* Audiences + company */}
           <nav aria-label='Audiences and company'>
-            <h3 className='font-[family-name:var(--font-sora)] font-semibold text-sm uppercase tracking-wider text-ec-gold mb-4'>
+            <h3 className='font-[family-name:var(--font-clash)] font-semibold text-sm uppercase tracking-wider text-ec-gold mb-4'>
               Audiences
             </h3>
             <ul className='space-y-2.5 mb-6'>
@@ -104,7 +104,7 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-            <h3 className='font-[family-name:var(--font-sora)] font-semibold text-sm uppercase tracking-wider text-ec-gold mb-4'>
+            <h3 className='font-[family-name:var(--font-clash)] font-semibold text-sm uppercase tracking-wider text-ec-gold mb-4'>
               Company
             </h3>
             <ul className='space-y-2.5'>
@@ -120,7 +120,7 @@ export default function Footer() {
 
           {/* Legal */}
           <nav aria-label='Legal'>
-            <h3 className='font-[family-name:var(--font-sora)] font-semibold text-sm uppercase tracking-wider text-ec-gold mb-4'>
+            <h3 className='font-[family-name:var(--font-clash)] font-semibold text-sm uppercase tracking-wider text-ec-gold mb-4'>
               Legal
             </h3>
             <ul className='space-y-2.5'>

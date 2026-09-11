@@ -62,7 +62,7 @@ export default function WhyDifferent() {
               delay={i * 90}
               className='group grid grid-cols-[3.5rem_1fr] gap-5 py-7 border-b border-ec-border last:border-b-0'
             >
-              <span className='font-[family-name:var(--font-sora)] font-bold text-2xl text-ec-border dark:text-ec-border/50 group-hover:text-ec-teal transition-colors'>
+              <span className='font-[family-name:var(--font-clash)] font-bold text-2xl text-ec-border dark:text-ec-border/50 group-hover:text-ec-teal transition-colors'>
                 {String(i + 1).padStart(2, '0')}
               </span>
               <div>

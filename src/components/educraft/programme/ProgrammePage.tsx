@@ -115,7 +115,7 @@ export default function ProgrammePage({ programme }: { programme: Programme }) {
                 className='grid grid-cols-[3rem_1fr] md:grid-cols-[4rem_1fr_1.4fr] gap-5 md:gap-8 py-6 border-b border-ec-border'
               >
                 <span
-                  className='w-11 h-11 rounded-2xl flex items-center justify-center font-[family-name:var(--font-sora)] font-bold text-lg'
+                  className='w-11 h-11 rounded-2xl flex items-center justify-center font-[family-name:var(--font-clash)] font-bold text-lg'
                   style={{ backgroundColor: pillarAccentVar[programme.pillarId], color: '#fff' }}
                 >
                   {i + 1}
@@ -181,7 +181,7 @@ export default function ProgrammePage({ programme }: { programme: Programme }) {
                     style={{ backgroundColor: accent }}
                     aria-hidden='true'
                   />
-                  <span className='font-[family-name:var(--font-sora)] font-bold text-3xl text-ec-border dark:text-ec-border/60'>
+                  <span className='font-[family-name:var(--font-clash)] font-bold text-3xl text-ec-border dark:text-ec-border/60'>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <h3 className='type-heading-s text-ec-indigo dark:text-white mt-3'>{s.title}</h3>
