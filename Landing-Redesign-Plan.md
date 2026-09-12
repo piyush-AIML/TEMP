@@ -394,12 +394,19 @@ The act stays ~4.5 screens regardless of pillar count.
 
 1. Add one object to `pillars` in `data/pillars.ts` (`id`, `slug`, `name`, `vertical`, `short`, `description`).
 2. Add its accent object to `pillarAccent` in `lib/pillarStyles.ts`.
-3. **Run `npx tsc --noEmit`.** Every remaining gap is now a compile error, not a silent break. Work through them:
-   - `globals.css` — add the pillar's `--ec-p-*` + `-soft` vars to `@theme inline`, `:root`, `.dark`
-   - `data/programmes.ts` — add the programme (or the station renders without a link target)
-   - `validators/courses.ts` — verify `COURSE_VERTICALS` derived it correctly
+3. **Run `npx tsc --noEmit` and let the compiler enumerate the rest.** Every remaining gap is now a compile error, not a silent break. **Verified by dry-run 2026-09-12** — adding a sixth id produces exactly three errors, and the list below is what that run actually reported, not an estimate:
+
+   | Error site | Why it fires |
+   |---|---|
+   | `lib/pillarStyles.ts` — `pillarAccent` | `Record<PillarId, PillarAccentClasses>` is a checked object literal; the new key is missing. **The back-compat re-exports below it need no edit** — they are `Object.fromEntries(...)` derivations of `pillarAccent`, so they inherit the new key automatically |
+   | `components/educraft/graphics/EcosystemGraphic.tsx` — `POSITIONS` | a second `Record<PillarId, {x,y}>` literal. *(This site is why the runbook says "let the compiler enumerate" rather than listing files: it was missed by the first draft of this list. It disappears once `EcosystemGraphic` is retired in Stage 2.)* |
+   | `lib/validators/courses.ts` — the `_VerticalsMatchPillarSlugs` assertion | surfaces as `Type 'true' is not assignable to type 'never'` — the bidirectional slug check firing exactly as designed |
+
+   Then, separately from `tsc` (these are **not** compile errors and must be done deliberately):
+   - `globals.css` — add the pillar's `--ec-p-*`, `-graphic` and `-soft` vars to `@theme inline`, `:root` and `.dark`
+   - `data/programmes.ts` — add the programme, or the station renders without a link target
 4. Re-run the palette contrast test (`§10.3`) — it fails if the new accent misses AA.
-5. Nothing in `acts/` changes. The walk, fork, rail and ribbon derive from `pillars.length`.
+5. Nothing in the acts changes. The walk, fork, rail and ribbon derive from `pillars.length`, and `perStationVh(N)` keeps the act ~4 screens tall.
 
 ---
 
