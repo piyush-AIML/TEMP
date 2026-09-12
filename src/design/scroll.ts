@@ -56,11 +56,12 @@ export function perStationVh(pillarCount: number): number {
  * The walk's pinned run, in pixels: one dwell per station, from
  * `perStationVh`, transcribed against the live viewport height.
  *
- * This is both the pin's `end` distance and the denominator
- * `stationScrollTarget` divides, which is why it is one function. Computed in
- * two places, a change to the dwell formula could move the pin without moving
- * the rail's targets, and every button would land a fixed fraction of the walk
- * away from the station it names.
+ * This is both the pin's `end` distance and the range the rail's targets are
+ * scaled by: `stationScrollTarget` multiplies it by `i/n`. (Its divisor there is
+ * `pillarCount` — this is the multiplicand.) That is why it is one function:
+ * computed in two places, a change to the dwell formula could move the pin
+ * without moving the rail's targets, and every button would land a fixed
+ * fraction of the walk away from the station it names.
  */
 export function walkPinRangePx(viewportHeightPx: number, pillarCount: number): number {
   return (viewportHeightPx * perStationVh(pillarCount) * pillarCount) / 100;
@@ -87,9 +88,15 @@ export function walkPinRangePx(viewportHeightPx: number, pillarCount: number): n
  * pillars. Task 6 carries the ruling that removed the disagreement.
  *
  * `pinStartY` is the page offset of the pin's start and `pinRangeY` its length,
- * both in pixels. An unusable count returns `pinStartY`, matching `perStationVh`
- * and `drawAt`: a `NaN` here would be silently ignored by the browser and the
- * button would do nothing with no error.
+ * both in pixels.
+ *
+ * **Unusable input returns `pinStartY`, matching `perStationVh` and `drawAt`:**
+ * a count below 1, a non-finite index, or a range that is not a positive finite
+ * length. Each would otherwise reach `window.scrollTo` as a silent no-op — a
+ * `NaN` or an infinite `top` is ignored by the browser and the button does
+ * nothing, with no error — or, for a negative range, scroll *backwards* out of
+ * the pin. The index needs its own finiteness test because `Math.min`/`Math.max`
+ * propagate `NaN` rather than rejecting it.
  */
 export function stationScrollTarget(
   index: number,
@@ -98,6 +105,8 @@ export function stationScrollTarget(
   pinRangeY: number
 ): number {
   if (pillarCount <= 0) return pinStartY;
+  if (!Number.isFinite(index)) return pinStartY;
+  if (!Number.isFinite(pinRangeY) || pinRangeY <= 0) return pinStartY;
   const station = Math.min(Math.max(index, 0), pillarCount - 1);
   return pinStartY + (station / pillarCount) * pinRangeY;
 }
@@ -119,14 +128,40 @@ export function branchFor(widthPx: number): ScrollBranch {
  * `branchFor` is the runtime decision; this is the same decision expressed as a
  * media query, for `gsap.matchMedia()`.
  *
- * **Only the desktop query exists, deliberately.** The pin and the scrubbed
- * track are the desktop branch; tablet and mobile are what happens when this
- * query does not match, so a tablet query would have no reader — and an export
- * with no consumer is the same defect as a test that pins nothing. The
+ * **A media query is not a width comparison.** It measures CSS pixels with the
+ * scrollbar excluded, while `window.innerWidth` includes it, so a JS branch must
+ * `matchMedia()` this (or `MOBILE_QUERY`) rather than compare `innerWidth`: the
+ * two can disagree by a scrollbar width at the boundary, and the JS would then
+ * pick a mechanic the CSS layout is not in.
+ *
+ * **No tablet query exists, deliberately.** The pin and the scrubbed track are
+ * the desktop branch; tablet and mobile are what happens when this query does
+ * not match, so a tablet query would have no reader — and an export with no
+ * consumer is the same defect as a test that pins nothing. `MOBILE_QUERY` is the
+ * other half of the pair, because the rail has to tell mobile from tablet; the
  * boundaries themselves stay in `branchFor`, which the Stage 1 tests already
  * pin on all three sides.
  */
 export const DESKTOP_QUERY = `(min-width: ${BREAKPOINTS.lg}px)`;
+
+/**
+ * The mobile branch, derived from `BREAKPOINTS` so the edge exists once. It
+ * pairs with `DESKTOP_QUERY` and leaves tablet as the band that matches
+ * neither — which is why two queries can name §8's three branches.
+ *
+ * **Consumed by Task 6's rail handler**, which picks a click behaviour per
+ * branch: desktop scrolls the page, tablet scrolls a stacked station into view,
+ * mobile scrolls the native snap container. That is what needs mobile told
+ * apart from tablet — `gsap.matchMedia()` only ever asked about desktop. It is
+ * `matchMedia()`d rather than compared against `window.innerWidth`, for the
+ * CSS-pixel reason in `DESKTOP_QUERY`'s note above.
+ *
+ * The edge is `BREAKPOINTS.sm - 1`, not `sm`: `branchFor` is mobile strictly
+ * below `sm`, and a CSS `max-width` is inclusive. Deriving the subtraction keeps
+ * §8's mobile edge in one place — a literal `639px` here would be a second copy
+ * of it, which is the drift this pair exists to prevent.
+ */
+export const MOBILE_QUERY = `(max-width: ${BREAKPOINTS.sm - 1}px)`;
 
 /**
  * GSAP ScrollTrigger scrub smoothing, in seconds. 1 gives the walk a weighted

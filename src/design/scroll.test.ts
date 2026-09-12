@@ -4,6 +4,7 @@ import {
   BREAKPOINTS,
   CEILINGS,
   DESKTOP_QUERY,
+  MOBILE_QUERY,
   SCRUB,
   WALK_BASE_VH,
   WALK_MAX_VH,
@@ -192,6 +193,40 @@ describe('the desktop media query', () => {
   });
 });
 
+describe('the mobile media query', () => {
+  it('pins the exact string the Tailwind variant is aligned to', () => {
+    // The same band as Tailwind's `max-sm:` variant — `width < 40rem` — written
+    // in whole CSS pixels. It is one below `sm` and not `sm` itself because
+    // `branchFor` is mobile strictly below 640 while a CSS `max-width` includes
+    // its own boundary.
+    expect(MOBILE_QUERY).toBe('(max-width: 639px)');
+  });
+
+  it('agrees with branchFor at its own boundary', () => {
+    // Same shape as the desktop query's, and the same failure if they drift:
+    // the CSS layout and the rail's decision disagree at the breakpoint.
+    const mobileMax = Number(/max-width: (\d+)px/.exec(MOBILE_QUERY)![1]);
+    expect(mobileMax).toBe(BREAKPOINTS.sm - 1);
+    expect(branchFor(mobileMax), 'the query includes its own boundary').toBe('mobile');
+    expect(branchFor(mobileMax + 1)).toBe('tablet');
+  });
+
+  it('partitions with DESKTOP_QUERY, leaving the tablet band between them', () => {
+    // The rail branches on this pair and treats "neither matches" as tablet, so
+    // the two must not overlap — a width in both would run one branch's
+    // mechanic over another's layout — and must not touch: a tablet band
+    // collapsed to nothing would silently delete the branch whose behaviour is
+    // the absence of the desktop setup, and so is written down nowhere else.
+    const mobileMax = Number(/max-width: (\d+)px/.exec(MOBILE_QUERY)![1]);
+    const desktopMin = Number(/min-width: (\d+)px/.exec(DESKTOP_QUERY)![1]);
+    expect(mobileMax).toBeLessThan(desktopMin);
+    expect(branchFor(mobileMax)).toBe('mobile');
+    expect(branchFor(mobileMax + 1), 'the tablet band starts between them').toBe('tablet');
+    expect(branchFor(desktopMin - 1)).toBe('tablet');
+    expect(branchFor(desktopMin)).toBe('desktop');
+  });
+});
+
 describe('stationScrollTarget', () => {
   it('targets the progress at which each station is centred', () => {
     // Five stations over a 400vh pin starting at 0: the track travels one
@@ -227,12 +262,51 @@ describe('stationScrollTarget', () => {
     expect(stationScrollTarget(0, 0, 300, 400)).toBe(300);
   });
 
+  it('returns the pin start for a negative range rather than scrolling out of the pin', () => {
+    // `walkPinRangePx` cannot go negative today, but the rail's range is read
+    // from the live viewport, and a negative one would send the page
+    // *backwards*, above the pin's start and outside the walk entirely.
+    expect(stationScrollTarget(2, 5, 0, -400)).toBe(0);
+    expect(stationScrollTarget(2, 5, 1200, -400)).toBe(1200);
+  });
+
+  it('returns the pin start for a NaN index rather than a NaN scroll position', () => {
+    // `Math.min`/`Math.max` propagate `NaN` rather than rejecting it, so the
+    // clamp cannot catch it, and a `NaN` `top` is one of the values the browser
+    // ignores silently — the button would do nothing, with no error. `drawAt`
+    // is already NaN-safe for an index, so this closes an asymmetry between the
+    // two halves of the cross-check rather than inventing a policy.
+    expect(stationScrollTarget(Number.NaN, 5, 0, 400)).toBe(0);
+    expect(stationScrollTarget(Number.NaN, 5, 1200, 400)).toBe(1200);
+  });
+
+  it('returns the pin start for a non-finite range rather than an ignored scroll', () => {
+    // An infinite `top` is dropped by `window.scrollTo` exactly as a `NaN` one
+    // is; both take the guard the count already had. The count, the index and
+    // the range are every argument this function consumes.
+    expect(stationScrollTarget(2, 5, 0, Number.POSITIVE_INFINITY)).toBe(0);
+    expect(stationScrollTarget(2, 5, 0, Number.NEGATIVE_INFINITY)).toBe(0);
+    expect(stationScrollTarget(2, 5, 0, Number.NaN)).toBe(0);
+  });
+
   it('targets the exact progress at which drawAt starts that station', () => {
     // The cross-check, and the reason the rail is trustworthy: a button takes
     // the page to the progress where the walk arrives at its station, which is
     // the same progress at which that station's segment begins to draw. If
     // either module changes its axis, a button would land somewhere the draw
     // does not agree with.
+    //
+    // `toBe` is `Object.is`-strict, and this agreement is exact only at the
+    // small counts below — measured, not a structural property of the axis.
+    // `drawAt(i/n, i, n)` is exact for every `i` at `n <= 21` and inexact beyond
+    // it: the first failure is `n = 22, i = 15`, where `22 * (15 / 22)` is
+    // `14.999999999999998` — 1 ULP below 15 — so the preceding station reads
+    // `0.9999999999999982`, 16 ULP below the `1` this asserts. 134 of the `n`
+    // in 1..200 have at least one failing pair, in both directions (the
+    // station's own segment first fails at `n = 25`). The shipped counts are 5
+    // and 7, both inside the exact region — so a later task that widens this
+    // loop past 21 must expect float error and compare with a tolerance, rather
+    // than conclude the axis has moved.
     for (const [i, n] of [[0, 5], [2, 5], [4, 5], [3, 7]] as const) {
       const progress = stationScrollTarget(i, n, 0, 1);
       expect(drawAt(progress, i, n), `station ${i} of ${n} has just begun`).toBe(0);
@@ -253,6 +327,20 @@ describe('walkPinRangePx', () => {
   it('keeps the act near four screens at six and seven pillars', () => {
     expect(walkPinRangePx(800, 6)).toBe(3200); // 400/6 vh × 6 = 400vh
     expect(walkPinRangePx(800, 7)).toBe(3360); // clamped at 60vh × 7 = 420vh
+  });
+
+  it('pins the multiplication order the literals above cannot see', () => {
+    // The order is load-bearing and the three pinned triples are blind to it:
+    // 800 × 5, 6 and 7 agree under every ordering, which is exactly why this
+    // needs a cell that does not. Replicated over h = 100..3000 × n = 1..12
+    // (34,812 cells), `(h * vh * n) / 100` differs from `(h * n * vh) / 100` on
+    // 1,062 of them and from `(h * (vh * n)) / 100` on 696; `h = 102, n = 6` is
+    // one of the 1,062, where the reordered product lands on exactly 408 and
+    // this order on the value below. The gap is 1 ULP and no browser renders it
+    // as a different pixel, so this pins a choice rather than defending a
+    // defect: a rewrite that reorders the operands is then a deliberate,
+    // visible change instead of a silent 1-ULP drift.
+    expect(walkPinRangePx(102, 6)).toBe(408.00000000000006);
   });
 
   it('agrees with stationScrollTarget about where the last station is', () => {
