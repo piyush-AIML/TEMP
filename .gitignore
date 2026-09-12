@@ -37,4 +37,7 @@ next-env.d.ts
 .idea/
 .claude
 
+# subagent-driven-development scratch (ledgers, briefs, review packages)
+.superpowers/
+
 /src/generated/prisma
