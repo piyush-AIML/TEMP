@@ -21,10 +21,11 @@ import {
 const DRAW_IN_VIEW_S = motionTokens.duration.hero;
 
 /**
- * Duration passed in scrub mode. **Inert when `scrub` is set** — `scrub` makes
- * ScrollTrigger drive the tween's progress from the scroll position instead of
- * letting it run on its own clock, so this value never governs the draw. Kept
- * for symmetry between the two branches; it is not a quantity the tween reads.
+ * Duration passed to the tween in scrub mode. **Inert when `scrub` is set:**
+ * the value does reach the tween's `duration` option, but `scrub` makes
+ * ScrollTrigger drive progress from the scroll position rather than letting the
+ * tween run on its own clock, so it never governs the draw. Kept so both
+ * branches pass the same option shape.
  */
 const DRAW_SCRUB_S = 1;
 
@@ -39,8 +40,9 @@ const DRAW_STAGGER_S = 0.12;
 /**
  * Where the in-view draw starts, as a ScrollTrigger `start` string.
  *
- * Named rather than inlined because the `scrub` docstring quotes it, and a
- * docstring that quotes a literal is a second copy waiting to drift.
+ * The `pin` and `scrub` docstrings refer to this **by name**, so the value has
+ * one home: a docstring that repeated the literal would be a second copy
+ * waiting to drift.
  */
 const IN_VIEW_START = 'top 85%';
 
@@ -55,9 +57,16 @@ const IN_VIEW_START = 'top 85%';
  * loop.
  *
  * GSAP owns `stroke-dashoffset` exclusively. Motion must never be pointed at
- * the same property of the same element (spec §3.2). React re-renders do not
- * clobber it either — `setValueForStyles` only writes values that changed — so
- * the animated offset survives a render pass.
+ * the same property of the same element (spec §3.2).
+ *
+ * React re-renders do not clobber it, but the reason is narrower than "React
+ * preserves it": React 19 diffs the *previous props object*
+ * (`prevStyles[name] !== value`), never `node.style`, so it writes a style
+ * property only when the value passed in changed. The `style` literal here is
+ * constant across renders, so nothing is written and the animated offset
+ * survives. A *varying* style value would be written and would fight GSAP —
+ * which is why the initial dash state belongs in that constant literal and the
+ * animation belongs to GSAP.
  */
 export type LineStageProps = {
   /** Path `d` strings, one per strand. The first is the primary strand. */
@@ -82,8 +91,8 @@ export type LineStageProps = {
    *
    * Independent of the draw — the pin is its own ScrollTrigger with no
    * relationship to the draw tween. With `pin: true, scrub: false` the draw
-   * finishes ~1.2s after the stage's top reaches 85% of the viewport, and the
-   * pin then runs for `pinDistanceVh` of scroll. With `scrub: true` it is worse
+   * finishes ~1.2s after the stage's top reaches `IN_VIEW_START`, and the pin
+   * then runs for `pinDistanceVh` of scroll. With `scrub: true` it is worse
    * than merely independent; see `scrub`.
    */
   pin?: boolean;
@@ -95,9 +104,9 @@ export type LineStageProps = {
   /**
    * Drive the draw from scroll instead of playing it once. When true the tween
    * is scrubbed from `top 80%` to `bottom 60%` with `SCRUB` smoothing. When
-   * false it plays once as the stage's top reaches `top 85%` of the viewport
-   * (`once: true`), staggered per strand — so an act below the fold is still
-   * undrawn when the user arrives at it.
+   * false it plays once as the stage's top reaches `IN_VIEW_START` of the
+   * viewport (`once: true`), staggered per strand — so an act below the fold is
+   * still undrawn when the user arrives at it.
    *
    * **`pin` and `scrub: true` do not compose, and nothing here stops you
    * setting both.** The scrub trigger measures `top 80%` → `bottom 60%` from

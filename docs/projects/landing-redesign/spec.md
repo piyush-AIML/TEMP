@@ -118,7 +118,7 @@ Act 1 exit anchor  ==  Act 2 entry anchor   …
 |---|---|---|
 | `line/ anchors.ts` | The entry/exit contract **as functions of `N`** (§7.3), plus station positions | nothing |
 | `line/ pathBuilders.ts` | Pure `(fromAnchor, toAnchor, shape) → path 'd'`. Testable without a DOM. | `anchors.ts` |
-| `line/ LineStage.tsx` | Renders one act's `<svg>`; wires GSAP draw/pin; exposes `data-line-path` hooks | both, `lib/gsap.ts` |
+| `line/ LineStage.tsx` | Renders one act's `<svg>`; wires GSAP draw/pin; exposes `data-line-path` hooks | `design/motion.ts`, `design/scroll.ts`, `lib/gsap.ts` |
 | `line/ station.ts` | Pure calibration math: `stationPositions(N)`, `perStationVh(N)`, `drawAt(progress, i, N)` | `anchors.ts` |
 
 **Technique:** every path carries `pathLength="1"`. Draw is then always `stroke-dasharray: 1` with `stroke-dashoffset: 1 → 0` — identical for every path regardless of real length. No `getTotalLength()`, no layout reads in the animation loop, one animated property per act.
@@ -481,7 +481,9 @@ These run under **Vitest** — which `EDUCRAFT_PRODUCTION.md` already names as S
 | ribbon draw | 700ms | `reveal` |
 | UI feedback ceiling | ≤160ms | `fast` |
 
-GSAP easing **is** the `motion.easing` curves. `lib/gsap.ts` parses each `cubic-bezier(...)` token into its control points and solves it as a plain function ease, registered with the core `gsap.registerEase` — so the token is the easing, with no approximation in between and **no easing plugin dependency**. GSAP's nearest built-ins were measured against the tokens and are not close enough to substitute: `power3.out` diverges from `motion.easing.out` by up to **0.084** (and `power3` is a *quart*, exponent 4, despite the name), and `power2.out` diverges from `motion.easing.soft` by up to **0.266** — a quarter of the range, on the one animation the design is built around.
+GSAP easing **is** the `motion.easing` curves. `lib/gsap.ts` parses each `cubic-bezier(...)` token into its control points and solves it as a plain function ease, registered with the core `gsap.registerEase` — so the token is the easing, with no approximation in between and **no easing plugin dependency**. The solved eases reproduce the tokens to **~2.7e-12**, which is the bisection bracket's own width rather than a curve error.
+
+Measured against the tokens, the built-ins are not close enough to substitute. **The ones this stage previously shipped:** `power3.out` diverged from `motion.easing.out` by up to **0.084** (`power3` is a *quart*, exponent 4, despite the name), and `power2.out` from `motion.easing.soft` by up to **0.266** — a quarter of the range, on the one animation the design is built around. **Even the nearest available**, `power4.out` (0.011) and `expo.out` (0.011), are nine orders of magnitude further from the tokens than the solved eases.
 
 ### 10.3 The calibration overlay
 

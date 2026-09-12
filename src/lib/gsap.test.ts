@@ -158,33 +158,98 @@ describe('EASE', () => {
   });
 
   /**
-   * The regression this replaced: GSAP built-ins diverged from the tokens by
-   * up to 0.084 (`out`) and 0.266 (`soft`). Anything at that scale must fail.
+   * D2's headline claim, made enforceable.
+   *
+   * The previous revision of this test compared `EASE.out` against `EASE.out`
+   * — the reference WAS the value under test, so the difference was identically
+   * zero and `toBeLessThan(1e-12)` could not fail for any implementation,
+   * including `x => 12345 * x`. It is replaced by a genuinely independent
+   * reference: Newton-Raphson on the same cubic, a different algorithm from the
+   * shipped bisection, converging to ~1e-16.
+   *
+   * The tolerance below is 1e-10, not 1e-12: the measured divergence is
+   * ~2.7e-12 (it is the 40-halving bracket's own width, 2^-41 × |dy/du|), so
+   * 1e-10 leaves ~37× headroom while still failing anything materially worse.
+   * The sampler test above cross-checks the same claim with a structurally
+   * different reference.
+   *
+   * Both sides of the comparison use that independent reference. The built-in
+   * really was far off — this asserts the regression, it does not assume it.
    */
-  it('is far closer to the token than the GSAP built-ins it replaced', () => {
+  it('solves the token curve to float precision, far closer than the built-in it replaced', () => {
+    function newtonReference(cp: [number, number, number, number], progress: number): number {
+      const [p1x, p1y, p2x, p2y] = cp;
+      let u = progress;
+      for (let i = 0; i < 60; i += 1) {
+        const inverse = 1 - u;
+        const x = 3 * inverse * inverse * u * p1x + 3 * inverse * u * u * p2x + u * u * u;
+        const dx = 3 * p1x * inverse * (1 - 3 * u) + 3 * p2x * u * (2 - 3 * u) + 3 * u * u;
+        if (dx === 0 || !Number.isFinite(dx)) break;
+        const step = (x - progress) / dx;
+        u -= step;
+        if (Math.abs(step) < 1e-16) break;
+      }
+      const inverse = 1 - u;
+      return 3 * inverse * inverse * u * p1y + 3 * inverse * u * u * p2y + u * u * u;
+    }
+
+    const points = bezierControlPoints(EASE_EQUIVALENCE.out);
     const builtIn = gsap.parseEase('power3.out');
-    const token = EASE.out;
-    let builtInWorst = 0;
     let shippedWorst = 0;
+    let builtInWorst = 0;
     for (let i = 0; i <= 1000; i += 1) {
       const progress = i / 1000;
-      builtInWorst = Math.max(builtInWorst, Math.abs(builtIn(progress) - token(progress)));
-      shippedWorst = Math.max(shippedWorst, Math.abs(EASE.out(progress) - token(progress)));
+      const reference = newtonReference(points, progress);
+      shippedWorst = Math.max(shippedWorst, Math.abs(EASE.out(progress) - reference));
+      builtInWorst = Math.max(builtInWorst, Math.abs(builtIn(progress) - reference));
     }
+
+    // Round 1 shipped power3.out, measured at 0.0838 from this same curve.
     expect(builtInWorst).toBeGreaterThan(0.05);
-    expect(shippedWorst).toBeLessThan(1e-12);
+    expect(shippedWorst).toBeLessThan(1e-10);
   });
 });
 
 describe('the reduced-motion fallback in globals.css', () => {
   const css = readFileSync(fileURLToPath(new URL('../app/globals.css', import.meta.url)), 'utf8');
 
+  /**
+   * The span of the block opened at or after `from`, by brace matching. Needed
+   * because "the rule appears somewhere after the media query starts" is not
+   * containment: a rule hoisted *out* of the block to the end of the file
+   * satisfies it while shipping an unconditional `stroke-dashoffset: 0
+   * !important` that would beat GSAP's inline writes and freeze every strand.
+   */
+  function blockSpan(source: string, from: number): { open: number; close: number } {
+    const open = source.indexOf('{', from);
+    let depth = 0;
+    for (let i = open; i < source.length; i += 1) {
+      if (source[i] === '{') depth += 1;
+      else if (source[i] === '}') {
+        depth -= 1;
+        if (depth === 0) return { open, close: i };
+      }
+    }
+    return { open, close: -1 };
+  }
+
+  const RULE = /\[data-line-path\]\s*\{\s*stroke-dashoffset:\s*0\s*!important;\s*\}/;
+
   it('uses the same media query text as the JS constant', () => {
     expect(css).toContain(`@media ${REDUCED_MOTION_QUERY}`);
   });
 
-  it('draws the strand without JS, matching the matchMedia branch', () => {
-    const block = css.slice(css.indexOf(`@media ${REDUCED_MOTION_QUERY}`));
-    expect(block).toMatch(/\[data-line-path\]\s*\{\s*stroke-dashoffset:\s*0\s*!important;\s*\}/);
+  it('draws the strand without JS, from inside the reduced-motion block', () => {
+    const media = css.indexOf(`@media ${REDUCED_MOTION_QUERY}`);
+    expect(media).toBeGreaterThan(-1);
+
+    const { open, close } = blockSpan(css, media);
+    expect(close).toBeGreaterThan(open);
+
+    const rule = RULE.exec(css);
+    expect(rule).not.toBeNull();
+    // Containment, not merely ordering: the rule must sit inside the braces.
+    expect(rule!.index).toBeGreaterThan(open);
+    expect(rule!.index).toBeLessThan(close);
   });
 });
