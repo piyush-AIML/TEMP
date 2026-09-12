@@ -4,13 +4,29 @@
  * or editing a programme never touches component code.
  */
 
-export type PillarId = 'learn' | 'include' | 'thrive' | 'achieve' | 'excel';
+/**
+ * Pillar identity is derived from the registry in `data/pillars.ts` — see
+ * Landing-Redesign-Plan.md §7.3. The re-export is type-only (erased at
+ * compile time), so there is no runtime import cycle between this module and
+ * the data layer, and every existing `import type { PillarId } from '@/types'`
+ * keeps working.
+ *
+ * Do NOT hand-write the union here. Adding a pillar means adding one object to
+ * `pillars`, and every `Record<PillarId, …>` in the codebase then fails to
+ * compile until it is updated — which is the point.
+ */
+import type { PillarId } from '@/data/pillars';
+
+export type { PillarId };
 
 export interface Pillar {
-  id: PillarId;
-  /** Learn / Include / Thrive / Achieve / Excel */
+  /** Short key, e.g. 'learn'. Narrowed to the literal union by the registry. */
+  id: string;
+  /** URL slug and DB vertical value, e.g. 'linguistics'. Same as the programme slug. */
+  slug: string;
+  /** Display name, e.g. 'Learn'. */
   name: string;
-  /** The vertical it represents, e.g. "Linguistics" */
+  /** The vertical it represents, e.g. 'Linguistics'. */
   vertical: string;
   /** One-line description used in nav, mega menu, and ecosystem map. */
   short: string;

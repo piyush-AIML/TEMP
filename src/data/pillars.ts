@@ -70,12 +70,18 @@ export const studentJourneyStages: JourneyStage[] = [
 ];
 
 /**
- * The five pillars — the narrative spine of the whole experience
- * ("Many learning paths. One connected ecosystem.").
+ * The pillars — the narrative spine of the whole experience.
+ *
+ * **This array is the single source of truth for pillar identity.** `PillarId`
+ * and `PillarSlug` are derived from it below, so adding an entry here widens
+ * both unions and every `Record<PillarId, …>` map in the codebase becomes a
+ * compile error until it is updated. See Landing-Redesign-Plan.md §7.3 and the
+ * runbook in §7.4.
  */
-export const pillars: Pillar[] = [
+export const pillars = [
   {
     id: 'learn',
+    slug: 'linguistics',
     name: 'Learn',
     vertical: 'Linguistics',
     short: 'Real fluency and confident communication across languages.',
@@ -84,6 +90,7 @@ export const pillars: Pillar[] = [
   },
   {
     id: 'include',
+    slug: 'inclusive-education',
     name: 'Include',
     vertical: 'Inclusive Education',
     short: 'Adaptive, individualised support so every learner can access opportunity.',
@@ -92,6 +99,7 @@ export const pillars: Pillar[] = [
   },
   {
     id: 'thrive',
+    slug: 'wellbeing-counseling',
     name: 'Thrive',
     vertical: 'Wellbeing & Counselling',
     short: 'Confidential, judgement-free support that keeps students steady.',
@@ -100,6 +108,7 @@ export const pillars: Pillar[] = [
   },
   {
     id: 'achieve',
+    slug: 'ai-digital-tech',
     name: 'Achieve',
     vertical: 'AI & Digital Technologies',
     short: 'Practical AI literacy and digital readiness for what comes next.',
@@ -108,12 +117,19 @@ export const pillars: Pillar[] = [
   },
   {
     id: 'excel',
+    slug: 'neet-jee',
     name: 'Excel',
     vertical: 'NEET & JEE Preparation',
     short: 'Concept-first, disciplined exam coaching with measurable progress.',
     description:
       'Fundamentals-first exam coaching with weekly testing, mentor guidance, and transparent progress tracking.',
   },
-];
+] as const satisfies readonly Pillar[];
+
+/** The literal union of pillar keys, e.g. 'learn' | 'include' | …. */
+export type PillarId = (typeof pillars)[number]['id'];
+
+/** The literal union of pillar slugs, e.g. 'linguistics' | …. */
+export type PillarSlug = (typeof pillars)[number]['slug'];
 
 export const getPillar = (id: string): Pillar | undefined => pillars.find((p) => p.id === id);

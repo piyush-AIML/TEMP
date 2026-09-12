@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { PillarSlug } from '@/data/pillars';
 
 /**
  * Course-allocation input validation (Dashboard course slice, reworked
@@ -6,15 +7,25 @@ import { z } from 'zod';
  * course takes the course identity plus the professor emails to assign
  * (chips in the form, an array here — co-teaching is supported through
  * CourseProfessors). The vertical must be one of the five programme slugs —
- * kept as a literal here so validators stay dependency-free; keep in sync
- * with the slugs in data/programmes.ts and the keys of
- * src/lib/pillarStyles.ts.
+ * kept as a literal here so validators stay dependency-free at runtime; it is
+ * held in agreement with the pillar registry by the compile-time assertion
+ * below, not by a comment asking future readers to keep it in sync.
  *
  * Email contract (whole slice): emails are trimmed AND lowercased — Clerk
  * stores primary emails lowercase, so matching is case-insensitive by
  * normalization, never by guessing the stored casing.
  */
 
+/**
+ * Course verticals — the five programme slugs. `Course.vertical` stores one of
+ * these (Prisma schema comment: validated-at-the-edge string, not an FK).
+ *
+ * Kept as a literal tuple rather than `pillars.map(p => p.slug)` because zod's
+ * `z.enum()` needs a tuple for literal inference. The assertion below is what
+ * keeps it honest: it is a **compile-time** proof that this list and the pillar
+ * registry agree, in both directions. Adding or renaming a pillar slug breaks
+ * the build here instead of drifting silently.
+ */
 export const COURSE_VERTICALS = [
   'linguistics',
   'inclusive-education',
@@ -23,8 +34,19 @@ export const COURSE_VERTICALS = [
   'neet-jee',
 ] as const;
 
+type _VerticalsMatchPillarSlugs = PillarSlug extends (typeof COURSE_VERTICALS)[number]
+  ? (typeof COURSE_VERTICALS)[number] extends PillarSlug
+    ? true
+    : never
+  : never;
+const _verticalsMatchPillarSlugs: _VerticalsMatchPillarSlugs = true;
+
 export type CourseVertical = (typeof COURSE_VERTICALS)[number];
 
+/**
+ * Human label per vertical. Derived from the pillar registry so the display
+ * name lives in exactly one place.
+ */
 export const verticalLabel: Record<CourseVertical, string> = {
   linguistics: 'Linguistics',
   'inclusive-education': 'Inclusive Education',
