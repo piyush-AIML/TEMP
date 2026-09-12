@@ -1390,7 +1390,7 @@ It also lands one second additive prop, `viewBox`, for a reason the Task 2 corre
 
 **Interfaces:**
 - Consumes: nothing new.
-- Produces: `LineStageProps['draw']?: boolean` (default `true`) — consumed by Task 6 (the walk) and Task 7 (the ribbon).
+- Produces: `LineStageProps['draw']?: boolean` (default `true`) — passed `false` by Task 5 (Origin), Task 6 (the walk) and Task 7 (the ribbon); Tasks 8–10 take the default. *(Corrected 2026-09-13, on Task 4's contract pass: this line named Tasks 6 and 7 only, while Task 5's own `Consumes:` line and its JSX both pass `draw={false}`.)*
 - **The existing tests must stay green, unmodified.** If one fails, the change is wrong: the render-only mode adds a prop and a branch, and changes no output.
 
 - [ ] **Step 1: Write the failing test**
