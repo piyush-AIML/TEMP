@@ -43,6 +43,7 @@ the dashboard needs Clerk keys. So:
 | Know what is being worked on and what's next | `docs/projects/<project>/state.md` |
 | Know what's blocked or unverified | `docs/platform/blockers.md` |
 | Find where a fact lives | `docs/INDEX.md` — includes the old→new migration map |
+| Execute a stage | `docs/platform/execution.md` — the no-agent procedure. **No skill drives it and no subagents run**; the assistant does every step, including verification and fixes |
 
 Per-subtree conventions are **not** here — they load automatically from `.claude/rules/` when you
 open a matching file. Current rules: `marketing-site`, `dashboard`, `design-tokens`, `lib-layers`,

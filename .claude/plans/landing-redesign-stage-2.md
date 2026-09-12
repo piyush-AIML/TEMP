@@ -34,7 +34,7 @@
 - **The assistant never launches a browser or curls the site.** Visual QA is the owner's; `?calibrate=1` (Task 11) exists so their report can carry numbers.
 - **No route is deleted, and `/programmes`, `/programmes/[slug]`, `/methodology`, `/impact` are Stage 3's** — not touched here except where a shared data module changes.
 - **Do not touch the dashboard.** `src/app/dashboard/**` and `src/components/dashboard/**`.
-- **Commits:** one per task, at the end, staging files explicitly — never `git add -A`. There is unrelated work in the tree (`.claude/skills/run-a-stage/SKILL.md` and `src/app/(site)/about/page.tsx` are modified in the working tree and belong to no task here).
+- **Commits:** one per task, at the end, staging files explicitly — never `git add -A`. **Check the index before committing** (`git diff --cached --name-only`): an earlier commit here swallowed another agent's staged files. There is unrelated work in the tree (`src/app/(site)/about/page.tsx` is modified and belongs to no task here).
 - **Tests are `.test.ts`, never `.test.tsx`.** `vitest.config.mts:16` (`include: ['src/**/*.test.ts']`) silently drops `.tsx` tests — reconfirmed twice with deliberately-failing probes. Component contracts are pinned with `renderToStaticMarkup` + `createElement` in a `.test.ts` (ADR 0007). Effects are not reachable from the suite; say so rather than implying coverage.
 
 ---
@@ -1107,7 +1107,7 @@ Two facts the acts genuinely need from JS:
 
 **Interfaces:**
 - Consumes: `BREAKPOINTS` (already there). Nothing else.
-- Produces: `DESKTOP_QUERY: string`, `walkPinRangePx(viewportHeightPx, pillarCount): number`, `stationScrollTarget(index, pillarCount, pinStartY, pinRangeY): number`. Consumed by Tasks 5, 6 and 12; `drawAt` (from `line/station.ts`) is the cross-check for `stationScrollTarget`, and `perStationVh` is the source `walkPinRangePx` is built from.
+- Produces: `DESKTOP_QUERY: string`, `MOBILE_QUERY: string`, `walkPinRangePx(viewportHeightPx, pillarCount): number`, `stationScrollTarget(index, pillarCount, pinStartY, pinRangeY): number`. **Consumed by Tasks 5 and 6** — *not* Task 12, whose own `Consumes:` names only `branchFor` and `drawAt`; an earlier draft overstated this. `drawAt` (from `line/station.ts`) is the cross-check for `stationScrollTarget`, and `perStationVh` is the source `walkPinRangePx` is built from. **`MOBILE_QUERY` was added by this task's fix round, and it exists because a media query and `window.innerWidth` disagree by a scrollbar width at the boundary:** the CSS layout is decided by the query while the rail handler branched on `innerWidth`, so within ~15px of the breakpoint a click would scroll the page under a stacked layout. Task 6 branches on the two queries for that reason, and `branchFor` keeps no runtime consumer — it remains the spec-pinned statement of §8's three branches and the reference the queries' boundaries are asserted against.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -1212,7 +1212,7 @@ describe('walkPinRangePx', () => {
 ```bash
 npx vitest run src/design/scroll.test.ts
 ```
-Expected: **FAIL** — `DESKTOP_QUERY`, `TABLET_QUERY` and `stationScrollTarget` are not exported.
+Expected: **FAIL** — the three new exports do not exist yet. *(As executed on 2026-09-13 the runner reported `expected undefined to be '(min-width: 1024px)'` rather than an "is not exported" error, and the mention of `TABLET_QUERY` in an earlier draft of this line was a residue of the pre-flight scan that removed it from this very task.)*
 
 - [ ] **Step 3: Add both to `scroll.ts`**
 
@@ -1262,8 +1262,11 @@ export function walkPinRangePx(viewportHeightPx: number, pillarCount: number): n
  * centres.
  *
  * The planning pass first recorded `(i + 0.5)/n` here — the dwell's midpoint —
- * which disagreed with the tween by up to `0.5/n` of the pin, 40vh at five
- * pillars. Task 6 carries the ruling that removed the disagreement.
+ * which disagreed with the tween by `0.5/n` of the pin *on average* and by
+ * `1/n` at the ends: 40vh and **80vh** of a 400vh walk at five pillars. (The
+ * "up to `0.5/n`, 40vh" this file carried until the Task 3 verifier measured it
+ * was the mean, not the maximum.) Task 6 carries the ruling that removed the
+ * disagreement.
  *
  * `pinStartY` is the page offset of the pin's start and `pinRangeY` its length,
  * both in pixels. An unusable count returns `pinStartY`, matching `perStationVh`
@@ -2117,8 +2120,8 @@ import { walkFrame } from '@/components/educraft/line/frames';
 import { drawAt } from '@/components/educraft/line/station';
 import { pillarAccent } from '@/lib/pillarStyles';
 import {
-  branchFor,
   DESKTOP_QUERY,
+  MOBILE_QUERY,
   SCRUB,
   stationScrollTarget,
   walkPinRangePx,
@@ -2203,10 +2206,12 @@ export default function FivePillars({ stations, pillarCount }: FivePillarsProps)
         // At (N−1) viewports of travel, station i reaches the middle of the
         // viewport at `i/(N−1)` of the pin, while `drawAt` — pinned by Stage 1
         // and decided by the owner after the alternative was put to them —
-        // begins segment i at `i/N`. The two axes differ by up to `0.5/N` of the
-        // pin: **10% at five pillars, 40vh of a 400vh walk**. The rail would
-        // land 40vh from the station it names, and the strand would draw one
-        // station's segment while a different station was centred.
+        // begins segment i at `i/N`. The two axes differ by `0.5/N` of the pin
+        // *on average* and by `1/N` at the ends: **40vh and 80vh of a 400vh walk
+        // at five pillars**. (The "up to `0.5/N`, 40vh" this comment carried
+        // until the verifier measured it was the mean, not the maximum.) The
+        // rail would land 80vh from the station it names, and the strand would
+        // draw one station's segment while a different station was centred.
         //
         // A full viewport of travel per dwell removes both disagreements and
         // makes the model self-consistent: station i centres at `i/N`, exactly
@@ -2239,7 +2244,19 @@ export default function FivePillars({ stations, pillarCount }: FivePillarsProps)
     // rather than scrolled, so the page moves; on tablet the stations are
     // stacked, so the element scrolls into view; on mobile the track is a
     // native snap container, so the container scrolls horizontally.
-    const branch = branchFor(window.innerWidth);
+    // Branch on the same media queries the CSS layout uses, not on
+    // `window.innerWidth`: a media query measures CSS pixels while `innerWidth`
+    // includes the scrollbar, so within ~15px of a breakpoint the two disagree
+    // and a rail click would scroll the page under a stacked layout. The queries
+    // come from `src/design/scroll.ts`, so the layout and the button cannot drift.
+    // (`branchFor` keeps no runtime consumer after this; it remains the
+    // spec-pinned statement of §8's three branches, and the boundaries the two
+    // queries are asserted against.)
+    const branch = window.matchMedia(DESKTOP_QUERY).matches
+      ? 'desktop'
+      : window.matchMedia(MOBILE_QUERY).matches
+        ? 'mobile'
+        : 'tablet';
     if (branch === 'tablet') {
       document.getElementById(`station-${stations[index].pillarId}`)?.scrollIntoView({ block: 'start' });
       return;
@@ -3086,7 +3103,7 @@ This task also lands the two cross-cutting checks that only make sense once all 
 - Modify: `src/app/(site)/page.tsx` (mount the overlay), the acts (report their state)
 
 **Interfaces:**
-- Consumes: `branchFor` (Task 3), `drawAt` (`line/station.ts`).
+- Consumes: `DESKTOP_QUERY`, `MOBILE_QUERY` (Task 3) — **not `branchFor`**, which the layout and the rail no longer consult; `drawAt` (`line/station.ts`). The `branch` this task reports is read from the same two queries the rail uses, never from `window.innerWidth`, so the overlay names the branch the layout is actually in.
 - Produces: `isCalibrateEnabled(search: string): boolean`, `formatCalibration(state: CalibrationState): string[]`, `reportCalibration(state: CalibrationState): void`, `subscribeCalibration(listener): () => void`, and the `CalibrationState` type.
 
 - [ ] **Step 1: Write the failing tests**
@@ -3339,7 +3356,7 @@ card-surface."
 
 **Type consistency:** `Station` is defined once in `FivePillars.tsx` and imported by `page.tsx`; `RibbonStage` is a named export from the same file; `CalibrationState` is defined in `lib/calibrate.ts` and consumed by the acts and the overlay; `ActSectionProps`/`MaskLineProps`/`OriginProps`/`WayProps`/`ProofProps` are each declared beside their component; `walkFrame`/`ribbonFrame` return types (`WalkFrame`/`RibbonFrame`) are consumed only through their fields, never re-declared; `stationScrollTarget(index, pillarCount, pinStartY, pinRangeY)` keeps its argument order everywhere.
 
-**Corrections applied during this plan's own review.** Thirteen, in three groups. The first three were found while drafting the acts; the next five by reading the finished plan back against the code it cites; the last five when the owner's review of the walk's wiring exposed a disagreement between two denominators — that group is the one worth reading, because the largest of them would have shipped a walk whose rail buttons land 40vh from the station they name.
+**Corrections applied during this plan's own review.** Thirteen, in three groups. The first three were found while drafting the acts; the next five by reading the finished plan back against the code it cites; the last five when the owner's review of the walk's wiring exposed a disagreement between two denominators — that group is the one worth reading, because the largest of them would have shipped a walk whose rail buttons land up to 80vh from the station they name.
 
 1. **A speculative module was removed, not annotated.** An earlier draft gave Task 3 an `acts/layout.ts` mapping each branch to `{ pinned, horizontal, snap, … }`. Writing the acts showed nothing would consume it: the pin is a `gsap.matchMedia()` branch and the three layouts are Tailwind's `sm:`/`lg:` variants — the ladder `BREAKPOINTS` is aligned to, and the reason Stage 1 renamed that key. It was replaced by the two facts the acts *do* consume, one of which (`branchFor`) finally gets its caller. Had it shipped, the gate-integrity lens would have been right to call it dead weight.
 2. **`Station.highlights` keeps its structure.** The draft typed it `readonly [string, string]`, which would have forced `page.tsx` to flatten `Highlight`'s own `{ title, detail }` shape and lose the copy's structure. It is `readonly Highlight[]`, sliced to two, and `Highlight` is imported from `@/types` rather than re-declared.
@@ -3352,7 +3369,7 @@ card-surface."
 
 **Found in review of the walk's wiring, after the first draft was complete:**
 
-9. **The tween and the draw/rail axes disagreed by `0.5/n` of the pin.** `drawAt`'s slices, `walkFrame`'s N equal segments and `stationScrollTarget` all place station `i` at `i/n` of the walk; the draft's tween, `0 → -(N−1)w`, placed it at `i/(N−1)`. At five pillars the ends differ by **10% of the pin — 40vh** — so the rail would land 40vh from the station it names, and the strand would draw one station's segment while a different station was centred. Fixed by the **N-viewport tween**, which is the resolution Stage 1's ruling had already offered when it corrected `drawAt` ("change Task 7's tween from (N−1) to N steps"). It also makes each dwell travel exactly one viewport, which the `(N−1)` model did not. **The alternative — slicing on `N−1` — is impossible**, ruled out by Stage 1's proof that the last station's window would fall outside the walk and its segment would never draw at any progress.
+9. **The tween and the draw/rail axes disagreed by `0.5/n` of the pin.** `drawAt`'s slices, `walkFrame`'s N equal segments and `stationScrollTarget` all place station `i` at `i/n` of the walk; the draft's tween, `0 → -(N−1)w`, placed it at `i/(N−1)`. At five pillars the ends differ by up to **`1/n` of the pin — 80vh of a 400vh walk** (measured by the Task 3 verifier; this entry said "40vh" until then, which is the mean, not the maximum) — so the rail would land 80vh from the station it names, and the strand would draw one station's segment while a different station was centred. Fixed by the **N-viewport tween**, which is the resolution Stage 1's ruling had already offered when it corrected `drawAt` ("change Task 7's tween from (N−1) to N steps"). It also makes each dwell travel exactly one viewport, which the `(N−1)` model did not. **The alternative — slicing on `N−1` — is impossible**, ruled out by Stage 1's proof that the last station's window would fall outside the walk and its segment would never draw at any progress.
 10. **`spec.md` §4 Act 1's tween formula is superseded by that fix**, so Task 6 corrects the spec rather than leaving the authority false — the same call Stage 1 made on two of the spec's own rows ("fixing the code while leaving the authority false would hand the next stage's planner a contradiction").
 11. **The rail's pin-start derivation was wrong, and no report had flagged it.** It read `getBoundingClientRect().top + scrollY`. *Inside* the pinned range the pinned element is fixed to the top of the viewport, so that expression returns the current scroll position rather than the pin's start — every click would overshoot by however far into the walk the reader already was. It now reads the ScrollTrigger's own `start`, published in `onRefresh`.
 12. **The pin range was computed in two places** — the pin's `end` and the rail's denominator. Now one tested function, `walkPinRangePx`, with an assertion that the rail's last target is 80% of it at five pillars.
@@ -3389,7 +3406,7 @@ This stage invalidates claims in six places. Each is a defect of the kind this r
 | `docs/projects/landing-redesign/spec.md` | **Two rows, both made false by this stage.** §4 Act 1's tween, "`x` tweened `0 → -(100 × (N−1))vw`" — superseded: that formula puts station `i` at `i/(N−1)` of the walk, while `drawAt`'s slices, `walkFrame`'s segments and `stationScrollTarget` all put it at `i/N`. And **§10.1's `assertContinuity` row**, which states the old equality rule ("each act's exit anchor equals the next act's entry anchor") — the correction is not scheduled anywhere else in this plan, which the correctness lens caught | §4: **Task 6**, whose tween makes it false. §10.1: **Task 1's fix round** — the row was already false when Task 1 landed, and leaving it for a later task would mean building eight more tasks on a spec that contradicts the code |
 | `docs/design/motion.md` | "`src/lib/gsap.ts`… not yet created" was fixed at Stage 1 close; check for anything about the acts being absent | **Task 5** (first act) |
 | `docs/surfaces/homepage.md` | Describes 12 sections | **Task 11** |
-| `docs/projects/landing-redesign/state.md` | "Stage 2 is neither planned nor started"; the "do not get wrong" list's join entries | **At close** (per `run-a-stage`) |
+| `docs/projects/landing-redesign/state.md` | "Stage 2 is neither planned nor started"; the "do not get wrong" list's join entries | **At close** (per `platform/execution.md`) |
 | `docs/platform/blockers.md` | Seed testimonials are a launch blocker — Act 3 leans on them harder, and the visible warning is the mitigation, not a resolution | **Task 9**, one line |
 
 **Carried forward, not forgotten** (out of scope by D4, and each needs a home in Stage 3's planning inputs):
@@ -3399,4 +3416,4 @@ This stage invalidates claims in six places. Each is a defect of the kind this r
 - **The spec's own two stale counts** (`Five X. One Y.` ×5 vs the tree's 8; `Portfolios, dashboards` ×4 vs 3), recorded in the copy table so the next reader does not re-derive them.
 - **`motion`'s first import** is Task 5's, and `motion/react` must be verified against the installed package's `exports` before it is assumed.
 
-**ADRs this stage expects at close** (per `run-a-stage`, rulings become durable decisions): the seam rule re-specification (supersedes the premise `assertContinuity` shipped with), the join as viewBox selection (the outcome 0006 deferred), and the ribbon's convergence being symbolic rather than a scale-out of the walk's own nodes.
+**ADRs this stage expects at close** (per `platform/execution.md`, rulings become durable decisions): the seam rule re-specification (supersedes the premise `assertContinuity` shipped with), the join as viewBox selection (the outcome 0006 deferred), and the ribbon's convergence being symbolic rather than a scale-out of the walk's own nodes.

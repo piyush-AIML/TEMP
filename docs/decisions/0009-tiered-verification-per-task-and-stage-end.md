@@ -1,6 +1,6 @@
 # 0009 — Tiered verification: one verifier per task, depth at stage end
 
-**Status:** accepted 2026-09-13 · **Supersedes:** the per-task three-lens regime in `run-a-stage`
+**Status:** accepted 2026-09-13 · **Superseded 2026-09-13 by [ADR 0010](0010-no-agent-execution.md)**, which replaces agent-driven verification with an operator-run procedure. Kept as the record of the tiered regime, which is archived verbatim at [`platform/archive/`](../platform/archive/). · **Supersedes:** the per-task three-lens regime in `run-a-stage`
 **Note on numbering:** `0008` is already promised by shipped docstrings (`pathBuilders.ts`, and
 `0006`'s append) to the seam-rule re-specification that Stage 2 will record at close. ADRs are
 numbered by when they are written, so this one takes 0009 and that one keeps its promised number.

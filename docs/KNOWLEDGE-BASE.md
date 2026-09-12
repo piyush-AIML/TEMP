@@ -50,7 +50,7 @@ mechanism determines the budget.
 |---|---|---|---|---|
 | **ALWAYS** | `CLAUDE.md` at repo root | **< 200 lines** | every request | Invariants true for *every* task: the gate command, non-obvious gotchas, repo etiquette |
 | **PATH** | `.claude/rules/*.md` with `paths:` frontmatter | ~100 lines each | Claude reads a matching file | Conventions for one subtree |
-| **INVOKE** | `.claude/skills/<name>/SKILL.md` + sibling reference files | **< 500 lines** per `SKILL.md` | the skill is invoked | Procedures: verify, add-a-pillar, run-a-stage |
+| **INVOKE** | `.claude/skills/<name>/SKILL.md` + sibling reference files | **< 500 lines** per `SKILL.md` | the skill is invoked | Procedures: verify, add-a-pillar. **Stage execution is deliberately *not* a skill** — it is `platform/execution.md`, an ONDEMAND document the assistant follows directly, with the agent-driven predecessors archived beside it |
 | **SESSION** | `SessionStart` hook (`.claude/hooks/`) | **< 20 lines of output** | turn one, and again after compaction | *Dynamic* state: branch, active project, next task |
 | **ONDEMAND** | `docs/**`, reached via `docs/INDEX.md` | unbounded | Claude reads it deliberately | Specifications, plans, ADRs, history |
 
@@ -71,7 +71,8 @@ The primary cut inside `docs/` is **currency**, because that is the axis along w
 documents failed:
 
 ```
-docs/platform/      stack · verification · deployment-env · security · blockers · history
+docs/platform/      stack · verification · execution · deployment-env · security · blockers · history
+                    archive/  ← retired procedures, kept verbatim and restorable
 docs/architecture/  routes · source-layout · layering · data-model
 docs/design/        system · palette · motion
 docs/surfaces/      homepage · programme-pages · shell-and-nav · enquiry · seo

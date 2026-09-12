@@ -34,17 +34,22 @@ structure** — the homepage still renders its 12 sections, with new colours.
 
 ## 2. Immediate next action
 
-**Stage 2 is in progress — 2 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) is closed at `04b1702`; Task 2 (the join, `frames.ts`) is implemented and in verification. The live plan is `.claude/plans/landing-redesign-stage-2.md`; it moves into `stages/` when the stage closes.
+**Stage 2 is in progress — 3 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
+`04b1702`; Task 2 (the join, `frames.ts`) → `048af65`; Task 3 (the two facts §8 leaves to JS) →
+`f9e0919`. The live plan is `.claude/plans/landing-redesign-stage-2.md`; it moves into `stages/` when
+the stage closes.
 
-**The verification regime changed on 2026-09-13.** From Task 3, each task gets **one verifier held across its whole lifecycle** — three phases in a fixed order, then the same agent resumed for the post-fix re-check — with depth moved to a scripted mutation sweep and three question-defined lenses at stage end. See [`docs/decisions/0009`](../../decisions/0009-tiered-verification-per-task-and-stage-end.md). Tasks 1–2 ran under the previous three-lens regime.
+**Execution is a no-agent procedure as of 2026-09-13, on the owner's instruction.** No subagents run
+and no skill drives the loop: the assistant implements, verifies in three phases (contract → claims →
+mutation) and fixes, itself. See [`platform/execution.md`](../../platform/execution.md) and
+[ADR 0010](../../decisions/0010-no-agent-execution.md). The two agent-driven predecessors are archived
+verbatim at [`platform/archive/`](../../platform/archive/) and are one `cp` from being restored —
+Tasks 1–2 ran under the three-lens regime and Task 3 under the tiered one, so all three regimes are
+directly comparable on cost: **949k · 929k · 516k** per task.
 
-Next action: continue the stage with the `run-a-stage` skill.
+Next action: **Task 4** — `LineStage`'s render-only mode and the frame override — per
+`platform/execution.md`. **The stage is paused here at the owner's instruction.**
 
-**Owner decisions waiting, not blocking:** the fork's geometry is a horizontal bulge rather than a
-vertical leave; the ten anchor values, the arc coefficients and the fork shape are **invented and
-unvalidated** (pinned by test, which makes a *change* visible without making the values *correct*);
-whether `pillars`/`way`/`proof` should really have zero-length strands; and whether the Accent-on-
-`/programmes/[slug]` interface needs a prop or is satisfied by CSS.
 
 ## 3. Blocked
 

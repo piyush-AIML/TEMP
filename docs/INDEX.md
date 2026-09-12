@@ -26,7 +26,7 @@ you rarely need the first two by hand.
 
 | Area | Answers | Files |
 |---|---|---|
-| [`platform/`](platform/) | How do I build, test, deploy and debug this? What is blocked? | stack · verification · deployment-env · security · blockers · history |
+| [`platform/`](platform/) | How do I build, test, deploy and debug this? How is a stage executed? What is blocked? | stack · verification · [execution](platform/execution.md) · deployment-env · security · blockers · history · [archive/](platform/archive/) (retired procedures, restorable) |
 | [`architecture/`](architecture/) | How is the application put together? Where does code go? | routes · source-layout · layering · data-model |
 | [`design/`](design/) | What are the visual rules? Why these colours? | system · palette · motion |
 | [`surfaces/`](surfaces/) | How does each user-facing area work? | homepage · programme-pages · shell-and-nav · enquiry · seo |

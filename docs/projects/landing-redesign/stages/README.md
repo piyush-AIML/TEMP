@@ -12,7 +12,8 @@ decomposition.
 ## The planning contract
 
 To plan a stage: read its entry below, then its "decided" spec sections, then run the
-`writing-plans` flow. To execute it, use the `run-a-stage` skill. When a stage closes, its plan moves
+planning pass. To execute it, follow [`platform/execution.md`](../../../platform/execution.md) — the
+no-agent procedure; no skill and no subagent drives it. When a stage closes, its plan moves
 into this directory and gains an entry in the table.
 
 **Why a stage's plan waits for the stage before it:** each stage's task breakdown depends on what the

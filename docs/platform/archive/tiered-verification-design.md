@@ -1,4 +1,4 @@
-# Tiered verification — final design (PROPOSED, awaiting owner approval)
+# Tiered verification — the approved design (in force from Stage 2 Task 3)
 
 **Status:** approved 2026-09-13 and in force — see `docs/decisions/0009-tiered-verification-per-task-and-stage-end.md` and `.claude/skills/run-a-stage/SKILL.md`. Kept as the design's reasoning; the ADR is the decision.
 **Scope of the change: verification only.** Implementation, the briefs, the gate and the ledger are unchanged.
