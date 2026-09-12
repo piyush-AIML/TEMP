@@ -54,7 +54,7 @@ export const programmeColors = {
     graphicLight: '#8B62D9',
     graphicDark: '#9E7FE4',
     softLight: '#EDE6FB',
-    softDark: '#1E1836',
+    softDark: '#221B3C',
   },
   achieve: {
     textLight: '#8A5A00',
@@ -70,7 +70,7 @@ export const programmeColors = {
     graphicLight: '#E0437C',
     graphicDark: '#EC6A99',
     softLight: '#FCE4EC',
-    softDark: '#331423',
+    softDark: '#391627',
   },
 } as const satisfies Record<string, PillarAccent>;
 

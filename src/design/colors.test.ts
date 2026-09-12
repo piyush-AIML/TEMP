@@ -54,10 +54,17 @@ describe('pillar accents', () => {
       expect(contrastRatio(accent.graphicDark, '#0b0f1e')).toBeGreaterThanOrEqual(AA_NON_TEXT);
     });
 
-    it(`${id}: dark soft wash is visible against both dark canvases`, () => {
-      // Spec §6.3 — the shipped washes measured 1.00-1.06 and were invisible.
-      // The floor is 1.10; the band to aim for is 1.15-1.25.
-      expect(contrastRatio(accent.softDark, '#0b0f1e')).toBeGreaterThanOrEqual(1.1);
+    it(`${id}: dark soft wash reads as a tint on both dark canvases`, () => {
+      // Spec §6.3. Floors: >=1.15 against the darkest canvas, >=1.02 against
+      // the lighter one. The second floor is the derived equivalent of the
+      // first — a wash always scores 1.1292x higher against #0b0f1e than
+      // against #141b38, because #0b0f1e is darker.
+      //
+      // There is deliberately NO upper bound. A wash that clears 1.15 on the
+      // darker canvas necessarily exceeds 1.25 on the lighter one, and that is
+      // correct: it is a tint against a lighter surface. An earlier draft of
+      // the spec demanded 1.15-1.25 on *both*, which is unsatisfiable.
+      expect(contrastRatio(accent.softDark, '#0b0f1e')).toBeGreaterThanOrEqual(1.15);
       expect(contrastRatio(accent.softDark, '#141b38')).toBeGreaterThanOrEqual(1.02);
     });
   }
