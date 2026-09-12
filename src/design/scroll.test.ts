@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest';
+import { drawAt } from '@/components/educraft/line/station';
 import {
   BREAKPOINTS,
   CEILINGS,
+  DESKTOP_QUERY,
   SCRUB,
   WALK_BASE_VH,
   WALK_MAX_VH,
   WALK_MIN_VH,
   branchFor,
   perStationVh,
+  stationScrollTarget,
+  walkPinRangePx,
 } from './scroll';
 
 /**
@@ -168,5 +172,93 @@ describe('SCRUB and the timing ceilings', () => {
       ribbonDrawMs: 700,
       uiFeedbackMaxMs: 160,
     });
+  });
+});
+
+describe('the desktop media query', () => {
+  it('pins the exact string the Tailwind variant is aligned to', () => {
+    expect(DESKTOP_QUERY).toBe('(min-width: 1024px)');
+  });
+
+  it('agrees with branchFor at its own boundary', () => {
+    // If the query and `branchFor` drift, the CSS layout and the GSAP branch
+    // disagree at a breakpoint: the visible failure is a pinned track with no
+    // animation, or a stacked spine that translates sideways. The tablet and
+    // mobile boundary is `branchFor`'s own, pinned in the Stage 1 tests.
+    const desktopMin = Number(/min-width: (\d+)px/.exec(DESKTOP_QUERY)![1]);
+    expect(desktopMin).toBe(BREAKPOINTS.lg);
+    expect(branchFor(desktopMin), 'the query includes its own boundary').toBe('desktop');
+    expect(branchFor(desktopMin - 1)).toBe('tablet');
+  });
+});
+
+describe('stationScrollTarget', () => {
+  it('targets the progress at which each station is centred', () => {
+    // Five stations over a 400vh pin starting at 0: the track travels one
+    // viewport per dwell, so station 0 centres at the pin's start and station 4
+    // at 80% of it.
+    expect(stationScrollTarget(0, 5, 0, 400)).toBe(0);
+    expect(stationScrollTarget(2, 5, 0, 400)).toBe(160);
+    expect(stationScrollTarget(4, 5, 0, 400)).toBe(320);
+  });
+
+  it('offsets from the pin start rather than assuming the top of the page', () => {
+    expect(stationScrollTarget(0, 5, 1200, 400)).toBe(1200);
+    expect(stationScrollTarget(3, 5, 1200, 400)).toBe(1440);
+  });
+
+  it('is strictly increasing, so a button never scrolls backwards', () => {
+    for (let i = 1; i < 7; i += 1) {
+      expect(stationScrollTarget(i, 7, 0, 420)).toBeGreaterThan(
+        stationScrollTarget(i - 1, 7, 0, 420)
+      );
+    }
+  });
+
+  it('clamps an out-of-range index to the ends', () => {
+    expect(stationScrollTarget(-1, 5, 0, 400)).toBe(0);
+    expect(stationScrollTarget(9, 5, 0, 400)).toBe(320);
+  });
+
+  it('returns the pin start for an unusable count rather than NaN', () => {
+    // Same policy as perStationVh and drawAt: an unusable count must not produce
+    // a NaN scroll position, which the browser silently ignores — the button
+    // would do nothing, with no error.
+    expect(stationScrollTarget(0, 0, 300, 400)).toBe(300);
+  });
+
+  it('targets the exact progress at which drawAt starts that station', () => {
+    // The cross-check, and the reason the rail is trustworthy: a button takes
+    // the page to the progress where the walk arrives at its station, which is
+    // the same progress at which that station's segment begins to draw. If
+    // either module changes its axis, a button would land somewhere the draw
+    // does not agree with.
+    for (const [i, n] of [[0, 5], [2, 5], [4, 5], [3, 7]] as const) {
+      const progress = stationScrollTarget(i, n, 0, 1);
+      expect(drawAt(progress, i, n), `station ${i} of ${n} has just begun`).toBe(0);
+      if (i > 0) {
+        // Station 0 has no predecessor; its own segment is the first thing drawn.
+        expect(drawAt(progress, i - 1, n), `station ${i - 1} is complete`).toBe(1);
+      }
+    }
+  });
+});
+
+describe('walkPinRangePx', () => {
+  it('is one dwell per station, in pixels', () => {
+    // An 800px viewport at five pillars: 80vh per station, five stations.
+    expect(walkPinRangePx(800, 5)).toBe(3200);
+  });
+
+  it('keeps the act near four screens at six and seven pillars', () => {
+    expect(walkPinRangePx(800, 6)).toBe(3200); // 400/6 vh × 6 = 400vh
+    expect(walkPinRangePx(800, 7)).toBe(3360); // clamped at 60vh × 7 = 420vh
+  });
+
+  it('agrees with stationScrollTarget about where the last station is', () => {
+    // The last station is centred at 80% of the walk at five pillars, and the
+    // pin runs to 100%. Computed in one place, the two cannot drift.
+    const range = walkPinRangePx(800, 5);
+    expect(stationScrollTarget(4, 5, 0, range)).toBe(0.8 * range);
   });
 });

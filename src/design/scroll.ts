@@ -53,6 +53,56 @@ export function perStationVh(pillarCount: number): number {
 }
 
 /**
+ * The walk's pinned run, in pixels: one dwell per station, from
+ * `perStationVh`, transcribed against the live viewport height.
+ *
+ * This is both the pin's `end` distance and the denominator
+ * `stationScrollTarget` divides, which is why it is one function. Computed in
+ * two places, a change to the dwell formula could move the pin without moving
+ * the rail's targets, and every button would land a fixed fraction of the walk
+ * away from the station it names.
+ */
+export function walkPinRangePx(viewportHeightPx: number, pillarCount: number): number {
+  return (viewportHeightPx * perStationVh(pillarCount) * pillarCount) / 100;
+}
+
+/**
+ * Where a rail button should put the page for station `index`.
+ *
+ * The progress rail is N real `<button>`s (spec §9), and on desktop the track is
+ * `transform`-translated rather than scrolled — `scrollIntoView` cannot reach a
+ * station inside it, so the button must move the page instead.
+ *
+ * **Station `i` is centred at `i/n` of the pin — not at the midpoint of its own
+ * dwell.** The track travels N viewports across the pin, one per dwell, and
+ * station `i` sits at the centre of slot `i` in the track's own frame, so it
+ * reaches the middle of the viewport exactly when the walk has covered `i`
+ * viewports: `i/n` of the way. That is also the instant its own segment begins
+ * to draw, since `drawAt(progress, i, n)` is `0` at `i/n` and `1` by the end of
+ * the dwell — so the strand's drawn tip arrives at each station as that station
+ * centres.
+ *
+ * The planning pass first recorded `(i + 0.5)/n` here — the dwell's midpoint —
+ * which disagreed with the tween by up to `0.5/n` of the pin, 40vh at five
+ * pillars. Task 6 carries the ruling that removed the disagreement.
+ *
+ * `pinStartY` is the page offset of the pin's start and `pinRangeY` its length,
+ * both in pixels. An unusable count returns `pinStartY`, matching `perStationVh`
+ * and `drawAt`: a `NaN` here would be silently ignored by the browser and the
+ * button would do nothing with no error.
+ */
+export function stationScrollTarget(
+  index: number,
+  pillarCount: number,
+  pinStartY: number,
+  pinRangeY: number
+): number {
+  if (pillarCount <= 0) return pinStartY;
+  const station = Math.min(Math.max(index, 0), pillarCount - 1);
+  return pinStartY + (station / pillarCount) * pinRangeY;
+}
+
+/**
  * Which scroll mechanic a viewport gets (Landing-Redesign-Plan.md §8).
  * Desktop pins and scrubs horizontally; tablet deliberately does NOT (a pinned
  * horizontal track on a 768px viewport fights the browser's own gestures);
@@ -63,6 +113,20 @@ export function branchFor(widthPx: number): ScrollBranch {
   if (widthPx >= BREAKPOINTS.sm) return 'tablet';
   return 'mobile';
 }
+
+/**
+ * The desktop branch, derived from `BREAKPOINTS` so the breakpoint exists once.
+ * `branchFor` is the runtime decision; this is the same decision expressed as a
+ * media query, for `gsap.matchMedia()`.
+ *
+ * **Only the desktop query exists, deliberately.** The pin and the scrubbed
+ * track are the desktop branch; tablet and mobile are what happens when this
+ * query does not match, so a tablet query would have no reader — and an export
+ * with no consumer is the same defect as a test that pins nothing. The
+ * boundaries themselves stay in `branchFor`, which the Stage 1 tests already
+ * pin on all three sides.
+ */
+export const DESKTOP_QUERY = `(min-width: ${BREAKPOINTS.lg}px)`;
 
 /**
  * GSAP ScrollTrigger scrub smoothing, in seconds. 1 gives the walk a weighted
