@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { EnquiryModalProvider } from '@/context/EnquiryModalContext';
 import { ACT_ANCHORS } from '@/components/educraft/line/anchors';
-import { forkPaths } from '@/components/educraft/line/frames';
+import { forkPaths, seedAnchors } from '@/components/educraft/line/frames';
 import { pathFor } from '@/components/educraft/line/pathBuilders';
 import Origin, { type OriginProps } from './Origin';
 
@@ -85,5 +85,12 @@ describe('Act 0 — Origin', () => {
   it('scales to a sixth pillar with no rewrite', () => {
     const markup = render({ pillarCount: 6 });
     expect((markup.match(/data-line-path/g) ?? []).length).toBe(1 + 6);
+    // The branches and the nodes come from the same array, so a sixth branch
+    // that no node marks is the join half-applied. Measured on Task 5's
+    // mutation pass: without this, `seedAnchors(5)` left in place kept the
+    // suite green while the title above claimed the coverage.
+    for (const seed of seedAnchors(6)) {
+      expect(markup).toContain(`left:${seed.x * 100}%`);
+    }
   });
 });

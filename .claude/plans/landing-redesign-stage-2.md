@@ -1566,7 +1566,7 @@ than an animation."
 
 The hero stops being "a section that holds a visual" and becomes the first frame of a continuous sequence (§2). The copy is untouched — §4 says it is good and the staging was the problem — and the mechanical change is that the strand now enters top-right, descends, and forks into five at the fold, pinned for 70vh.
 
-This task also lands the two pieces of scaffolding the other acts reuse: the shared server `ActSection`, and the Motion `MaskLine` the H1's lines reveal through.
+This task also lands the two pieces of scaffolding the other acts reuse: the shared server `ActSection` — taken up by Tasks 8, 9 and 10 — and the Motion `MaskLine` the H1's lines reveal through, which no act after Act 0 currently uses.
 
 **Files:**
 - Create: `src/components/educraft/acts/ActSection.tsx`
@@ -1575,7 +1575,7 @@ This task also lands the two pieces of scaffolding the other acts reuse: the sha
 
 **Interfaces:**
 - Consumes: `ACT_ANCHORS` (Task 1); `ACT_VIEW_BOX`, `forkPaths`, `seedAnchors` (Task 2); `DESKTOP_QUERY` (Task 3); `LineStage`'s `draw={false}` (Task 4); `bezierControlPoints` and `EASE`/`REDUCED_MOTION_QUERY`/`useGSAP`/`gsap`/`registerGsap` (`lib/gsap.ts`); `motionTokens` (`design/motion.ts`); `CEILINGS.headlineStaggerMs` (`design/scroll.ts`); `EnquireButton`, `ButtonNextLink`, `Eyebrow` (existing UI). **`assertForkSeam` is *not* consumed here** — Task 11 is the single call site.
-- Produces: `Origin` (default export, client), `OriginProps`; `ActSection` (default export, **server**), `ActSectionProps`; `MaskLine` (default export, client), `MaskLineProps`. Consumed by Tasks 6–11.
+- Produces: `Origin` (default export, client), `OriginProps`; `ActSection` (default export, **server**), `ActSectionProps`; `MaskLine` (default export, client), `MaskLineProps`. *(Corrected 2026-09-13, on Task 5's contract pass: "Consumed by Tasks 6–11" was true of none of the three. Measured across all twelve briefs: `Origin` is consumed by Task 11 alone; `ActSection` by Tasks 8, 9 and 10; and **`MaskLine` by nothing outside this task** — `Origin` renders it, and spec §3.2's other Motion candidates (station enter/exit, panel crossfade) are not built on it. If that reuse was intended, Tasks 6–10 are where to route it; otherwise it is a single-use component and this line should not promise otherwise.)*
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -1615,7 +1615,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { ACT_ANCHORS } from '@/components/educraft/line/anchors';
-import { forkPaths } from '@/components/educraft/line/frames';
+import { forkPaths, seedAnchors } from '@/components/educraft/line/frames';
 import { pathFor } from '@/components/educraft/line/pathBuilders';
 import { EnquiryModalProvider } from '@/context/EnquiryModalContext';
 import Origin, { type OriginProps } from './Origin';
@@ -1690,6 +1690,13 @@ describe('Act 0 — Origin', () => {
   it('scales to a sixth pillar with no rewrite', () => {
     const markup = render({ pillarCount: 6 });
     expect((markup.match(/data-line-path/g) ?? []).length).toBe(1 + 6);
+    // The branches and the nodes come from the same array, so a sixth branch
+    // that no node marks is the join half-applied. Measured on Task 5's
+    // mutation pass: without this, `seedAnchors(5)` left in place kept the
+    // suite green while the title above claimed the coverage.
+    for (const seed of seedAnchors(6)) {
+      expect(markup).toContain(`left:${seed.x * 100}%`);
+    }
   });
 });
 ```
