@@ -33,10 +33,11 @@ structure** — the homepage still renders its 12 sections, with new colours.
 
 ## 2. Immediate next action
 
-**Stage 2 is in progress — 3 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
+**Stage 2 is in progress — 4 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
 `04b1702`; Task 2 (the join, `frames.ts`) → `048af65`; Task 3 (the two facts §8 leaves to JS) →
-`f9e0919`. The live plan is `.claude/plans/landing-redesign-stage-2.md`; it moves into `stages/` when
-the stage closes.
+`f9e0919`; Task 4 (`LineStage`'s render-only mode and the frame override) → `10291cd`, fix `8baddad`,
+corrections `620e35d` `6dd46c3`. The live plan is `.claude/plans/landing-redesign-stage-2.md`; it moves
+into `stages/` when the stage closes.
 
 **Execution is a no-agent procedure as of 2026-09-13, on the owner's instruction.** No subagents run
 and no skill drives the loop: the assistant implements, verifies in three phases (contract → claims →
@@ -46,8 +47,8 @@ verbatim at [`platform/archive/`](../../platform/archive/) and are one `cp` from
 Tasks 1–2 ran under the three-lens regime and Task 3 under the tiered one, so all three regimes are
 directly comparable on cost: **949k · 929k · 516k** per task.
 
-Next action: **Task 4** — `LineStage`'s render-only mode and the frame override — per
-`platform/execution.md`. **The stage is paused here at the owner's instruction.**
+Next action: **Task 5** — Act 0 (Origin) and the strand's first appearance — per
+`platform/execution.md`. **Awaiting the owner: they sequence the work.**
 
 
 ## 3. Blocked
@@ -65,7 +66,8 @@ against its own foreground — the hex this stage exists to retire, with no cons
 - **The join is resolved — `line/frames.ts`, Task 2.** It reconciles the three modules by **viewBox selection, not arithmetic**: a vertical act renders `0 0 1 1`, the walk `0 0 N 1` over an `N × 100vw` element, so `stationPositions`' `x = i` becomes slot `i`'s centre with a half-slot offset. The 0.33%-of-viewBox / 0.26px failure is no longer reachable from any caller in this plan. **Every export of `frames.ts` has a named consumer**; keep it that way.
 - **`assertContinuity` was re-specified, not wired as shipped (Task 1).** It demanded `exit == enter` as raw values, which no correct vertical chain can satisfy, because each anchor lives in its own act's box. It now checks the *shape* of a seam — exit on the act's bottom edge, entry on the next act's top edge, one shared horizontal fraction — and it **throws** on a chain with fewer than two acts, so a vacuous default cannot pass. Task 11 calls it at render from `page.tsx`, the only runtime call site.
 - **The walk's axis is decided (R1); Task 6 implements it.** The track travels **N viewports, not N−1**, so station `i` centres at `i/N` — exactly where `drawAt` begins drawing its segment — and each dwell moves one viewport. The spec's `(N−1)` formula is superseded and Task 6 corrects `spec.md` in the same commit. `drawAt` itself is unchanged: `clamp01(pillarCount * progress − index)` is *forced*, and do not "correct" it back toward the old tween.
-- **`LineStage`'s two gaps are Task 4's.** It has no render-only mode (Act 1 needs one: its pin and its track tween are a single ScrollTrigger the act owns, which is also the answer to the documented `pin ∧ scrub` non-composition) and no frame override (so `ACT_VIEW_BOX` and both frame strings would have no reader while five call sites restated the viewBox as raw numbers). Task 4 adds `draw?: boolean` and `viewBox?: string`, both additive, with the default path byte-identical.
+- **`LineStage`'s two gaps were Task 4's and are closed (`10291cd`).** `draw?: boolean` and `viewBox?: string` are additive with the default path byte-identical, and R7's three readerless constants now have six call sites across Tasks 5–10. **One residual, measured:** the `draw` default's *value* is unobservable to the suite — inverting it, or deleting it outright, leaves `15 passed (15)`, because markup never depends on `draw` and no test runs an effect. It is pinned by one literal and the comment beside it; it is the path Tasks 8–10 take, while `?calibrate=1` numbers only the two scrubbed acts (R16 — the owner's call if they want a number on it).
+- **A verbatim quotation in the plan was not in the document it cited (Task 4).** "The Stage 1 rulings name this gap twice" is false as written — `rulings.md` has no `render-only`, no `Act 1`, no `compose`; the homes are `state.md` §4 and `rulings.md:218` (R36, the `pin ∧ scrub` half). Corrected in the plan, and `10291cd`'s message repeats the attribution — unamended (R4), corrected in `8baddad`. **Check a citation resolves before inheriting it**; this is the second time this stage has paid for that.
 - **Palette hexes are measured — copy them verbatim, never re-derive or "improve" them.** `src/design/colors.test.ts` enforces AA, and its token-against-token pair assertions (not only token-vs-canvas) are what caught a 2.64:1 button. **`colors.ts` and `globals.css` must carry identical hex values, and the suite now asserts that mirror** — an edit to either file alone fails.
 - **Tailwind 4 needs literal class names** — `bg-ec-${x}` emits no CSS; every pillar→class mapping is written out. `stroke-ec-teal-graphic` is verified emitted, by hand.
 - **`@theme inline` alias coverage is still unasserted.** A token declared in `:root`/`.dark` but missing from the `@theme inline` block emits **no Tailwind class** and passes the whole suite — the palette mirror test reads `:root`/`.dark` only. Adding a token means three places, and nothing checks the third.
