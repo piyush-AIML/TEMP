@@ -58,8 +58,10 @@ describe('pathFor', () => {
   });
 
   it('pins the fork at dy = 0, where its first control point sits on y0', () => {
-    // The fork's actual case: `origin.exit` and the five seed nodes share a y,
-    // so the "leaves vertically first" reading does not hold — it starts flat.
+    // The fork's case: it leaves `origin.exit`, which ACT_ANCHORS fixes at
+    // y = 1, and the seeds sit on that same fold — so `dy` is 0 and the "leaves
+    // vertically first" reading does not hold. It starts flat. (ACT_ANCHORS
+    // holds act enter/exit anchors only, so the seed y is not readable there.)
     expect(pathFor({ x: 0.5, y: 0.5 }, { x: 1, y: 0.5 }, 'fork')).toBe('M 0.5 0.5 C 0.5 0.5 0.75 0.5 1 0.5');
   });
 
@@ -87,6 +89,20 @@ describe('pathFor', () => {
         NonFiniteCoordinateError
       );
     }
+  });
+
+  it('throws for finite inputs that stop being finite inside the maths', () => {
+    // `round` multiplies by 100, so `Number.MAX_VALUE` is finite going in and
+    // `Infinity` coming out: a guard on the arguments passes it through, and
+    // the browser then drops a `d` of "M Infinity 0 L 0 0" without a word.
+    expect(() => pathFor({ x: Number.MAX_VALUE, y: 0 }, { x: 0, y: 0 }, 'line')).toThrow(
+      NonFiniteCoordinateError
+    );
+    // The same hole on a curve path, where the infinite endpoint makes `dx`
+    // infinite and the midpoint `Infinity + -Infinity`, i.e. `NaN`.
+    expect(() => pathFor({ x: Number.MAX_VALUE, y: 0 }, { x: 0, y: 0 })).toThrow(
+      NonFiniteCoordinateError
+    );
   });
 });
 

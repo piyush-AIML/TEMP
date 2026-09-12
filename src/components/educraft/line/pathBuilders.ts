@@ -24,16 +24,23 @@ import { ACT_ANCHORS, type Anchor } from './anchors';
 export type PathShape = 'arc' | 'line' | 'fork';
 
 /**
- * Thrown for a coordinate that is not finite.
+ * Thrown for a number that cannot be written into a path.
  *
  * A browser silently drops a `d` it cannot parse, exactly as it rejects a `NaN`
  * dash offset (station.ts states the same policy for the same reason), so a
- * strand built from a non-finite point would simply vanish with nothing to
+ * strand built from a non-finite number would simply vanish with nothing to
  * trace. This module fails loudly instead.
  *
- * The guard is on the inputs deliberately: an infinite endpoint makes `dx`
- * infinite, and the midpoint is then `x0 + dx * 0.5` or `x1 - dx * 0.5`, which
- * is `Infinity - Infinity` — a `NaN` that no later check would see.
+ * **What is checked is the numbers that would be written into the string, not
+ * the arguments that came in.** `round` multiplies by 100, so a perfectly
+ * finite coordinate above `Number.MAX_VALUE / 100` overflows *inside the
+ * rounding* and comes back as `Infinity`; and once an endpoint has done that,
+ * `dx = x1 - x0` is `±Infinity` and the midpoint `round(x0 + dx * 0.5)` is
+ * `Infinity + -Infinity` — a `NaN`. Guarding only the arguments passes both
+ * straight into the string, which is the outcome this class exists to prevent.
+ * `perStationVh` in `src/design/scroll.ts` shipped that weaker guard — `NaN`
+ * inputs caught, `NaN` results not — and `docs/projects/landing-redesign/
+ * rulings.md` records it as a failure against its own stated goal.
  */
 export class NonFiniteCoordinateError extends Error {
   constructor(message: string) {
@@ -42,15 +49,21 @@ export class NonFiniteCoordinateError extends Error {
   }
 }
 
-/** Two decimal places is plenty at normalised scale and keeps strings diffable. */
+/**
+ * Two decimal places is plenty at normalised scale and keeps strings diffable.
+ *
+ * It can also overflow to `Infinity` for a finite input above
+ * `Number.MAX_VALUE / 100`, which is why `pathFor` checks its results rather
+ * than its arguments — see `NonFiniteCoordinateError`.
+ */
 const round = (value: number): number => Math.round(value * 100) / 100;
 
-/** Rejects a non-finite endpoint before it can reach a control point. */
-function assertFinite(label: string, point: Anchor): void {
-  if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) {
+/** Rejects a non-finite value before it can reach the `d` string. */
+function assertFinite(label: string, value: number): void {
+  if (!Number.isFinite(value)) {
     throw new NonFiniteCoordinateError(
-      `pathFor: ${label} is not a finite point (${point.x}, ${point.y}). ` +
-        'A path built from it would be dropped silently by the browser.'
+      `pathFor: ${label} is not finite (${value}). ` +
+        'A path containing it would be dropped silently by the browser.'
     );
   }
 }
@@ -68,13 +81,20 @@ function assertFinite(label: string, point: Anchor): void {
  *           `dy` is non-zero — see the note below.
  */
 export function pathFor(from: Anchor, to: Anchor, shape: PathShape = 'arc'): string {
-  assertFinite('from', from);
-  assertFinite('to', to);
-
   const x0 = round(from.x);
   const y0 = round(from.y);
   const x1 = round(to.x);
   const y1 = round(to.y);
+
+  // Checked *after* rounding, not before: `round` multiplies by 100, so a finite
+  // coordinate above `Number.MAX_VALUE / 100` arrives finite and leaves as
+  // `Infinity`. The arguments are not checked separately — every finite argument
+  // that survives rounding is covered here, and every one that does not is
+  // caught here.
+  assertFinite('from.x', x0);
+  assertFinite('from.y', y0);
+  assertFinite('to.x', x1);
+  assertFinite('to.y', y1);
 
   if (shape === 'line') {
     return `M ${x0} ${y0} L ${x1} ${y1}`;
@@ -92,11 +112,22 @@ export function pathFor(from: Anchor, to: Anchor, shape: PathShape = 'arc'): str
   // For `fork`, the first control point holds x at x0 so the branch leaves
   // straight down before it diverges: at t = 1/3 the curve has travelled only
   // 14.81% of dx, and x stays within 1% of x0 until t ≈ 0.083. That reading
-  // depends on `dy` being non-zero, and the fork's actual case in
-  // `ACT_ANCHORS` is `dy = 0` — `origin.exit` and the five seed nodes share a
-  // y — where the first control point sits on y0 and the curve starts flat.
+  // depends on `dy` being non-zero. The fork this shape is for leaves
+  // `origin.exit`, which `ACT_ANCHORS` fixes at `{ x: 0.5, y: 1 }` — the fold
+  // that `anchors.ts` describes as where the five seeds sit — so its `dy` is 0
+  // and the first control point lands on y0. (`ACT_ANCHORS` holds act
+  // enter/exit anchors only; no seed node is in it.)
   const c1 = shape === 'fork' ? { x: x0, y: round(y0 + dy * 0.55) } : { x: midX, y: y0 };
   const c2 = { x: midX, y: round(y1 - dy * 0.15) };
+
+  // The derived numbers are checked as well as the endpoints, because they are
+  // also written into the string. With today's coefficients a finite rounded
+  // pair keeps them finite; a check that stopped at the endpoints would stop
+  // covering the path the first time one of those coefficients rises above 1.
+  assertFinite('first control point x', c1.x);
+  assertFinite('first control point y', c1.y);
+  assertFinite('second control point x', c2.x);
+  assertFinite('second control point y', c2.y);
 
   return `M ${x0} ${y0} C ${c1.x} ${c1.y} ${c2.x} ${c2.y} ${x1} ${y1}`;
 }

@@ -4,8 +4,8 @@ Last updated: 2026-09-12 · branch `landing-redesign` · spec [`spec.md`](spec.m
 
 ## 1. Where we are
 
-**Stage 1 (Foundation): tasks 1–5 of 7 done, reviewed, committed. Tasks 6–7 not started.** Work was
-paused after Task 3 to build the knowledge base (done); Tasks 4 and 5 followed on 2026-09-12.
+**Stage 1 (Foundation): tasks 1–6 of 7 done, reviewed, committed. Task 7 is next.** Work was
+paused after Task 3 to build the knowledge base (done); Tasks 4–6 followed on 2026-09-12/13.
 Stages 2–4 are *designed* (`spec.md` §2–§12) but **not planned** — no stage plan exists yet.
 
 > **Planning a future stage? Read [`stages/README.md`](stages/README.md) first.** It is the stage
@@ -21,8 +21,8 @@ Stages 2–4 are *designed* (`spec.md` §2–§12) but **not planned** — no st
 | 3 | Pillar registry + derived `PillarId` | done | `ef9f14f`; ride-along fix `9d3027d` |
 | 4 | GSAP + Motion installed, `src/design/scroll.ts` | done | `12b1525` `d1be7db` `550f074` `a7cc303` `569bfa3` |
 | 5 | Station geometry (`anchors.ts`, `station.ts`) | done | `4b3ca87`, fix `e54ae97` (one merged round) |
-| 6 | Path builders + `assertContinuity` | **next** | — |
-| 7 | `src/lib/gsap.ts` + `LineStage` | not started | — |
+| 6 | Path builders + `assertContinuity` | done | `b1282cb`, fix round `2acd873` |
+| 7 | `src/lib/gsap.ts` + `LineStage` | **next** | — |
 
 Stage 2 = the five acts (Origin, Five Pillars, Way, Proof, Doors) · Stage 3 = components + shadcn +
 the four handoff routes · Stage 4 = R3F removal + React pin relaxation. Stage 1 changes **no page
@@ -30,15 +30,16 @@ structure** — the homepage still renders its 12 sections, with new colours.
 
 ## 2. Immediate next action
 
-Task 6 (`## Task 6` in [`stages/stage-1.md`](stages/stage-1.md)), brief at
-`.superpowers/sdd/Landing-Redesign-Stage-1-Implementation-Plan/task-6-brief.md` — creates
-`src/components/educraft/line/pathBuilders.ts` (`pathFor(from, to, shape)`,
-`assertContinuity(acts)`) plus its test. **Verify the brief is not stale before dispatching** — the
-same diff against the plan section that was run for Task 5 (it was byte-identical there).
+Task 7 (`## Task 7` in [`stages/stage-1.md`](stages/stage-1.md)), brief at
+`.superpowers/sdd/Landing-Redesign-Stage-1-Implementation-Plan/task-7-brief.md` — creates
+`src/lib/gsap.ts` and `LineStage.tsx`. **Verify the brief is not stale before dispatching** — the
+same diff that was run on the Task 5 and Task 6 sections, and check rather than assume: Task 6's
+brief and the plan both carried stale claims (frame sentence, test count, a Consumes line that named
+a module its own component never imported).
 
-Interfaces Task 5 leaves for it, all now pinned by tests: `Anchor`, `ACT_ANCHORS`, `ACT_ORDER`,
-`ActName` from `anchors.ts`; `stationPositions(n)`, `drawAt(progress, index, n)` from `station.ts`.
-Task 6's Consumes line names `Anchor` and `ACT_ANCHORS` (`stage-1.md:1794`).
+Interfaces Task 6 leaves for it, all pinned by tests: `pathFor(from, to, shape)`, `PathShape`,
+`assertContinuity(chain?)` from `pathBuilders.ts`. `LineStage` takes pre-computed `paths: string[]`
+and imports none of them — see the correction note in the plan's Task 7 section.
 
 ## 3. Blocked
 
@@ -59,7 +60,7 @@ the five pillars (`spec.md` §7.1 — deferred product decision).
 - `src/app/(site)/about/page.tsx` carries formatting-only churn in the working tree (quote style, JSX re-wrapping). It is out of scope here — do not sweep it into a Stage 1 commit.
 - **`src/design/scroll.ts` is fully pinned to spec literals.** If a later task changes a `motion.ts` token or a breakpoint constant and the suite goes red, the spec needs updating too — that coupling is deliberate, not a test to relax.
 - **The walk's draw is `clamp01(pillarCount * progress - index)`, with `index` clamped to `[0, pillarCount − 1]`.** The `(pillarCount − 1)` spacing was considered and is impossible — the last station's window falls outside the walk, so its segment never draws at any progress. `Math.floor(progress * n)` is safe to use as the active-station index as a result. Do not "correct" the spacing back toward the spec's tween: the tween describes track translation, not station activation.
-- **The anchors' coordinate frame supersedes the plan's.** `anchors.ts` states x/y as **act-local**; the plan's Task 5 code block (`stage-1.md` ~1690) still carries the superseded sentence ("x in track-widths (0 = left edge of act 0 …)") and it also carries the values themselves — `origin.enter` is `{ x: 0.72, y: 0 }` there. `anchors.test.ts` asserted those values "appear in no spec, plan or design doc", which was **false**; it now records the truth — the values are invented for the design and that block carries them, but no design document *fixes* them. `pathFor` does **not** own a transform between the act-local anchors and the track-local station x: it is frame-agnostic (both points arrive already in one frame), and the vertical strand segments and the horizontal rail are different geometry rather than one frame needing conversion. How they compose on screen is a Stage 2 layout decision, and whether the strand reads as one line at real viewports is still the owner's visual QA.
+- **The anchors' coordinate frame supersedes the plan's.** `anchors.ts` states x/y as **act-local**; the plan's Task 5 code block (`stage-1.md`, the `ACT_ANCHORS` listing — by step, not by line, because its line numbers have moved twice) still carries the superseded sentence ("x in track-widths (0 = left edge of act 0 …)") and it also carries the values themselves — `origin.enter` is `{ x: 0.72, y: 0 }` there. `anchors.test.ts` asserted those values "appear in no spec, plan or design doc", which was **false**; it now records the truth — the values are invented for the design and that block carries them, but no design document *fixes* them. `pathFor` does **not** own a transform between the act-local anchors and the track-local station x: it is frame-agnostic (both points arrive already in one frame), and the vertical strand segments and the horizontal rail are different geometry rather than one frame needing conversion. How they compose on screen is a Stage 2 layout decision, and whether the strand reads as one line at real viewports is still the owner's visual QA.
 - **The anchor values are invented, not specified.** No design document fixes `0.72` / the `0.5` baseline — they came from the Task 5 brief. Pinning them makes a *change* visible; it does not make them *correct*. They need the owner's eye.
 - **`vitest.config.mts`'s `include: ['src/**/*.test.ts']` silently drops `.test.tsx`** — reconfirmed with a deliberately failing probe that left the suite green. Task 7's brief creates no component test file, so nothing pending is skipped today, but any `.test.tsx` added later would never run. Needs a `jsdom` decision.
 - **`stationPositions(Infinity)` throws `RangeError`** (loud, unreachable from `pillars.length`), and the `pillarCount <= 0` guard there was removed as unobservable — `Array.from` already coerces the length.

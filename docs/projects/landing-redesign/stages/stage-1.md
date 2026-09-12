@@ -1791,7 +1791,7 @@ calibration is verifiable without a browser."
 >
 > - **The module docstring's frame sentence is false.** "Coordinates are normalised (x in track-widths, y in band-heights)" contradicts `anchors.ts`, which Task 5 pinned to **act-local** x/y. The repair that briefly replaced it ("`pathFor` owns the transform") was withdrawn as unverified too: `pathFor` is **frame-agnostic** — it takes two points already in one frame, and the vertical strand segments (from the act-local anchors) and the horizontal rail (from the track-local station positions) are different geometry, not one frame needing conversion. Marked inline at Step 3.
 > - **Step 4's count is wrong.** The listing below has 9 `it()` blocks, not 8. Marked inline at Step 4.
-> - **The commit message's "reported" is unsourced.** "the handoff feels broken" appears only in this plan (`:1809` and the Step 5 listing below) — no report, ticket or spec carries it, so it is this plan's framing. The shipped message also drops the false frame sentence. Marked inline at Step 5.
+> - **The commit message's "reported" is unsourced.** "the handoff feels broken" appears only in this plan — in Step 1's test docstring (`:1817`) and in the Step 5 commit listing (`:2003`) — so it is this plan's framing. No report, ticket or spec carries it. (Both citations name the step as well as the line, because line numbers in this file have moved twice already; the step is what survives.) The shipped message also drops the false frame sentence. Marked inline at Step 5.
 > - **`pathFor`/`PathShape` are not consumed by Task 7.** Task 7's `LineStage` takes pre-computed `paths: string[]` and imports nothing from `./pathBuilders`; the Interfaces line above is as originally written.
 > - Two shipped additions rather than corrections: `assertContinuity` iterates `Object.keys(chain)` — insertion order, not `ACT_ORDER` — and `pathFor` throws a named `NonFiniteCoordinateError` for a non-finite coordinate instead of emitting a `d` the browser drops silently.
 
@@ -2017,6 +2017,8 @@ both sides of a broken seam. A negative test confirms it has teeth."
 **Interfaces:**
 - Consumes: `pathFor` (Task 6), `ACT_ANCHORS`/`Anchor` (Task 5), `perStationVh`/`branchFor`/`SCRUB` (Task 4)
 - Produces: `registerGsap()`, `gsap`, `ScrollTrigger`, `useGSAP`, `EASE`; `<LineStage>` — consumed by Stage 2's acts.
+
+> **Correction to the Consumes line above, as the Task 6 note does it.** `LineStage` consumes `SCRUB` (Task 4) and nothing else from this list: it takes pre-computed `paths: string[]` and imports nothing from `./pathBuilders`, and its body imports neither `ACT_ANCHORS`/`Anchor`, `perStationVh` nor `branchFor`. The same correction was applied to `task-7-brief.md`, but that file lives in the gitignored `.superpowers/` scratch directory, so this note is the durable one — the brief is extracted from this section.
 
 - [ ] **Step 1: Write `src/lib/gsap.ts`**
 

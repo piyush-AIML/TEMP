@@ -11,7 +11,7 @@ import { ACT_ANCHORS, ACT_ORDER, type ActName } from './anchors';
  * blind to the two free ends (`origin.enter`, `doors.exit`) and to a coordinated
  * edit that moves both copies of a seam, but not to a single anchor move. So the
  * actual numbers are pinned literally below, and this file is the only place
- * they are.
+ * they are **asserted**.
  *
  * The coordinates are **invented for the design**: the plan's Task 5 code block
  * (`stage-1.md`) does carry `enter: { x: 0.72, y: 0 }`, so they are not absent
