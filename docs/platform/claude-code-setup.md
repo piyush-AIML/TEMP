@@ -1,11 +1,24 @@
 # Claude Code setup for this repo
 
-**This file is a recommendation, not applied configuration.** The two pieces below change Claude
-Code's own behaviour for this project, so they are the owner's call to apply — an assistant should
-not grant itself standing permissions or install hooks on its own initiative.
+**Status: APPLIED 2026-09-12.** `.claude/settings.json` exists and contains both the `SessionStart`
+hook registration and the permission rules below. A new session receives the state-of-play block
+before any input.
 
-Everything else in `docs/KNOWLEDGE-BASE.md` works without them. These two pieces are the difference
-between "context is available when asked for" and "context arrives automatically."
+This file records *what* is configured and *why*, so it can be reviewed or changed deliberately
+rather than being mysterious. **It is verification, not instruction** — nothing here needs applying.
+
+One caveat worth knowing about editing it: **a malformed `settings.json` is worse than no file.**
+Claude Code may ignore the hooks silently rather than erroring, which is precisely the failure this
+setup exists to prevent. Validate after any edit:
+
+```bash
+python3 -c "import json; json.load(open('.claude/settings.json')); print('valid')"
+```
+
+An earlier attempt to create this file by pasting a long single-line command through the terminal
+wrapper failed exactly this way — the line was wrapped and four literal newlines were inserted
+*inside* a JSON string, producing `Invalid control character`. The command exited 0, so it looked
+like success. Write the file with an editor, or verify it afterwards.
 
 ---
 
@@ -19,8 +32,7 @@ lines.
 context. It is therefore the only way to inject *dynamic* text at turn one. A document can only
 state what was true when it was written; the hook reads the branch and `state.md` live.
 
-**Apply it** by adding this to `.claude/settings.json` (create the file if absent — merge with
-anything already there):
+**Applied.** This is the `hooks` block currently in `.claude/settings.json`:
 
 ```json
 {
