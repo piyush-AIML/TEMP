@@ -109,6 +109,33 @@ describe('pathFor', () => {
       NonFiniteCoordinateError
     );
   });
+
+  it('attributes the error to pathFor, naming the endpoint that overflowed', () => {
+    // One check, two callers, one error class: the function name in the message
+    // is the only thing that tells a reader which function met the number, so
+    // each caller passes its own name. The sibling assertion in `polylinePath`
+    // below pins the other direction; this is the one that keeps a `pathFor`
+    // overflow from reporting itself as `polylinePath:`.
+    //
+    // Every endpoint is covered because each is a separate `assertFinite` call —
+    // relabelling one of them is a one-token edit that a single-fixture check
+    // would not see. The two control-point calls are not covered: they are
+    // unreachable while the coefficients are convex combinations of the rounded
+    // endpoints, so no input makes `pathFor` throw there (see `pathFor`).
+    const big = Number.MAX_VALUE;
+    const cases: [string, Anchor, Anchor][] = [
+      ['from.x', { x: big, y: 0 }, { x: 0, y: 0 }],
+      ['from.y', { x: 0, y: big }, { x: 0, y: 0 }],
+      ['to.x', { x: 0, y: 0 }, { x: big, y: 0 }],
+      ['to.y', { x: 0, y: 0 }, { x: 0, y: big }],
+    ];
+    for (const [label, from, to] of cases) {
+      const endpoint = label.replace('.', '\\.');
+      expect(() => pathFor(from, to, 'line'), label).toThrow(
+        new RegExp(`^pathFor: ${endpoint} is not finite`)
+      );
+    }
+  });
 });
 
 describe('assertContinuity', () => {
@@ -183,13 +210,14 @@ describe('assertContinuity', () => {
     // false, so a NaN anchor is accepted as a valid edge *and* as equal to its
     // neighbour. `pathFor` guards a `d` one layer down, but this is the layer
     // Task 2's generated seed coordinates arrive at.
-    const cases: [string, Chain][] = [
+    const cases: [string, Chain, string][] = [
       [
         'NaN exit y',
         {
           a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: NaN } },
           b: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
         },
+        'a.exit',
       ],
       [
         'NaN enter y',
@@ -197,6 +225,7 @@ describe('assertContinuity', () => {
           a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
           b: { enter: { x: 0.5, y: NaN }, exit: { x: 0.5, y: 1 } },
         },
+        'b.enter',
       ],
       [
         'NaN x on both sides of the seam',
@@ -204,11 +233,19 @@ describe('assertContinuity', () => {
           a: { enter: { x: NaN, y: 0 }, exit: { x: NaN, y: 1 } },
           b: { enter: { x: NaN, y: 0 }, exit: { x: NaN, y: 1 } },
         },
+        'a.exit',
       ],
     ];
-    for (const [label, chain] of cases) {
+    for (const [label, chain, side] of cases) {
       expect(() => assertContinuity(chain), label).toThrow(NonFiniteCoordinateError);
       expect(() => assertContinuity(chain), label).toThrow(/NaN/);
+      // The side named is the one that threw, not a fixed string: this branch
+      // runs before the edge checks, so it is the only thing that reports which
+      // anchor is non-finite — a hardcoded label here would satisfy every
+      // assertion above and send its reader to the wrong anchor.
+      expect(() => assertContinuity(chain), label).toThrow(
+        `Strand seam broken at ${side}: the anchor is`
+      );
     }
   });
 
@@ -234,8 +271,10 @@ describe('assertContinuity', () => {
   });
 
   it('throws when handed the whole ACT_ANCHORS record, by design', () => {
-    // origin.exit is the fork point at y = 0.85, not an act edge. This is the
-    // arity change D1 named: the chain is VERTICAL_CHAIN, never the full record.
+    // This call does pass the full record, and it throws on `origin.exit`: the
+    // fork point at y = 0.85, not an act edge. That is the arity change D1 named
+    // — the chain the contract is defined over is `VERTICAL_CHAIN` (the four
+    // post-fork acts), which is what `assertContinuity` runs with by default.
     expect(() => assertContinuity(ACT_ANCHORS)).toThrow(/bottom edge/);
   });
 

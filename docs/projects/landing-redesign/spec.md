@@ -110,12 +110,18 @@ Consequence: retiring the orbit scene retires the whole WebGL dependency tree, *
 Not one giant `<svg>` across ~11.5 screens — that cannot survive pinning, background changes and reflow. Instead **one `LineStage` per act, bound by an entry/exit anchor contract**: each act's path begins exactly where the previous act's path ended, so the eye reads one continuous line while the DOM stays as small, independently understandable pieces.
 
 ```
-Act 0 exit anchor and Act 1 entry anchor are the same screen point
-Act 1 exit anchor and Act 2 entry anchor are the same screen point   …
-  (each exit on its own bottom edge, each entry on its own top edge, one shared
-  horizontal fraction — different numbers, never equal: this block read
-  "Act 0 exit anchor == Act 1 entry anchor" until Stage 2 Task 1, and act-local
-  no correct stack can satisfy that)
+At each seam of the vertical chain (pillars → way → proof → doors): each act's
+exit sits on its own bottom edge (y = 1), the next act's enter on its own top
+edge (y = 0), and the two share one horizontal fraction (x = 0.75) — the same
+screen point in two act-local boxes, so different numbers that are never equal.
+  origin is the exception, and it is not in the chain: its exit is the fork
+  point (x = 0.5, y = 0.85), where one strand becomes N — deliberately not an
+  act edge. That seam is checked by `assertForkSeam` in `line/frames.ts`.
+  doors.exit is the exception at the other end of the page: the CTA node at
+  mid-band (x = 0.75, y = 0.5), a free end. `doors` is the chain's last key, so
+  only its enter sits in a seam.
+  (This block read "Act 0 exit anchor == Act 1 entry anchor" until Stage 2
+  Task 1: under act-local frames, no correct stack can satisfy that.)
 ```
 
 | File | Responsibility | Depends on |
