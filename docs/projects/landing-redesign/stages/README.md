@@ -23,7 +23,7 @@ ways nobody notices until execution.
 | Stage | Scope | Status |
 |---|---|---|
 | [**1 — Foundation**](stage-1.md) | Test harness · palette v2 · pillar registry · scroll maths · line geometry · `LineStage` | **Complete.** All 7 tasks done, reviewed and committed. |
-| **2 — The Acts** | The five acts replacing the 12 homepage sections | Designed, **not planned** |
+| **2 — The Acts** | The five acts replacing the 12 homepage sections | **Planned 2026-09-13** — plan at `.claude/plans/landing-redesign-stage-2.md` (live; moves here on close). **Not started.** |
 | **3 — Components & Handoff Routes** | shadcn primitives · interactive component redesigns · the four handoff routes | Designed, **not planned** |
 | **4 — Cleanup** | Retire the WebGL tree · relax the React pin · finalise the docs | Designed, **not planned** |
 
