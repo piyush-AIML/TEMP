@@ -39,8 +39,8 @@ export type PathShape = 'arc' | 'line' | 'fork';
  * `Infinity + -Infinity` — a `NaN`. Guarding only the arguments passes both
  * straight into the string, which is the outcome this class exists to prevent.
  * `perStationVh` in `src/design/scroll.ts` shipped that weaker guard — `NaN`
- * inputs caught, `NaN` results not — and `docs/projects/landing-redesign/
- * rulings.md` records it as a failure against its own stated goal.
+ * inputs caught, `NaN` results not — and failed against its own stated goal.
+ * `docs/projects/landing-redesign/rulings.md` records it.
  */
 export class NonFiniteCoordinateError extends Error {
   constructor(message: string) {
