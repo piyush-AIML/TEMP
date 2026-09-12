@@ -33,11 +33,12 @@ structure** — the homepage still renders its 12 sections, with new colours.
 
 ## 2. Immediate next action
 
-**Stage 2 is in progress — 4 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
+**Stage 2 is in progress — 5 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
 `04b1702`; Task 2 (the join, `frames.ts`) → `048af65`; Task 3 (the two facts §8 leaves to JS) →
 `f9e0919`; Task 4 (`LineStage`'s render-only mode and the frame override) → `10291cd`, fix `8baddad`,
-corrections `620e35d` `6dd46c3`. The live plan is `.claude/plans/landing-redesign-stage-2.md`; it moves
-into `stages/` when the stage closes.
+corrections `620e35d` `6dd46c3`; Task 5 (Act 0 — Origin, `ActSection`, `MaskLine`) → `efab08b`, brief
+fixes `e2bf9f9`, fix round `862593b`. The live plan is `.claude/plans/landing-redesign-stage-2.md`; it
+moves into `stages/` when the stage closes.
 
 **Execution is a no-agent procedure as of 2026-09-13, on the owner's instruction.** No subagents run
 and no skill drives the loop: the assistant implements, verifies in three phases (contract → claims →
@@ -47,7 +48,7 @@ verbatim at [`platform/archive/`](../../platform/archive/) and are one `cp` from
 Tasks 1–2 ran under the three-lens regime and Task 3 under the tiered one, so all three regimes are
 directly comparable on cost: **949k · 929k · 516k** per task.
 
-Next action: **Task 5** — Act 0 (Origin) and the strand's first appearance — per
+Next action: **Task 6** — Act 1, the walk, and `drawAt`'s first call site — per
 `platform/execution.md`. **Awaiting the owner: they sequence the work.**
 
 
@@ -68,6 +69,9 @@ against its own foreground — the hex this stage exists to retire, with no cons
 - **The walk's axis is decided (R1); Task 6 implements it.** The track travels **N viewports, not N−1**, so station `i` centres at `i/N` — exactly where `drawAt` begins drawing its segment — and each dwell moves one viewport. The spec's `(N−1)` formula is superseded and Task 6 corrects `spec.md` in the same commit. `drawAt` itself is unchanged: `clamp01(pillarCount * progress − index)` is *forced*, and do not "correct" it back toward the old tween.
 - **`LineStage`'s two gaps were Task 4's and are closed (`10291cd`).** `draw?: boolean` and `viewBox?: string` are additive with the default path byte-identical, and R7's three readerless constants now have six call sites across Tasks 5–10. **One residual, measured:** the `draw` default's *value* is unobservable to the suite — inverting it, or deleting it outright, leaves `15 passed (15)`, because markup never depends on `draw` and no test runs an effect. It is pinned by one literal and the comment beside it; it is the path Tasks 8–10 take, while `?calibrate=1` numbers only the two scrubbed acts (R16 — the owner's call if they want a number on it).
 - **A verbatim quotation in the plan was not in the document it cited (Task 4).** "The Stage 1 rulings name this gap twice" is false as written — `rulings.md` has no `render-only`, no `Act 1`, no `compose`; the homes are `state.md` §4 and `rulings.md:218` (R36, the `pin ∧ scrub` half). Corrected in the plan, and `10291cd`'s message repeats the attribution — unamended (R4), corrected in `8baddad`. **Check a citation resolves before inheriting it**; this is the second time this stage has paid for that.
+- **Any test that renders a component containing `EnquireButton` must wrap it in `EnquiryModalProvider`.** `useEnquiryModal` is called at render time and throws outside its provider, which lives in `app/(site)/layout.tsx`. Task 5's seven Origin cases died on this before the harness was fixed (`efab08b`), and every act carries a CTA, so Tasks 6–11's tests meet it again. Same family: `PROPS … as const` narrows a literal prop (`pillarCount: 5`), so test overrides are typed by the component's props — `Partial<OriginProps>` — not by `Partial<typeof PROPS>`.
+- **Act 0's H1 ships `type-display-xl`**, not the brief snippet's `type-display-l`. The brief's own prose said to keep whatever `Hero.tsx` used, and the two differ by a measured step — `clamp(3rem, 6.5vw + 0.75rem, 5.25rem)` against `clamp(2.5rem, 5vw + 1rem, 4.25rem)`. **One class to revert** if the smaller H1 was the intent; the plan carries the conflict.
+- **`ActSection` has no tests, and `MaskLine` is single-use.** Measured consumers: `Origin` → Task 11 alone; `ActSection` → Tasks 8, 9, 10; `MaskLine` → Task 5 only, though the plan's Interfaces line promised "Tasks 6–11" for all three. Spec §3.4's `Stagger.tsx` is created by no task. Routing later Motion reveals (station enter/exit, panel crossfade) through `MaskLine` is an open owner decision.
 - **Palette hexes are measured — copy them verbatim, never re-derive or "improve" them.** `src/design/colors.test.ts` enforces AA, and its token-against-token pair assertions (not only token-vs-canvas) are what caught a 2.64:1 button. **`colors.ts` and `globals.css` must carry identical hex values, and the suite now asserts that mirror** — an edit to either file alone fails.
 - **Tailwind 4 needs literal class names** — `bg-ec-${x}` emits no CSS; every pillar→class mapping is written out. `stroke-ec-teal-graphic` is verified emitted, by hand.
 - **`@theme inline` alias coverage is still unasserted.** A token declared in `:root`/`.dark` but missing from the `@theme inline` block emits **no Tailwind class** and passes the whole suite — the palette mirror test reads `:root`/`.dark` only. Adding a token means three places, and nothing checks the third.
