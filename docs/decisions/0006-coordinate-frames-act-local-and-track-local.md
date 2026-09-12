@@ -1,7 +1,7 @@
 # 0006 — The Line system's coordinate frames, and why `pathFor` reconciles none of them
 
 **Date:** 2026-09-13
-**Status:** Accepted — Stage 1 shipped; the join is Stage 2's to design
+**Status:** Accepted — Stage 1 shipped; **the join was designed in Stage 2 Task 2** (`line/frames.ts`, viewBox selection as the transform). The decision below is unchanged; the update at the end of this file records the outcome. This status line carried "the join is Stage 2's to design" until 2026-09-13, which misled any reader who stopped at the header.
 
 ## Context
 

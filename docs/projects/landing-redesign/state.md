@@ -6,8 +6,8 @@ Last updated: 2026-09-13 · branch `landing-redesign` · spec [`spec.md`](spec.m
 
 **Stage 1 (Foundation) is COMPLETE — all 7 tasks done, reviewed and committed.** Work was paused after
 Task 3 to build the knowledge base (done); Tasks 4–7 followed on 2026-09-12/13, and Stage 1 was closed
-by a whole-branch review on 2026-09-13. **Stage 2 was planned on 2026-09-13** — its plan is live at
-`.claude/plans/landing-redesign-stage-2.md` and has not been executed. Stages 3–4 are *designed*
+by a whole-branch review on 2026-09-13. **Stage 2 was planned on 2026-09-13 and is being executed** —
+its plan is live at `.claude/plans/landing-redesign-stage-2.md`. Stages 3–4 are *designed*
 (`spec.md` §2–§12) but **not planned**.
 
 > **Planning a future stage? Read [`stages/README.md`](stages/README.md) first.** It is the stage
@@ -34,11 +34,11 @@ structure** — the homepage still renders its 12 sections, with new colours.
 
 ## 2. Immediate next action
 
-**Stage 2 is planned and not started.** Nothing is in flight, and no source file has changed — the planning pass wrote one plan and corrected two documents.
+**Stage 2 is in progress — 2 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) is closed at `04b1702`; Task 2 (the join, `frames.ts`) is implemented and in verification. The live plan is `.claude/plans/landing-redesign-stage-2.md`; it moves into `stages/` when the stage closes.
 
-Next action, when the owner sequences it: **execute Stage 2** from `.claude/plans/landing-redesign-stage-2.md` (12 tasks) with the `run-a-stage` skill. It moves into `stages/` when the stage closes.
+**The verification regime changed on 2026-09-13.** From Task 3, each task gets **one verifier held across its whole lifecycle** — three phases in a fixed order, then the same agent resumed for the post-fix re-check — with depth moved to a scripted mutation sweep and three question-defined lenses at stage end. See [`docs/decisions/0009`](../../decisions/0009-tiered-verification-per-task-and-stage-end.md). Tasks 1–2 ran under the previous three-lens regime.
 
-**Do not begin executing Stage 2 unasked** — a plan existing is not authorisation to run it.
+Next action: continue the stage with the `run-a-stage` skill.
 
 **Owner decisions waiting, not blocking:** the fork's geometry is a horizontal bulge rather than a
 vertical leave; the ten anchor values, the arc coefficients and the fork shape are **invented and

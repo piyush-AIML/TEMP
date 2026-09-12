@@ -25,7 +25,7 @@
 
 - **The loop is four commands, after every task:** `npx tsc --noEmit && npm run lint && npm run test && npm run build`. Three of four is not green.
 - **Never `overflow-hidden` on an ancestor of a pinned or sticky section.** It becomes the sticky element's scroll box and silently breaks the pinning. Put the clip on a *descendant* of the pinned element.
-- **Never run `rm -rf .next` while a dev server is running** (a recorded incident, not a precaution). Run it after any file delete or rename, before the gate — Task 10 deletes ~20 files in one commit.
+- **Never run `rm -rf .next` while a dev server is running** (a recorded incident, not a precaution). Run it after any file delete or rename, before the gate — Task 11 deletes ~20 files in one commit.
 - **Reduced motion is a hard requirement, and CSS can no longer provide it.** Every GSAP setup pairs with `gsap.matchMedia()` and renders the final state under `REDUCED_MOTION_QUERY`. The CSS backstop (`globals.css:508-538`, including `[data-line-path]{stroke-dashoffset:0 !important}`) stays as the no-JS fallback.
 - **Engine split — never both on the same property of the same element.** GSAP owns anything scrubbed or pinned; Motion owns anything discrete or state-driven. If an element seems to need both, it is two nested elements.
 - **`design/motion.ts` is the single source of timings; `design/scroll.ts` of calibration.** No new durations. The two spec-pinned literal sets (`scroll.ts`'s constants, `colors.ts`'s hexes) are not retuned here.
@@ -72,7 +72,7 @@
 | `src/app/(site)/page.tsx` | 12 sections → 5 acts, and the one runtime `assertContinuity` call site. |
 | `src/app/(site)/layout.tsx` | `CursorProvider` removed (D4). |
 
-**Deleted in this stage (all in Task 10, one commit):**
+**Deleted in this stage (all in Task 11, one commit):**
 
 | Path | Why |
 |---|---|
@@ -98,7 +98,7 @@ The shipped contract says a seam holds when `exit == enter` as raw values. That 
 
 **Interfaces:**
 - Consumes: nothing new.
-- Produces: `ACT_ANCHORS` (rewritten values; same `AnchorPair` shape), `VERTICAL_CHAIN` (a frozen sub-record of the four post-fork acts), `assertContinuity(chain = VERTICAL_CHAIN)` (re-specified), `polylinePath(points: readonly Anchor[]): string` — consumed by Task 2's `frames.ts` and by Task 10's page.
+- Produces: `ACT_ANCHORS` (rewritten values; same `AnchorPair` shape), `VERTICAL_CHAIN` (a frozen sub-record of the four post-fork acts), `assertContinuity(chain = VERTICAL_CHAIN)` (re-specified), `polylinePath(points: readonly Anchor[]): string` — consumed by Task 2's `frames.ts` and by Task 11's page.
 - Unchanged and load-bearing: `ACT_ORDER`, `ActName`, `Anchor`, `endpoints()`, `pathFor`, `NonFiniteCoordinateError`.
 
 **The values.** x is a fraction of the act's own box width; y runs down its own band, `0` = top edge, `1` = bottom edge.
@@ -531,7 +531,7 @@ The walk's slices then line up with `drawAt` for free: the rail spans `0 … N` 
 
 **Interfaces:**
 - Consumes: `ACT_ANCHORS`, `Anchor` (Task 1); `pathFor`, `polylinePath` (Task 1); `stationPositions` (`line/station.ts`, unchanged).
-- Produces: `ACT_VIEW_BOX` (string), `seedAnchors(pillarCount): Anchor[]`, `forkPaths(pillarCount): string[]`, `assertForkSeam(pillarCount, fork?): void`, `walkFrame(pillarCount): WalkFrame`, `ribbonFrame(stageCount, pillarCount): RibbonFrame`, `assertRibbonSeam(pillarCount, stageCount, spineX?): void`, and the types `WalkFrame` / `RibbonFrame`. Consumed by Tasks 5–9 (the acts) and Task 10 (the page's call site).
+- Produces: `ACT_VIEW_BOX` (string), `seedAnchors(pillarCount): Anchor[]`, `forkPaths(pillarCount): string[]`, `assertForkSeam(pillarCount, fork?): void`, `walkFrame(pillarCount): WalkFrame`, `ribbonFrame(stageCount, pillarCount): RibbonFrame`, `assertRibbonSeam(frame: RibbonFrame, spineX?): void`, and the types `WalkFrame` / `RibbonFrame`. **`assertRibbonSeam` took two counts until Task 2's fix round replaced them with the frame** — two adjacent numbers can be swapped with no type error and no failing assertion, measured: `(6,5)`, `(7,5)`, `(9,6)` and `(5,7)` all passed. Consumed by Tasks 5–10 (the acts) and Task 11 (the page's call site).
 - **Does not change `station.ts`.** The half-slot offset lives here, in the caller, which is what R8 requires.
 
 - [ ] **Step 1: Write the failing test**
@@ -741,6 +741,10 @@ describe('ribbonFrame', () => {
 describe('the two seam assertions', () => {
   it('accepts the shipped contract', () => {
     expect(() => assertForkSeam(5)).not.toThrow();
+    // SUPERSEDED in Task 2's fix round (R11): the shipped signature takes the
+    // frame — `assertRibbonSeam(ribbonFrame(6, 5))` — because two adjacent
+    // numbers can be swapped silently. Left as written; for an executed task the
+    // plan is a record of what ran, not a description of what shipped.
     expect(() => assertRibbonSeam(5, 6)).not.toThrow();
   });
 
@@ -1067,7 +1071,7 @@ Expected: all four pass. Nothing imports `frames.ts` yet, so the page is unchang
 > shape of a seam.
 ```
 
-Then **append** the outcome to `docs/decisions/0006-coordinate-frames-act-local-and-track-local.md` — the decision stands unchanged; its stated consequence ("how they compose on screen is a layout decision owned by the Stage 2 caller") now has an answer, and a reader who stops at that file would not know it. A dated paragraph, not a rewrite.
+Then **append** the outcome to `docs/decisions/0006-coordinate-frames-act-local-and-track-local.md` — the decision stands unchanged, and the question it deferred now has an answer. **Do not attribute that deferred question to the ADR's own text:** the sentence usually quoted for it ("how they compose on screen is a layout decision owned by the Stage 2 caller") lives in `station.ts:16` and `pathBuilders.ts:14`, not in 0006. A dated paragraph, not a rewrite — and a citation that sends the next reader to the wrong document is worse than no citation.
 
 - [ ] **Step 7: Commit**
 
@@ -1376,6 +1380,8 @@ Every string the acts render, with its source. **Almost nothing is new**: the re
 
 The Stage 1 rulings name this gap twice: *"`LineStage` cannot serve Act 1 as shipped. It has no render-only mode, and it documents that `pin` and `scrub: true` 'do not compose' — which is exactly Act 1's required mechanic."* Act 1 owns a track tween and a pin whose ranges are the same trigger, and it draws each rail segment against `drawAt` rather than all of them against one range — so it needs the renderer without the renderer's animation. This task adds that, and does **not** make `pin` and `scrub` compose: Act 1 owns its own ScrollTriggers, which is the composition.
 
+It also lands one second additive prop, `viewBox`, for a reason the Task 2 correctness review measured: `ACT_VIEW_BOX` and both of `frames.ts`'s frame strings had **no reader anywhere**, while five call sites restated the join's policy as raw numbers. The frame override makes the policy live in one place and gives all three constants a consumer.
+
 **Files:**
 - Modify: `src/components/educraft/line/LineStage.tsx`, `src/components/educraft/line/LineStage.test.ts`
 
@@ -1410,6 +1416,18 @@ describe('LineStage render-only mode', () => {
       render({ paths: ['M 0 0 L 1 1'], draw: true })
     );
   });
+
+  it('takes a supplied viewBox verbatim, overriding the numeric default', () => {
+    // Every act in this stage passes its frame's string, so this is the path
+    // that makes act-local anchors viewBox coordinates.
+    expect(render({ paths: ['M 0 0 L 1 1'], viewBox: '0 0 1 1' })).toContain('viewBox="0 0 1 1"');
+  });
+
+  it('keeps composing the frame from numbers when no override is given', () => {
+    expect(render({ paths: ['M 0 0 L 1 1'], viewBoxWidth: 5, viewBoxHeight: 1 })).toContain(
+      'viewBox="0 0 5 1"'
+    );
+  });
 });
 ```
 
@@ -1420,7 +1438,7 @@ describe('LineStage render-only mode', () => {
 ```bash
 npx vitest run src/components/educraft/line/LineStage.test.ts
 ```
-Expected: **FAIL** — `draw: false` is not a known prop, so depending on the helper's typing it is either a `tsc` error inside the test or the markup comparison passes trivially. Both are failures to fix in Step 3; run `npx tsc --noEmit` too and expect it to report the excess property.
+Expected: **FAIL** — `draw` and `viewBox` are not known props, so depending on the helper's typing this is either a `tsc` error inside the test or an assertion that passes trivially (the `viewBox` case would keep the numeric fallback and never see `0 0 1 1`). Both are failures to fix in Step 3; run `npx tsc --noEmit` too and expect it to report the excess properties.
 
 - [ ] **Step 3: Add the prop**
 
@@ -1449,9 +1467,29 @@ Add to `LineStageProps`, after `scrub`:
    * that under reduced motion this component is the only writer.
    */
   draw?: boolean;
+
+  /**
+   * The SVG's `viewBox` as a string, overriding the `viewBoxWidth` ×
+   * `viewBoxHeight` composition below.
+   *
+   * The acts supply their **frame** rather than its dimensions, so the join's
+   * policy lives in exactly one place: `ACT_VIEW_BOX` for the four vertical
+   * acts, `walkFrame(n).viewBox` and `ribbonFrame(...).viewBox` for the two
+   * horizontal ones. Without this the policy is restated as numbers at five
+   * call sites, which is the drift `frames.ts` exists to prevent — and it is
+   * not hypothetical: the first draft of this plan had the constant and both
+   * frame strings with **no reader at all**, while five call sites passed
+   * `viewBoxWidth={1} viewBoxHeight={1}` or their equivalent. The correctness
+   * review of Task 2 measured it.
+   */
+  viewBox?: string;
 ```
 
-Destructure it with the other defaults (`draw = true,`) and add it to the `useGSAP` dependency array.
+Destructure both with the other defaults (`draw = true,`, `viewBox,`) and add `draw` to the `useGSAP` dependency array. Then make the SVG prefer the override, so the default path is byte-identical:
+
+```tsx
+        viewBox={viewBox ?? `0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+```
 
 - [ ] **Step 4: Guard the tween branch**
 
@@ -1864,8 +1902,7 @@ export default function Origin({
       <div ref={root} className='relative flex h-screen items-center px-6'>
         <LineStage
           paths={[arc, ...forkPaths(pillarCount)]}
-          viewBoxWidth={1}
-          viewBoxHeight={1}
+          viewBox={ACT_VIEW_BOX}
           draw={false}
           className='pointer-events-none absolute inset-0'
         >
@@ -1911,7 +1948,7 @@ export default function Origin({
 Three things the implementer must **not** "improve":
 
 1. **No `overflow-hidden` on any ancestor of `div[ref=root]`.** That element is pinned; an ancestor with `overflow: hidden` becomes its scroll box and silently breaks the pin. This is the repo's first architectural rule and the reason the retired `StudentJourney` carries a comment about it.
-2. **`viewBoxWidth={1} viewBoxHeight={1}`** is the join, not an oversight: it makes the act-local anchors viewBox coordinates. Passing `1200×800` (the default) is what produced the 0.26px arc at Stage 1's close.
+2. **`viewBox={ACT_VIEW_BOX}`** is the join, not an oversight: it makes the act-local anchors viewBox coordinates verbatim. Passing `1200×800` (the default) is what produced the 0.26px arc at Stage 1's close. It reads the frame from `frames.ts` rather than restating `1, 1` here, so the policy has exactly one home.
 3. **The seed `<span>`s are positioned by `seedAnchors` output, and `aria-hidden` on the wrapper.** They are the same values the branches end on; hand-placing them reintroduces the drift the join exists to remove.
 
 - [ ] **Step 6: Run the tests to verify they pass**
@@ -1957,7 +1994,7 @@ The largest act and the product itself. A track of N stations translates `0 → 
 - Modify: `src/app/globals.css` (the reduced-motion block only)
 
 **Interfaces:**
-- Consumes: `walkFrame`, `assertRibbonSeam` (Task 2); `drawAt` (`line/station.ts`); `DESKTOP_QUERY`, `SCRUB`, `walkPinRangePx`, `stationScrollTarget`, `branchFor` (Task 3); `LineStage` `draw={false}` (Task 4); `pillarAccent` (`lib/pillarStyles.ts`) for the literal per-pillar class strings.
+- Consumes: `walkFrame` (Task 2) — **not `assertRibbonSeam`**, which Task 11 calls once from `page.tsx`; the earlier draft listed it here, and Task 7 says explicitly not to add a call site in an act; `drawAt` (`line/station.ts`); `DESKTOP_QUERY`, `SCRUB`, `walkPinRangePx`, `stationScrollTarget`, `branchFor` (Task 3); `LineStage` `draw={false}` (Task 4); `pillarAccent` (`lib/pillarStyles.ts`) for the literal per-pillar class strings.
 - Produces: `FivePillars` (default export, client), `FivePillarsProps`, `Station` (exported type). Consumed by Task 11's page, and the ribbon lands in Task 7 in the same file.
 
 - [ ] **Step 1: Write the failing test**
@@ -2238,8 +2275,7 @@ export default function FivePillars({ stations, pillarCount }: FivePillarsProps)
         >
           <LineStage
             paths={frame.railSegments}
-            viewBoxWidth={pillarCount}
-            viewBoxHeight={1}
+            viewBox={frame.viewBox}
             draw={false}
             className='pointer-events-none absolute inset-0'
           />
@@ -2500,8 +2536,7 @@ export function RibbonStage({ stages, pillarCount }: { stages: readonly RibbonSt
       </h3>
       <LineStage
         paths={[...frame.convergence, frame.strand]}
-        viewBoxWidth={frame.width}
-        viewBoxHeight={1}
+        viewBox={frame.viewBox}
         draw={false}
         className='relative mt-12 h-40 w-full'
       >
@@ -2639,7 +2674,7 @@ Expected: **FAIL** — `Cannot find module './Way'`.
 
 Structure: `ActSection` (Task 5) supplying the eyebrow/heading/lede as **server-rendered props**, with the act itself as a client component that renders:
 
-- one `LineStage` with `paths={[pathFor(ACT_ANCHORS.way.enter, ACT_ANCHORS.way.exit, 'arc')]}` and `viewBoxWidth={1} viewBoxHeight={1}`, drawing on scroll as the act enters;
+- one `LineStage` with `paths={[pathFor(ACT_ANCHORS.way.enter, ACT_ANCHORS.way.exit, 'arc')]}` and `viewBox={ACT_VIEW_BOX}`, drawing on scroll as the act enters;
 - two ordered lists — the five differentiators with their `01`–`05` numerals as nodes, then the five method steps as nodes on **the same strand** — positioned so each node sits on the strand line (the strand runs at `x = 0.75`; nodes are placed with the same `left: ${x * 100}%` convention Act 0 uses, not hand-tuned);
 - the lede and the `Read the full methodology` link.
 
@@ -2750,7 +2785,7 @@ Expected: **FAIL** — `Cannot find module './Proof'`.
 
 - [ ] **Step 3: Write `Proof.tsx`**
 
-The act composes one strand in the unit frame with **three movements** — the axis, and a tick per station — built from `polylinePath` and `pathFor`:
+The act composes one strand in the unit frame — `viewBox={ACT_VIEW_BOX}`, so the act-local anchors are viewBox coordinates verbatim — with **three movements**: the axis, and a tick per station, built from `polylinePath` and `pathFor`:
 
 - the strand enters at `ACT_ANCHORS.proof.enter` `{0.75, 0}`, arcs to the axis's left end at `{0.15, 0.4}`, runs the axis to `{0.85, 0.4}`, then arcs down to `ACT_ANCHORS.proof.exit` `{0.75, 1}`;
 - four tick marks at `x = 0.15, 0.38, 0.62, 0.85` hang from the axis, each a `pathFor(..., 'line')` between `y = 0.4` and `y = 0.44`, with the impact chain's four stations beside them;
@@ -2863,7 +2898,7 @@ Expected: **FAIL** — `Cannot find module './Doors'`.
 
 - [ ] **Step 3: Write `Doors.tsx`**
 
-One `LineStage` in the unit frame whose single path runs `ACT_ANCHORS.doors.enter` → `ACT_ANCHORS.doors.exit`, drawn on scroll as the act enters. The three doors are a `grid` with `divide-x divide-ec-border` (collapsing to stacked with `max-lg:divide-x-0 max-lg:divide-y`), each rendering `headline` as its `h3`, `ctaLabel` as its link text with `ctaHref`, and exactly the two benefits the copy table keeps.
+One `LineStage` in the unit frame — `viewBox={ACT_VIEW_BOX}` — whose single path runs `ACT_ANCHORS.doors.enter` → `ACT_ANCHORS.doors.exit`, drawn on scroll as the act enters. The three doors are a `grid` with `divide-x divide-ec-border` (collapsing to stacked with `max-lg:divide-x-0 max-lg:divide-y`), each rendering `headline` as its `h3`, `ctaLabel` as its link text with `ctaHref`, and exactly the two benefits the copy table keeps.
 
 `FinalCTA` is copied from `landing/FinalCTA.tsx` with two changes:
 
@@ -2912,7 +2947,7 @@ One commit that changes what renders: `page.tsx` goes from 12 sections to 5 acts
 import { pillars, studentJourneyStages } from '@/data/pillars';
 import { programmes } from '@/data/programmes';
 import { ACT_ANCHORS, VERTICAL_CHAIN } from '@/components/educraft/line/anchors';
-import { assertForkSeam, assertRibbonSeam } from '@/components/educraft/line/frames';
+import { assertForkSeam, assertRibbonSeam, ribbonFrame } from '@/components/educraft/line/frames';
 import { assertContinuity } from '@/components/educraft/line/pathBuilders';
 import Origin from '@/components/educraft/acts/Origin';
 import FivePillars, { type Station } from '@/components/educraft/acts/FivePillars';
@@ -2930,7 +2965,7 @@ import Doors from '@/components/educraft/acts/Doors';
 // converging back into one. They throw on a broken seam, at build time.
 assertContinuity(VERTICAL_CHAIN);
 assertForkSeam(pillars.length);
-assertRibbonSeam(pillars.length, studentJourneyStages.length);
+assertRibbonSeam(ribbonFrame(studentJourneyStages.length, pillars.length));
 
 /** One station per pillar, in pillar order — the walk's data, shaped for the act. */
 const stations: Station[] = pillars.map((pillar) => {
@@ -3350,8 +3385,8 @@ This stage invalidates claims in six places. Each is a defect of the kind this r
 | Document | Claim that becomes false | Fix in |
 |---|---|---|
 | `docs/projects/landing-redesign/stages/README.md` | The **⚠ join warning**: "The Line layer has no defined join — Stage 2 owns the coordinate system", and "`assertContinuity` cannot be wired as it stands" | **Task 2**, whose commit makes it false. Replace with what the join is (`frames.ts`, viewBox selection) and what the seam rule became |
-| `docs/decisions/0006-coordinate-frames-act-local-and-track-local.md` | Records that "how they compose on screen is a layout decision owned by the Stage 2 caller" — true, but it now has an answer | **Task 2**: append the outcome, do not rewrite the decision |
-| `docs/projects/landing-redesign/spec.md` | §4 Act 1's tween, "`x` tweened `0 → -(100 × (N−1))vw`" — superseded: that formula puts station `i` at `i/(N−1)` of the walk, while `drawAt`'s slices, `walkFrame`'s segments and `stationScrollTarget` all put it at `i/N` | **Task 6**, whose tween makes it false |
+| `docs/decisions/0006-coordinate-frames-act-local-and-track-local.md` | Deferred the join to the Stage 2 caller; that now has an answer. (The sentence usually quoted for it — "how they compose on screen is a layout decision owned by the Stage 2 caller" — is `station.ts:16` and `pathBuilders.ts:14`, **not** the ADR. This row attributed it to 0006 until the Task 2 claims review measured it.) | **Task 2** (landed): append the outcome, do not rewrite the decision |
+| `docs/projects/landing-redesign/spec.md` | **Two rows, both made false by this stage.** §4 Act 1's tween, "`x` tweened `0 → -(100 × (N−1))vw`" — superseded: that formula puts station `i` at `i/(N−1)` of the walk, while `drawAt`'s slices, `walkFrame`'s segments and `stationScrollTarget` all put it at `i/N`. And **§10.1's `assertContinuity` row**, which states the old equality rule ("each act's exit anchor equals the next act's entry anchor") — the correction is not scheduled anywhere else in this plan, which the correctness lens caught | §4: **Task 6**, whose tween makes it false. §10.1: **Task 1's fix round** — the row was already false when Task 1 landed, and leaving it for a later task would mean building eight more tasks on a spec that contradicts the code |
 | `docs/design/motion.md` | "`src/lib/gsap.ts`… not yet created" was fixed at Stage 1 close; check for anything about the acts being absent | **Task 5** (first act) |
 | `docs/surfaces/homepage.md` | Describes 12 sections | **Task 11** |
 | `docs/projects/landing-redesign/state.md` | "Stage 2 is neither planned nor started"; the "do not get wrong" list's join entries | **At close** (per `run-a-stage`) |
