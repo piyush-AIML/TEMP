@@ -5,16 +5,21 @@
  * stays as small, separately understandable pieces. That is **not** because the
  * two sides of a seam are equal numbers — they cannot be. Each act is its own
  * coordinate box, so act *i* leaves at its own bottom edge (y = 1) and act
- * *i+1* enters at its own top edge (y = 0): the same *screen* point, different
- * numbers. The seam rule is that shape — an exit on the bottom edge, an enter
+ * *i+1* enters at its own top edge (y = 0): the same *screen* point in two act
+ * boxes — given full-width, gapless acts at one offset — in different numbers.
+ * The seam rule is that shape — an exit on the bottom edge, an enter
  * on the top edge, one shared horizontal fraction. `assertContinuity`
  * (`pathBuilders.ts`) checks it, but it is called from the test suite and from
  * nothing else — no runtime module calls it, so nothing checks this file at
  * load time. `anchors.test.ts` is what pins the values, and it has to: the
  * check is relative, so a coordinated edit that moves both sides of a seam
- * together passes it, and it is not defined over the acts that leave the
- * pattern on purpose (`origin`, whose exit is the fork point, and `doors`,
- * whose exit is the CTA node). `VERTICAL_CHAIN` is the sub-record it covers.
+ * together passes it, and it is defined over a chain's *interior* only — the
+ * first key's `enter` and the last key's `exit` have no seam against them. Nor
+ * is it defined over the two exits that leave the pattern on purpose:
+ * `origin.exit`, the fork point (its act is not in the chain at all), and
+ * `doors.exit`, the CTA node. `VERTICAL_CHAIN` is the sub-record it covers, and
+ * `doors` is inside it as the last key: `doors.enter` is checked like any other
+ * act's entry, and only `doors.exit` goes unexamined.
  *
  * **Frames.** x and y here are **act-local**: x runs 0..1 across one act's own
  * strip and y runs 0..1 down that act's own band. This is *not* the frame
@@ -64,9 +69,12 @@ function endpoints(enter: Anchor, exit: Anchor): AnchorPair {
  * top edge and its `exit` on its bottom edge, and neighbouring acts agree on
  * their horizontal fraction — so the two sides of a seam are the same *screen*
  * point even though they are different *numbers*, because each is expressed in
- * its own act's box. `assertContinuity` (pathBuilders.ts) checks exactly that,
- * and reading it as `exit === enter` is what made the shipped version throw a
- * false alarm on correct geometry.
+ * its own act's box. That "same screen point" holds while every act is
+ * full-width and gapless and they share one horizontal offset; the comparison
+ * is between fractions of two different boxes and cannot see layout.
+ * `assertContinuity` (pathBuilders.ts) checks exactly that, and reading it as
+ * `exit === enter` is why the shipped version throws a false alarm when it is
+ * driven with this geometry.
  *
  * Two acts leave the pattern on purpose:
  * - `origin.exit` is **the fork point**, above the fold at y = 0.85, where the
@@ -102,8 +110,12 @@ export const ACT_ANCHORS = Object.freeze({
 } satisfies Record<ActName, AnchorPair>);
 
 /**
- * The acts whose strand runs edge to edge through its own band, in scroll
- * order — the chain `assertContinuity` is defined over, and its default.
+ * The chain `assertContinuity` is defined over, and its default: the four
+ * post-fork acts, in scroll order. `pillars`, `way` and `proof` run edge to
+ * edge through their own band; `doors` is the chain's last key and its strand
+ * stops at the CTA node at mid-band, so it is the chain's tail rather than a
+ * fourth edge-to-edge run. It is in the chain all the same — only its exit is
+ * unexamined, because there is no seam after it.
  *
  * `origin` is absent because it hands off through the fork rather than through
  * an edge: its exit is the fork point, so passing this whole record would throw
@@ -112,7 +124,8 @@ export const ACT_ANCHORS = Object.freeze({
  * (N→1, checked by `assertRibbonSeam`), both in `frames.ts`.
  *
  * Built from `ACT_ANCHORS` by reference, not by copy: a seam that moves in one
- * place must move in both.
+ * place must move in both. Frozen like the rest of the contract, so nothing —
+ * including a later test fixture — can re-point the default in place.
  */
 export const VERTICAL_CHAIN = Object.freeze({
   pillars: ACT_ANCHORS.pillars,

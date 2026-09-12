@@ -58,11 +58,17 @@ export class NonFiniteCoordinateError extends Error {
  */
 const round = (value: number): number => Math.round(value * 100) / 100;
 
-/** Rejects a non-finite value before it can reach the `d` string. */
-function assertFinite(label: string, value: number): void {
+/**
+ * Rejects a non-finite value before it can reach the `d` string.
+ *
+ * The caller names itself (`caller`), because two exported functions share this
+ * check and the class is the same for both: a `polylinePath` overflow reported
+ * as `pathFor:` sends its reader to the wrong function.
+ */
+function assertFinite(caller: string, label: string, value: number): void {
   if (!Number.isFinite(value)) {
     throw new NonFiniteCoordinateError(
-      `pathFor: ${label} is not finite (${value}). ` +
+      `${caller}: ${label} is not finite (${value}). ` +
         'A path containing it would be dropped silently by the browser.'
     );
   }
@@ -91,10 +97,10 @@ export function pathFor(from: Anchor, to: Anchor, shape: PathShape = 'arc'): str
   // `Infinity`. The arguments are not checked separately — every finite argument
   // that survives rounding is covered here, and every one that does not is
   // caught here.
-  assertFinite('from.x', x0);
-  assertFinite('from.y', y0);
-  assertFinite('to.x', x1);
-  assertFinite('to.y', y1);
+  assertFinite('pathFor', 'from.x', x0);
+  assertFinite('pathFor', 'from.y', y0);
+  assertFinite('pathFor', 'to.x', x1);
+  assertFinite('pathFor', 'to.y', y1);
 
   if (shape === 'line') {
     return `M ${x0} ${y0} L ${x1} ${y1}`;
@@ -125,10 +131,10 @@ export function pathFor(from: Anchor, to: Anchor, shape: PathShape = 'arc'): str
   // also written into the string. With today's coefficients a finite rounded
   // pair keeps them finite; a check that stopped at the endpoints would stop
   // covering the path the first time one of those coefficients rises above 1.
-  assertFinite('first control point x', c1.x);
-  assertFinite('first control point y', c1.y);
-  assertFinite('second control point x', c2.x);
-  assertFinite('second control point y', c2.y);
+  assertFinite('pathFor', 'first control point x', c1.x);
+  assertFinite('pathFor', 'first control point y', c1.y);
+  assertFinite('pathFor', 'second control point x', c2.x);
+  assertFinite('pathFor', 'second control point y', c2.y);
 
   return `M ${x0} ${y0} C ${c1.x} ${c1.y} ${c2.x} ${c2.y} ${x1} ${y1}`;
 }
@@ -141,8 +147,21 @@ const SEAM_EPSILON = 1e-6;
  * One side of a seam, as fractions of its own act's box — see `anchors.ts`.
  * The two sides of a seam are the same screen point while being different
  * numbers, which is why the check is a shape and not an equality.
+ *
+ * Finiteness is checked **first**, and it is not decoration: both tests below
+ * are ordered comparisons, and every comparison with `NaN` is `false`, so a
+ * `NaN` anchor passes as a valid edge *and* as equal to its neighbour. The class
+ * is the same one `pathFor` and `polylinePath` throw for the same input, so a
+ * caller catches one class whichever function met the number first.
  */
 function assertSeamSide(label: string, side: Anchor, edge: 'top' | 'bottom'): void {
+  if (!Number.isFinite(side.x) || !Number.isFinite(side.y)) {
+    throw new NonFiniteCoordinateError(
+      `Strand seam broken at ${label}: the anchor is (${side.x}, ${side.y}), which is ` +
+        'not a finite point. Each side of a seam is a fraction of its own act box, so a ' +
+        'non-finite coordinate is on no edge and compares equal to nothing.'
+    );
+  }
   const expected = edge === 'top' ? 0 : 1;
   if (Math.abs(side.y - expected) > SEAM_EPSILON) {
     throw new Error(
@@ -159,13 +178,26 @@ function assertSeamSide(label: string, side: Anchor, edge: 'top' | 'bottom'): vo
  * agree on their horizontal fraction — so the strand reads as one continuous
  * line across the boundary while each act keeps its own coordinate box.
  *
+ * "Continuous" holds of the numbers *and* of the layout: the two sides are the
+ * same screen point only while every act is full-width and gapless and all acts
+ * share one horizontal offset. This function compares fractions of each act's
+ * own box and cannot see a box, so an act rendered 90% wide, or nudged
+ * sideways, breaks screen continuity with every check here still green.
+ *
+ * A chain of **fewer than two acts throws**. A record with one key (or none) has
+ * no seam to check, and the loop would run zero times — which is what would let
+ * a default bound to `{}` turn this guard into a silent no-op.
+ *
  * **Re-specified in Stage 2.** The shipped version demanded `exit == enter` as
  * raw values, which no correct vertical chain can satisfy: act i's exit is in
  * act i's box and act i+1's enter is in act i+1's box, one band apart. Driven
- * with real geometry it threw a false alarm; called with no argument it
- * re-validated a frozen literal against itself. The premise was the defect.
- * `docs/projects/landing-redesign/rulings.md` records the original finding and
- * ADR 0008 the re-specification.
+ * with the corrected geometry the shipped check throws a false alarm; called
+ * with no argument it re-validated a frozen literal against itself. The premise
+ * was the defect. The finding is recorded in
+ * `docs/decisions/0006-coordinate-frames-act-local-and-track-local.md` (the
+ * "naive seam check will throw a false alarm" consequence) and in
+ * `docs/projects/landing-redesign/state.md` §4. The re-specification itself is
+ * to be recorded at stage close in ADR 0008, which does not exist yet.
  *
  * The order checked is `Object.keys(chain)` — **insertion order, not
  * `ACT_ORDER`**. For the default `VERTICAL_CHAIN` the two coincide because the
@@ -180,6 +212,14 @@ function assertSeamSide(label: string, side: Anchor, edge: 'top' | 'bottom'): vo
  */
 export function assertContinuity(chain: ActChain = VERTICAL_CHAIN): void {
   const names = Object.keys(chain);
+  if (names.length < 2) {
+    throw new Error(
+      `assertContinuity: received a chain of ${names.length} ` +
+        `${names.length === 1 ? 'act' : 'acts'}. A chain with no seams is not a valid ` +
+        'chain: there is no handoff to check, and a loop over zero seams would pass ' +
+        'every input — including the empty one a broken default binds to.'
+    );
+  }
   for (let i = 0; i < names.length - 1; i += 1) {
     const from = names[i];
     const to = names[i + 1];
@@ -222,8 +262,8 @@ export function polylinePath(points: readonly Anchor[]): string {
   }
   const rounded = points.map((point) => ({ x: round(point.x), y: round(point.y) }));
   rounded.forEach((point, index) => {
-    assertFinite(`point ${index} x`, point.x);
-    assertFinite(`point ${index} y`, point.y);
+    assertFinite('polylinePath', `point ${index} x`, point.x);
+    assertFinite('polylinePath', `point ${index} y`, point.y);
   });
   const [head, ...tail] = rounded;
   return [`M ${head.x} ${head.y}`, ...tail.map((point) => `L ${point.x} ${point.y}`)].join(' ');

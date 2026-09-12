@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ACT_ANCHORS } from './anchors';
+import { ACT_ANCHORS, type Anchor } from './anchors';
 import { NonFiniteCoordinateError, assertContinuity, pathFor, polylinePath } from './pathBuilders';
+
+/** A seam fixture: what `assertContinuity` accepts, spelled out per case. */
+type Chain = Record<string, { enter: Anchor; exit: Anchor }>;
 
 /**
  * Path geometry + the seam contract. Source: Landing-Redesign-Plan.md §3.1.
@@ -45,7 +48,7 @@ describe('pathFor', () => {
   });
 
   /**
-   * The four tests below pin current output, which is a change-detector, not a
+   * The next five tests pin current output, which is a change-detector, not a
    * correctness check: the control-point coefficients come from the plan's code
    * block and no design document fixes them. Pinning makes a change visible; it
    * does not make the curve right. That still needs the owner's eye.
@@ -113,29 +116,121 @@ describe('assertContinuity', () => {
     expect(() => assertContinuity()).not.toThrow();
   });
 
-  it('rejects an exit that is not on its act bottom edge', () => {
-    const chain = {
+  it('throws on a chain with no seams rather than iterating zero times', () => {
+    // A one-key (or empty) record has no handoff to check and the loop would run
+    // zero times, passing everything — which is how a default bound to `{}`
+    // turns this guard into a silent no-op. It throws instead, so the default
+    // binding stays observable through the `not.toThrow()` above.
+    expect(() => assertContinuity({})).toThrow(/no seams is not a valid chain/);
+    expect(() =>
+      assertContinuity({ only: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 0.5 } } })
+    ).toThrow(/no seams is not a valid chain/);
+  });
+
+  it('rejects an exit that is not on its act bottom edge, and names that side', () => {
+    const chain: Chain = {
       a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 0.9 } },
       b: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
     };
-    expect(() => assertContinuity(chain)).toThrow(/bottom edge/);
+    // The label is pinned, not only the edge word: the edge word comes from the
+    // message template, so `/bottom edge/` alone is satisfied by a call that
+    // reports the wrong side — `b.enter` rather than `a.exit` — as broken.
+    expect(() => assertContinuity(chain)).toThrow(
+      /Strand seam broken at a\.exit: an act's bottom edge is y = 1/
+    );
   });
 
-  it('rejects an enter that is not on its act top edge', () => {
-    const chain = {
+  it('rejects an enter that is not on its act top edge, and names that side', () => {
+    const chain: Chain = {
       a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
       b: { enter: { x: 0.5, y: 0.1 }, exit: { x: 0.5, y: 1 } },
     };
-    expect(() => assertContinuity(chain)).toThrow(/top edge/);
+    expect(() => assertContinuity(chain)).toThrow(
+      /Strand seam broken at b\.enter: an act's top edge is y = 0/
+    );
   });
 
   it('rejects a seam whose two sides disagree horizontally, and names both', () => {
-    const chain = {
+    const chain: Chain = {
       a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
       b: { enter: { x: 0.6, y: 0 }, exit: { x: 0.6, y: 1 } },
     };
     expect(() => assertContinuity(chain)).toThrow(/a\.exit → b\.enter/);
     expect(() => assertContinuity(chain)).toThrow(/0\.5/);
+  });
+
+  it('rejects a seam off by a thousandth — the tolerance, not only the fixtures', () => {
+    // Every other failing fixture here is off by exactly 0.1, so what this block
+    // actually pinned was "the offset exceeds 0.1": an epsilon loosened to 0.09
+    // — 90,000x the shipped 1e-6 — left the whole suite green, and at that
+    // tolerance the check stops telling a shared spine from a 1%-off one. One
+    // fixture per guard, each off by a thousandth, pins the order of magnitude.
+    const edgeOff: Chain = {
+      a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1.001 } },
+      b: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
+    };
+    expect(() => assertContinuity(edgeOff)).toThrow(/bottom edge/);
+
+    const xOff: Chain = {
+      a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
+      b: { enter: { x: 0.501, y: 0 }, exit: { x: 0.501, y: 1 } },
+    };
+    expect(() => assertContinuity(xOff)).toThrow(/a\.exit → b\.enter/);
+  });
+
+  it('rejects a non-finite anchor, which every ordered comparison passes', () => {
+    // Both guards are ordered comparisons and every comparison with NaN is
+    // false, so a NaN anchor is accepted as a valid edge *and* as equal to its
+    // neighbour. `pathFor` guards a `d` one layer down, but this is the layer
+    // Task 2's generated seed coordinates arrive at.
+    const cases: [string, Chain][] = [
+      [
+        'NaN exit y',
+        {
+          a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: NaN } },
+          b: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
+        },
+      ],
+      [
+        'NaN enter y',
+        {
+          a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
+          b: { enter: { x: 0.5, y: NaN }, exit: { x: 0.5, y: 1 } },
+        },
+      ],
+      [
+        'NaN x on both sides of the seam',
+        {
+          a: { enter: { x: NaN, y: 0 }, exit: { x: NaN, y: 1 } },
+          b: { enter: { x: NaN, y: 0 }, exit: { x: NaN, y: 1 } },
+        },
+      ],
+    ];
+    for (const [label, chain] of cases) {
+      expect(() => assertContinuity(chain), label).toThrow(NonFiniteCoordinateError);
+      expect(() => assertContinuity(chain), label).toThrow(/NaN/);
+    }
+  });
+
+  it('walks a break through every seam of a four-act chain, naming the one that broke', () => {
+    // Every other failing fixture here is a two-act chain, which has one seam:
+    // a loop that stopped after the first seam, or took every second one,
+    // satisfies all of them. The shipped data cannot tell them apart either —
+    // `pillars`, `way` and `proof` share anchors, so seams 1, 2 and 3 are
+    // byte-identical. Here four acts share an x and only the moved exit differs,
+    // so the seam named in the message is the only evidence the loop reached it.
+    const acts = ['a', 'b', 'c', 'd'] as const;
+    for (let seam = 0; seam < acts.length - 1; seam += 1) {
+      const chain: Chain = {};
+      for (const act of acts) {
+        chain[act] = { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } };
+      }
+      chain[acts[seam]].exit = { x: 0.5, y: 0.9 };
+      expect(
+        () => assertContinuity(chain),
+        `seam ${seam + 1} (${acts[seam]}.exit → ${acts[seam + 1]}.enter) is not checked`
+      ).toThrow(new RegExp(`Strand seam broken at ${acts[seam]}\\.exit`));
+    }
   });
 
   it('throws when handed the whole ACT_ANCHORS record, by design', () => {
@@ -178,5 +273,15 @@ describe('polylinePath', () => {
   it('rejects a non-finite coordinate that only becomes non-finite when rounded', () => {
     expect(() => polylinePath([{ x: 0, y: 0 }, { x: Number.MAX_VALUE, y: 0 }]))
       .toThrow(NonFiniteCoordinateError);
+  });
+
+  it('attributes the error to polylinePath, not to pathFor', () => {
+    // One check, two callers, one error class: the function name in the message
+    // is the only thing that tells a reader which function met the number. It
+    // used to be a hardcoded `pathFor:` prefix, so every overflow from here was
+    // reported against the wrong function.
+    expect(() => polylinePath([{ x: 0, y: 0 }, { x: Number.MAX_VALUE, y: 0 }])).toThrow(
+      /polylinePath: point 1 x is not finite/
+    );
   });
 });

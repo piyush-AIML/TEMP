@@ -110,8 +110,12 @@ Consequence: retiring the orbit scene retires the whole WebGL dependency tree, *
 Not one giant `<svg>` across ~11.5 screens — that cannot survive pinning, background changes and reflow. Instead **one `LineStage` per act, bound by an entry/exit anchor contract**: each act's path begins exactly where the previous act's path ended, so the eye reads one continuous line while the DOM stays as small, independently understandable pieces.
 
 ```
-Act 0 exit anchor  ==  Act 1 entry anchor
-Act 1 exit anchor  ==  Act 2 entry anchor   …
+Act 0 exit anchor and Act 1 entry anchor are the same screen point
+Act 1 exit anchor and Act 2 entry anchor are the same screen point   …
+  (each exit on its own bottom edge, each entry on its own top edge, one shared
+  horizontal fraction — different numbers, never equal: this block read
+  "Act 0 exit anchor == Act 1 entry anchor" until Stage 2 Task 1, and act-local
+  no correct stack can satisfy that)
 ```
 
 | File | Responsibility | Depends on |
@@ -466,7 +470,7 @@ Because the working agreement is that the assistant does not open a browser, cal
 | `stationPositions(N)` | anchor geometry |
 | `perStationVh(N)` | the §7.3 dwell formula |
 | `pathFor(from, to, shape)` | path strings |
-| `assertContinuity(acts)` | **each act's exit anchor equals the next act's entry anchor** |
+| `assertContinuity(chain = VERTICAL_CHAIN)` | **a shape, not an equality**: each act's exit sits on its own bottom edge (`y = 1`), the next act's enter on its own top edge (`y = 0`), and the two share one horizontal fraction — the same screen point in two act-local boxes. *(This row read "each act's exit anchor equals the next act's entry anchor" until Stage 2 Task 1: act-local, those two anchors are one band apart and `exit == enter` can never hold for a correct stack.)* |
 | `drawAt(progress, i, N)` | rail/draw fractions — replaces `Methodology`'s hardcoded `/ 5.5` |
 | `contrastRatio(a, b)` | the §6 table as a test, so a future palette edit cannot silently regress AA |
 
