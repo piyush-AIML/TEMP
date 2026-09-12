@@ -21,7 +21,11 @@ export type PillarAccentClasses = {
   text: string;
   /** Non-text accent for strokes and nodes. */
   graphic: string;
-  /** Short alias for `graphic` used as a background (dots, nodes). */
+  /**
+   * `bg-ec-<id>` — the **accent (text-safe)** tier used as a background, not
+   * the `graphic` tier. Preserves the old `pillarBgClass` values; Stage 3's
+   * graphic-role migration should reach for `graphicVar` instead.
+   */
   bg: string;
   /** Wash background for a station band. */
   softBg: string;

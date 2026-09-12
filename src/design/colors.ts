@@ -1,3 +1,5 @@
+import type { PillarId } from '@/data/pillars';
+
 /**
  * Educraft — colour system source of truth (Landing Redesign Stage 1).
  * Hex values are mirrored into CSS custom properties in globals.css, where
@@ -30,8 +32,15 @@ export type PillarAccent = {
  *
  * Equi-luminant by design: the five text tiers' relative luminance spans 0.030,
  * so no pillar shouts louder than another. Hue spread 39/184/222/260/336deg.
+ *
+ * Annotated `Record<PillarId, PillarAccent>` rather than `satisfies`, so a
+ * pillar id with no palette entry is a **compile error** — the same discipline
+ * as `pillarAccent` in lib/pillarStyles.ts. The annotation also makes every
+ * `programmeColors[pillarId]` index total; on an unconstrained object, and
+ * with `noImplicitAny: false`, an absent key silently types as `any` instead
+ * of erroring.
  */
-export const programmeColors = {
+export const programmeColors: Record<PillarId, PillarAccent> = {
   learn: {
     textLight: '#0C7078',
     textDark: '#4FD4DC',
@@ -72,9 +81,14 @@ export const programmeColors = {
     softLight: '#FCE4EC',
     softDark: '#391627',
   },
-} as const satisfies Record<string, PillarAccent>;
+};
 
-export type PillarColorKey = keyof typeof programmeColors;
+/**
+ * Pillar identity for colour lookups. An alias of `PillarId`, not a second
+ * union derived from this object's keys: two independently-derived identity
+ * unions drift the moment one of them gains an entry.
+ */
+export type PillarColorKey = PillarId;
 
 /**
  * Reserved accents for pillars 6 and 7 (Landing-Redesign-Plan.md §7.3).

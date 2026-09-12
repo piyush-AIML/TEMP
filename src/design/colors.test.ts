@@ -6,6 +6,7 @@ import {
   LIGHT_CANVASES,
   contrastRatio,
 } from '@/lib/contrast';
+import { pillars } from '@/data/pillars';
 import { brand, programmeColors, reservedPillarAccents } from './colors';
 
 /**
@@ -15,7 +16,12 @@ import { brand, programmeColors, reservedPillarAccents } from './colors';
  * silently regress accessibility.
  */
 
-const PILLAR_IDS = ['learn', 'include', 'thrive', 'achieve', 'excel'] as const;
+/**
+ * Derived from the registry, never restated. A hand-written list here meant a
+ * sixth pillar's colours were never measured against the AA floors while the
+ * suite stayed green — the failure mode §7.4 says this test exists to prevent.
+ */
+const PILLAR_IDS = pillars.map((pillar) => pillar.id);
 
 /** Worst-case ratio across a set of canvases — the number that must clear the floor. */
 function worst(hex: string, canvases: readonly string[]): number {
@@ -23,6 +29,13 @@ function worst(hex: string, canvases: readonly string[]): number {
 }
 
 describe('pillar accents', () => {
+  it('the palette and the pillar registry cover the same set of ids', () => {
+    // The per-pillar tests below are only as complete as PILLAR_IDS. This
+    // asserts the two sources agree in both directions, so a sixth pillar
+    // cannot be present in one and absent from the other.
+    expect(Object.keys(programmeColors).sort()).toEqual(pillars.map((p) => p.id).sort());
+  });
+
   for (const id of PILLAR_IDS) {
     const accent = programmeColors[id];
 
