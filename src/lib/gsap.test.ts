@@ -24,6 +24,13 @@ import {
 
 const SRC_DIR = fileURLToPath(new URL('..', import.meta.url));
 
+/**
+ * Read once. `globals.css` is the second source of truth for two separate sets
+ * of constants asserted below — the reduced-motion query and the easing
+ * curves — so both describes read this same text.
+ */
+const GLOBALS_CSS = readFileSync(fileURLToPath(new URL('../app/globals.css', import.meta.url)), 'utf8');
+
 /** Every `.ts`/`.tsx` under `src/`, excluding Prisma's generated output. */
 function sourceFiles(dir: string): string[] {
   const out: string[] = [];
@@ -211,8 +218,6 @@ describe('EASE', () => {
 });
 
 describe('the reduced-motion fallback in globals.css', () => {
-  const css = readFileSync(fileURLToPath(new URL('../app/globals.css', import.meta.url)), 'utf8');
-
   /**
    * The span of the block opened at or after `from`, by brace matching. Needed
    * because "the rule appears somewhere after the media query starts" is not
@@ -236,20 +241,82 @@ describe('the reduced-motion fallback in globals.css', () => {
   const RULE = /\[data-line-path\]\s*\{\s*stroke-dashoffset:\s*0\s*!important;\s*\}/;
 
   it('uses the same media query text as the JS constant', () => {
-    expect(css).toContain(`@media ${REDUCED_MOTION_QUERY}`);
+    expect(GLOBALS_CSS).toContain(`@media ${REDUCED_MOTION_QUERY}`);
   });
 
   it('draws the strand without JS, from inside the reduced-motion block', () => {
-    const media = css.indexOf(`@media ${REDUCED_MOTION_QUERY}`);
+    const media = GLOBALS_CSS.indexOf(`@media ${REDUCED_MOTION_QUERY}`);
     expect(media).toBeGreaterThan(-1);
 
-    const { open, close } = blockSpan(css, media);
+    const { open, close } = blockSpan(GLOBALS_CSS, media);
     expect(close).toBeGreaterThan(open);
 
-    const rule = RULE.exec(css);
+    const rule = RULE.exec(GLOBALS_CSS);
     expect(rule).not.toBeNull();
     // Containment, not merely ordering: the rule must sit inside the braces.
     expect(rule!.index).toBeGreaterThan(open);
     expect(rule!.index).toBeLessThan(close);
+  });
+});
+
+/**
+ * The other constant `globals.css` mirrors.
+ *
+ * `design/motion.ts` is the single source for the three easing curves, and the
+ * CSS layer re-declares the same three literals as `--ease-*` theme tokens for
+ * every transition in the stylesheet: two hand-maintained copies of one value.
+ *
+ * The suite does pin `motion.easing` to its literals ("reads the control points
+ * straight out of the token", above) — but that assertion is about the token
+ * alone. An editor who changes `motion.easing.out` is told by that test to
+ * update the literal, and doing so leaves the CSS on the old curve while the
+ * GSAP draw moves to the new one. Editing *either* file alone was invisible
+ * from the CSS side; these two tests are the mirror that closes it.
+ */
+describe('the easing tokens in globals.css', () => {
+  /** `motion.easing` key -> the custom property that must carry the same curve. */
+  const EASING_MIRROR = {
+    out: '--ease-out-soft',
+    inOut: '--ease-inout-soft',
+    soft: '--ease-soft',
+  } as const;
+
+  /**
+   * Every `--ease-*` declaration in the whole file with its value — not just
+   * the ones in the `@theme` block. A redefinition in `:root` or `.dark` would
+   * shadow the theme token at runtime, and a sweep scoped to `@theme` would
+   * report the file as agreeing while the browser painted the override.
+   */
+  function declaredEasings(): { name: string; value: string }[] {
+    const withoutComments = GLOBALS_CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+    const out: { name: string; value: string }[] = [];
+    const declaration = /(--ease-[a-z0-9-]+)\s*:\s*([^;]+);/g;
+    let match: RegExpExecArray | null;
+    while ((match = declaration.exec(withoutComments)) !== null) {
+      out.push({ name: match[1], value: match[2].trim() });
+    }
+    return out;
+  }
+
+  it('declares exactly the three tokens motion.easing carries', () => {
+    // Both directions, and duplicates count: a fourth `--ease-*` with no token
+    // behind it, or a token with no custom property, is a red here.
+    expect(declaredEasings().map((entry) => entry.name).sort()).toEqual(Object.values(EASING_MIRROR).sort());
+  });
+
+  it('carries the token curve, compared as bezier control points', () => {
+    for (const key of ['out', 'inOut', 'soft'] as const) {
+      const cssVar = EASING_MIRROR[key];
+      const declared = declaredEasings().filter((entry) => entry.name === cssVar);
+      expect(declared, `${cssVar} is not declared in globals.css`).toHaveLength(1);
+
+      // Parsed rather than string-compared, so whitespace or formatting cannot
+      // make two different curves look equal; and it throws — loudly — if the
+      // CSS value stops being a cubic-bezier at all, which a string compare
+      // would have reported as a plain mismatch.
+      expect(bezierControlPoints(declared[0].value), `${cssVar} vs motion.easing.${key}`).toEqual(
+        bezierControlPoints(motion.easing[key])
+      );
+    }
   });
 });

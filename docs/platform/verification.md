@@ -8,9 +8,10 @@ The commands that gate a change, who verifies what, and the accessibility and pe
 npm install
 npm run dev         # local dev on :3000 (first compile ~14s is normal)
 
-# verification loop — all three must pass before shipping
+# verification loop — all four must pass before shipping
 npm run lint         # eslint (react-hooks/immutability rule active)
 npx tsc --noEmit
+npm run test         # vitest run — added by Landing Redesign Stage 1
 npm run build         # prisma generate && next build — Turbopack production build
 
 npm start            # serve the production build
@@ -69,4 +70,4 @@ The full hard-won rule set lives in [../architecture/layering.md](../architectur
 
 **Rule 7 (obsolete)** — ~~`THREE.Clock` deprecation warning is emitted by R3F 9.7.0 internals (latest stable) — harmless, disappears with R3F's next patch. Do not upgrade to a 10.0 canary just to silence it.~~ **OBSOLETE 2026-09-12 — R3F is retired, so the warning disappears with it.**
 
-**Not overridden (still in force):** the `overflow-hidden`/sticky rule, hydration gating, zod v4 syntax, literal-only Tailwind classes, `tw-animate-css` key-remount, and route-group/proxy coverage — plus the three-command loop above and the visual-QA working agreement.
+**Not overridden (still in force):** the `overflow-hidden`/sticky rule, hydration gating, zod v4 syntax, literal-only Tailwind classes, `tw-animate-css` key-remount, and route-group/proxy coverage — plus the four-command loop above and the visual-QA working agreement.

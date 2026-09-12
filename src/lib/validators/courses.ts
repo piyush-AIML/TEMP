@@ -44,8 +44,28 @@ const _verticalsMatchPillarSlugs: _VerticalsMatchPillarSlugs = true;
 export type CourseVertical = (typeof COURSE_VERTICALS)[number];
 
 /**
- * Human label per vertical. Derived from the pillar registry so the display
- * name lives in exactly one place.
+ * Human label per vertical, for the dashboard's course forms.
+ *
+ * **Hand-written, and NOT derived from the pillar registry.** A previous
+ * version of this comment claimed otherwise; it was wrong. These are the
+ * deliberately shorter labels the course form's vertical `<select>` shows,
+ * while the marketing pages render the longer `pillar.vertical` from
+ * `src/data/pillars.ts`. Nothing keeps the two in step — no type, no test,
+ * no shared constant — so they can and do drift.
+ *
+ * Three of the five differ today:
+ *
+ *   pillar.vertical              verticalLabel
+ *   Wellbeing & Counselling      Wellbeing & Counseling
+ *   AI & Digital Technologies    AI & Digital Tech
+ *   NEET & JEE Preparation       NEET & JEE Prep
+ *
+ * The Counselling/Counseling split is a live inconsistency in the shipped
+ * product: the same programme is spelled two ways, in a place a student can
+ * see both. Reconciling the copy is a product decision, so the values here are
+ * left exactly as they were — do not "fix" one spelling without the other.
+ * If the copy is ever reconciled, delete the table above, but keep the warning:
+ * these strings are hand-maintained, not derived.
  */
 export const verticalLabel: Record<CourseVertical, string> = {
   linguistics: 'Linguistics',

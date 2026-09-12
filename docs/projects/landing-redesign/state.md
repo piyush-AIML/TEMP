@@ -1,18 +1,21 @@
 # Landing Redesign — state
 
-Last updated: 2026-09-12 · branch `landing-redesign` · spec [`spec.md`](spec.md) · stage plan [`stages/stage-1.md`](stages/stage-1.md)
+Last updated: 2026-09-13 · branch `landing-redesign` · spec [`spec.md`](spec.md) · Stage 1 plan [`stages/stage-1.md`](stages/stage-1.md)
 
 ## 1. Where we are
 
-**Stage 1 (Foundation): tasks 1–6 of 7 done, reviewed, committed. Task 7 is next.** Work was
-paused after Task 3 to build the knowledge base (done); Tasks 4–6 followed on 2026-09-12/13.
-Stages 2–4 are *designed* (`spec.md` §2–§12) but **not planned** — no stage plan exists yet.
+**Stage 1 (Foundation) is COMPLETE — all 7 tasks done, reviewed and committed.** Work was paused after
+Task 3 to build the knowledge base (done); Tasks 4–7 followed on 2026-09-12/13, and Stage 1 was closed
+by a whole-branch review on 2026-09-13. Stages 2–4 are *designed* (`spec.md` §2–§12) but **not
+planned** — no stage plan exists for any of them.
 
 > **Planning a future stage? Read [`stages/README.md`](stages/README.md) first.** It is the stage
 > index and holds each unplanned stage's **planning inputs**: what is already decided (with spec
 > pointers), what is deliberately still open, the interfaces the previous stage leaves behind, and
 > what must be true before the stage can be planned at all. It exists so planning a stage is
-> *planning*, not re-deriving.
+> *planning*, not re-deriving. **Read its ⚠ join warning before planning the strand** — Stage 1 left
+> the Line layer's coordinate system undefined on purpose (R8), and assembling the three modules
+> naively produces a 0.26px dot.
 
 | # | Task | State | Commits |
 |---|---|---|---|
@@ -20,47 +23,54 @@ Stages 2–4 are *designed* (`spec.md` §2–§12) but **not planned** — no st
 | 2 | Palette v2 token migration | done | `45bbcd7`, fixes `421f164` `244aa50` |
 | 3 | Pillar registry + derived `PillarId` | done | `ef9f14f`; ride-along fix `9d3027d` |
 | 4 | GSAP + Motion installed, `src/design/scroll.ts` | done | `12b1525` `d1be7db` `550f074` `a7cc303` `569bfa3` |
-| 5 | Station geometry (`anchors.ts`, `station.ts`) | done | `4b3ca87`, fix `e54ae97` (one merged round) |
-| 6 | Path builders + `assertContinuity` | done | `b1282cb`, fix round `2acd873` |
-| 7 | `src/lib/gsap.ts` + `LineStage` | **next** | — |
+| 5 | Station geometry (`anchors.ts`, `station.ts`) | done | `4b3ca87`, fix `e54ae97` |
+| 6 | Path builders + `assertContinuity` | done | `b1282cb`, fixes `2acd873` `ad5142e` `1476b65` |
+| 7 | `src/lib/gsap.ts` + `LineStage` | done | `7130610`, fixes `80ff7f0` `72a74ec` |
 
 Stage 2 = the five acts (Origin, Five Pillars, Way, Proof, Doors) · Stage 3 = components + shadcn +
-the four handoff routes · Stage 4 = R3F removal + React pin relaxation. Stage 1 changes **no page
+the four handoff routes · Stage 4 = R3F removal + React pin relaxation. **Stage 1 changed no page
 structure** — the homepage still renders its 12 sections, with new colours.
 
 ## 2. Immediate next action
 
-Task 7 (`## Task 7` in [`stages/stage-1.md`](stages/stage-1.md)), brief at
-`.superpowers/sdd/Landing-Redesign-Stage-1-Implementation-Plan/task-7-brief.md` — creates
-`src/lib/gsap.ts` and `LineStage.tsx`. **Verify the brief is not stale before dispatching** — the
-same diff that was run on the Task 5 and Task 6 sections, and check rather than assume: Task 6's
-brief and the plan both carried stale claims (frame sentence, test count, a Consumes line that named
-a module its own component never imported).
+**Nothing is in flight. Stage 1 is closed; Stage 2 is neither planned nor started.**
 
-Interfaces Task 6 leaves for it, all pinned by tests: `pathFor(from, to, shape)`, `PathShape`,
-`assertContinuity(chain?)` from `pathBuilders.ts`. `LineStage` takes pre-computed `paths: string[]`
-and imports none of them — see the correction note in the plan's Task 7 section.
+Next action, when the owner sequences it: **plan Stage 2 (The Acts)** — read [`stages/README.md`](stages/README.md), then run the `writing-plans` flow.
+
+**Do not begin planning or executing Stage 2 unasked** — its prerequisite is met, which makes starting it easier, not authorised.
+
+**Owner decisions waiting, not blocking:** the fork's geometry is a horizontal bulge rather than a
+vertical leave; the ten anchor values, the arc coefficients and the fork shape are **invented and
+unvalidated** (pinned by test, which makes a *change* visible without making the values *correct*);
+whether `pillars`/`way`/`proof` should really have zero-length strands; and whether the Accent-on-
+`/programmes/[slug]` interface needs a prop or is satisfied by CSS.
 
 ## 3. Blocked
 
-Nothing blocks Task 6 — Stage 1 needs no owner decision. Owner-side and open, but not blocking: all
-browser/visual QA (the assistant never launches a browser, which is why the dev-only `?calibrate=1`
-overlay reports numbers); seed testimonials remain a launch blocker this design leans on harder
-([`platform/blockers.md`](../../platform/blockers.md)); `Course.vertical` cannot express a course outside
-the five pillars (`spec.md` §7.1 — deferred product decision).
+Nothing blocks. Owner-side and open: all browser/visual QA (the assistant never launches a browser,
+which is why the dev-only `?calibrate=1` overlay reports numbers); seed testimonials remain a launch
+blocker this design leans on harder ([`platform/blockers.md`](../../platform/blockers.md));
+`Course.vertical` cannot express a course outside the five pillars (`spec.md` §7.1 — deferred product
+decision); and `--accent: #00b3b8` survives untouched in the shadcn contract, measuring **2.58:1**
+against its own foreground — the hex this stage exists to retire, with no consumer today.
 
 ## 4. Do not get wrong
 
-- **The loop is four commands now:** `npx tsc --noEmit && npm run lint && npm run test && npm run build`. Task 1 added the Vitest leg; three of four is not green.
-- **Palette hexes are measured — copy them verbatim, never re-derive or "improve" them.** `src/design/colors.test.ts` enforces AA, and its token-against-token pair assertions (not only token-vs-canvas) are what caught a 2.64:1 button.
-- **Tailwind 4 needs literal class names** — `bg-ec-${x}` emits no CSS; every pillar→class mapping is written out.
+- **The loop is four commands:** `npx tsc --noEmit && npm run lint && npm run test && npm run build`. Task 1 added the Vitest leg; three of four is not green.
+- **The Line layer has no defined join, and that is deliberate.** `LineStage` imports no geometry module. The frames are different *units*, not just different origins: `anchors.ts` is act-local 0..1, `stationPositions` x is track-widths (one per viewport, so `0..N−1`) and its y is viewport heights, and `pathFor` is frame-agnostic by R8 because the transform needs an act identity its signature never carries. Reconciling them into `LineStage`'s `viewBox` space is **Stage 2's job and nobody's current code**. Feeding `stationPositions(5)` straight through gives a rail at 0.33% of the default 1200-wide viewBox.
+- **`assertContinuity` cannot be wired as it stands.** Driven with real geometry it throws a *false* alarm; called with no argument it re-validates a frozen literal against itself. It enforces `exit == enter` as values, but act-local those are each act's own edge, one act-band apart on screen.
+- **`drawAt` and the spec's track tween disagree by (N−1)/N.** There is **no** mapping where a segment draws as the walk arrives at it — contradicting `station.ts`'s own docstring. 5 stations make 4 gaps; `drawAt` models 5 slices. The `(pillarCount − 1)` spacing was considered and is impossible; the shape `clamp01(pillarCount * progress − index)` is *forced*. Do not "correct" it back toward the tween: the tween describes track translation, not station activation.
+- **`LineStage` cannot serve Act 1 as shipped.** It has no render-only mode, and it documents that `pin` and `scrub: true` "do not compose" — which is exactly Act 1's required mechanic. `paths[0]` "the primary strand" is documented and consumed by nothing.
+- **Palette hexes are measured — copy them verbatim, never re-derive or "improve" them.** `src/design/colors.test.ts` enforces AA, and its token-against-token pair assertions (not only token-vs-canvas) are what caught a 2.64:1 button. **`colors.ts` and `globals.css` must carry identical hex values, and the suite now asserts that mirror** — an edit to either file alone fails.
+- **Tailwind 4 needs literal class names** — `bg-ec-${x}` emits no CSS; every pillar→class mapping is written out. `stroke-ec-teal-graphic` is verified emitted, by hand.
+- **`@theme inline` alias coverage is still unasserted.** A token declared in `:root`/`.dark` but missing from the `@theme inline` block emits **no Tailwind class** and passes the whole suite — the palette mirror test reads `:root`/`.dark` only. Adding a token means three places, and nothing checks the third.
+- **`verticalLabel` in `src/lib/validators/courses.ts` can still drift from `pillar.vertical`.** The comment now states the truth; nothing enforces it.
 - **GSAP ownership:** once GSAP drives, CSS can no longer guarantee reduced motion, so every setup pairs with `gsap.matchMedia()` rendering the final state; and never let GSAP and Motion own the same property of the same element.
 - `rm -rf .next` after a file delete or rename — **never while a dev server is running** (a recorded incident, not a precaution).
-- **`spec.md` §7.2 is the pre-Task-3 diagnosis, not a to-do list.** Tasks 1–3 already did the fix — derived `PillarId`, `pillarAccent` collapsed with back-compat re-exports, derived `COURSE_VERTICALS`, `programmeColors` constrained to `Record<PillarId, PillarAccent>`. Adding a pillar now follows §7.4's runbook, which carries the dry-run's actual output.
+- **`spec.md` §7.2 is the pre-Task-3 diagnosis, not a to-do list.** Adding a pillar follows §7.4's runbook — but note §7.4's "exactly three errors" is now **four** (the `programmeColors` literal at `colors.ts` was added a commit after the dry-run that produced the list).
+- **`verticalLabel` in `src/lib/validators/courses.ts` is NOT derived from the registry**, and 3 of its 5 values differ from `pillar.vertical` (`Counseling`/`Counselling`, `AI & Digital Tech`/`Technologies`, `NEET & JEE Prep`/`Preparation`). **Both render** — dashboard forms vs marketing pages — so the same vertical shows two names. Pre-existing divergence; the *claim of derivation* was introduced by Task 3 and removed at close. Fixing the labels is a copy decision for the owner.
+- **`vitest.config.mts`'s `include: ['src/**/*.test.ts']` silently drops `.test.tsx`.** Task 7's tests are `.test.ts` and run — but any `.test.tsx` added later will never run, silently. Needs a `jsdom` decision.
+- **`stationPositions(Infinity)` throws `RangeError`** (loud, unreachable from `pillars.length`), and the `pillarCount <= 0` guard there was removed as unobservable — `Array.from` already coerces the length.
+- **The anchors' coordinate frame supersedes the plan's.** `anchors.ts` states x/y as **act-local**; the plan's Task 5 code block still carries the superseded sentence and the values themselves. `pathFor` does **not** own a transform.
 - `src/app/(site)/about/page.tsx` carries formatting-only churn in the working tree (quote style, JSX re-wrapping). It is out of scope here — do not sweep it into a Stage 1 commit.
 - **`src/design/scroll.ts` is fully pinned to spec literals.** If a later task changes a `motion.ts` token or a breakpoint constant and the suite goes red, the spec needs updating too — that coupling is deliberate, not a test to relax.
-- **The walk's draw is `clamp01(pillarCount * progress - index)`, with `index` clamped to `[0, pillarCount − 1]`.** The `(pillarCount − 1)` spacing was considered and is impossible — the last station's window falls outside the walk, so its segment never draws at any progress. `Math.floor(progress * n)` is safe to use as the active-station index as a result. Do not "correct" the spacing back toward the spec's tween: the tween describes track translation, not station activation.
-- **The anchors' coordinate frame supersedes the plan's.** `anchors.ts` states x/y as **act-local**; the plan's Task 5 code block (`stage-1.md`, the `ACT_ANCHORS` listing — by step, not by line, because its line numbers have moved twice) still carries the superseded sentence ("x in track-widths (0 = left edge of act 0 …)") and it also carries the values themselves — `origin.enter` is `{ x: 0.72, y: 0 }` there. `anchors.test.ts` asserted those values "appear in no spec, plan or design doc", which was **false**; it now records the truth — the values are invented for the design and that block carries them, but no design document *fixes* them. `pathFor` does **not** own a transform between the act-local anchors and the track-local station x: it is frame-agnostic (both points arrive already in one frame), and the vertical strand segments and the horizontal rail are different geometry rather than one frame needing conversion. How they compose on screen is a Stage 2 layout decision, and whether the strand reads as one line at real viewports is still the owner's visual QA.
-- **The anchor values are invented, not specified.** No design document fixes `0.72` / the `0.5` baseline — they came from the Task 5 brief. Pinning them makes a *change* visible; it does not make them *correct*. They need the owner's eye.
-- **`vitest.config.mts`'s `include: ['src/**/*.test.ts']` silently drops `.test.tsx`** — reconfirmed with a deliberately failing probe that left the suite green. Task 7's brief creates no component test file, so nothing pending is skipped today, but any `.test.tsx` added later would never run. Needs a `jsdom` decision.
-- **`stationPositions(Infinity)` throws `RangeError`** (loud, unreachable from `pillars.length`), and the `pillarCount <= 0` guard there was removed as unobservable — `Array.from` already coerces the length.

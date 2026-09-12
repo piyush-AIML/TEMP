@@ -116,10 +116,11 @@ Act 1 exit anchor  ==  Act 2 entry anchor   …
 
 | File | Responsibility | Depends on |
 |---|---|---|
-| `line/ anchors.ts` | The entry/exit contract **as functions of `N`** (§7.3), plus station positions | nothing |
+| `line/ anchors.ts` | The entry/exit anchor contract. **Shipped as a frozen constant (`ACT_ANCHORS`), not as functions of `N`** — this row originally said "as functions of `N` (§7.3)", and §7.3's "not coordinate constants" is unmet; see [ADR 0006](../decisions/0006-coordinate-frames-act-local-and-track-local.md). | nothing |
 | `line/ pathBuilders.ts` | Pure `(fromAnchor, toAnchor, shape) → path 'd'`. Testable without a DOM. | `anchors.ts` |
 | `line/ LineStage.tsx` | Renders one act's `<svg>`; wires GSAP draw/pin; exposes `data-line-path` hooks | `design/motion.ts`, `design/scroll.ts`, `lib/gsap.ts` |
-| `line/ station.ts` | Pure calibration math: `stationPositions(N)`, `perStationVh(N)`, `drawAt(progress, i, N)` | `anchors.ts` |
+| `line/ station.ts` | Pure calibration math: `stationPositions(N)`, `drawAt(progress, i, N)` | `anchors.ts` |
+| `design/ scroll.ts` | Pure calibration: `perStationVh(N)`, `branchFor(width)`, `BREAKPOINTS`, `SCRUB`, `CEILINGS`. *(Filed under `line/station.ts` in an earlier revision of this table; it shipped in `design/`.)* | `design/motion.ts` |
 
 **Technique:** every path carries `pathLength="1"`. Draw is then always `stroke-dasharray: 1` with `stroke-dashoffset: 1 → 0` — identical for every path regardless of real length. No `getTotalLength()`, no layout reads in the animation loop, one animated property per act.
 

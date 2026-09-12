@@ -2294,6 +2294,6 @@ The fix is structural, not cosmetic: a test cannot reference a type shape that d
 
 - `npx tsc --noEmit && npm run lint && npm run test && npm run build` all pass.
 - The contrast test is green and the shipped palette's failures are recorded in commit history.
-- `npm run build` still emits the same 29 routes; the page renders the same 12 sections with new colours.
+- `npm run build` still emits the same route table; the page renders the same 12 sections with new colours. **The invariance is what this criterion means and it holds** — measured at close: no route file changed, and `src/app/(site)/page.tsx` still imports exactly 12 sections. *The "29" was never right: the build reports 50 entries by the tree's own counting (43 app-path entries by the manifest's). Corrected here rather than enforced, because the number was unachievable and the invariance was the point.*
 - `LineStage` exists but is unused — Stage 2 binds it.
 - Adding a sixth pillar id to `pillars.ts` fails `tsc` (verified by dry-run).

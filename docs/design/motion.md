@@ -46,7 +46,7 @@ The redesign retires the orbit scene entirely. The removed packages are `three`,
 
 ### The engine split that replaces them
 
-**A rule, not a preference:** GSAP + ScrollTrigger owns anything scrubbed or pinned; Motion owns anything discrete or state-driven; **never both on the same property of the same element.** Registration is to live in a single `src/lib/gsap.ts` module (part of the approved design; not yet created — implementation has not started).
+**A rule, not a preference:** GSAP + ScrollTrigger owns anything scrubbed or pinned; Motion owns anything discrete or state-driven; **never both on the same property of the same element.** Registration lives in a single `src/lib/gsap.ts` module — **shipped in Stage 1**. The single-site rule is not just stated: `src/lib/gsap.test.ts` scans the source tree and fails if `registerPlugin` appears in more than one file.
 
 **Reduced motion changes owner.** Once GSAP drives, **CSS can no longer make the reduced-motion guarantee** — the redesign enforces it through `gsap.matchMedia()`, which removes all pinning and renders a plain vertical document in identical DOM order. The CSS-level guarantee in [`system.md`](system.md) covers only what CSS still animates.
 

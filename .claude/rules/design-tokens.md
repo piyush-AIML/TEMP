@@ -21,10 +21,18 @@ paint. A value present in only one of the two **passes the whole test suite and 
 This is not hypothetical — it has already happened once. Keep it in mind whenever you correct a
 hex: change both files in the same edit.
 
-The mirror is **one-directional**. Every value in `colors.ts` must exist in `globals.css`, but not
-the reverse: `--ec-indigo-light`, `--ec-teal-dark` and `.dark --ec-indigo` are deliberate ramp
-steps with no `colors.ts` counterpart. A sweep script must whitelist those or it will report false
-positives.
+The mirror is **enforced by test**, in both directions, with exact equality both ways. Every
+`colors.ts` hex field must have a CSS pair, and every `--ec-*` in `:root`/`.dark` must be mapped or
+named on an explicit one-directional whitelist. Exactness matters: a whitelisted name that later
+gains a pair **fails**, so the list cannot rot.
+
+Seven names are one-directional by design — all ramp steps or aliases, none a `brand` field:
+`--ec-indigo-light` (both themes), `.dark --ec-indigo`, `--ec-teal-dark` (both), and
+`--ec-teal-light` (both — the graphic tier in the light block and the text tier in the dark block,
+an alias holding values two other vars also hold). **The whitelist lives in
+`src/design/colors.test.ts` as `ONE_DIRECTIONAL`** — change it there, not in prose. *(This paragraph
+previously named three names and called the mirror one-directional; both were stale, and the
+omission of `--ec-teal-light` would have made a docs-driven sweep report a false positive.)*
 
 ## Tailwind 4 will not generate what it cannot see
 
