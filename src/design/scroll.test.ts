@@ -16,6 +16,17 @@ import {
  */
 
 describe('perStationVh', () => {
+  /**
+   * The band itself, pinned to literals. Without this the floor and ceiling
+   * cases below compare `perStationVh` against the very constant under test, so
+   * each moves with the constant and pins nothing — `WALK_MAX_VH` anywhere >= 80
+   * and `WALK_MIN_VH` anywhere in ~[57.14, 66.67] left every assertion green.
+   */
+  it('pins the calibration band to spec §7.3 (60vh floor, 80vh ceiling)', () => {
+    expect(WALK_MIN_VH).toBe(60);
+    expect(WALK_MAX_VH).toBe(80);
+  });
+
   it('gives 80vh per station at 5 pillars (the designed value)', () => {
     expect(perStationVh(5)).toBe(80);
   });
@@ -25,14 +36,32 @@ describe('perStationVh', () => {
   });
 
   it('clamps to the floor rather than shrinking stations into nothing', () => {
+    // Literal first, then the constant: 60 is the calibration, `WALK_MIN_VH` is
+    // the name it ships under, and both have to be right.
+    expect(perStationVh(7)).toBe(60);
+    expect(perStationVh(8)).toBe(60);
+    expect(perStationVh(20)).toBe(60);
     expect(perStationVh(7)).toBe(WALK_MIN_VH);
     expect(perStationVh(8)).toBe(WALK_MIN_VH);
     expect(perStationVh(20)).toBe(WALK_MIN_VH);
   });
 
   it('never exceeds the ceiling for tiny pillar counts', () => {
+    expect(perStationVh(1)).toBe(80);
+    expect(perStationVh(3)).toBe(80);
     expect(perStationVh(1)).toBe(WALK_MAX_VH);
     expect(perStationVh(3)).toBe(WALK_MAX_VH);
+  });
+
+  it('falls back to the ceiling for NaN, and to the floor for a huge count', () => {
+    // The guard exists so a bad count can never become a silent NaN scroll
+    // length in a ScrollTrigger `end`. `Infinity` deliberately does NOT take
+    // that path: an absurdly large count is the floor's job, not the ceiling's,
+    // so catching it with `!Number.isFinite` would be a regression.
+    expect(perStationVh(Number.NaN)).toBe(WALK_MAX_VH);
+    expect(perStationVh(Number.NaN)).toBe(80);
+    expect(perStationVh(Number.POSITIVE_INFINITY)).toBe(60);
+    expect(perStationVh(1e9)).toBe(60);
   });
 
   it('is monotonic non-increasing as pillars are added', () => {
@@ -60,7 +89,7 @@ describe('branchFor', () => {
 
   it('agrees with the breakpoint constants it is built from', () => {
     expect(branchFor(BREAKPOINTS.lg)).toBe('desktop');
-    expect(branchFor(BREAKPOINTS.md)).toBe('tablet');
-    expect(branchFor(BREAKPOINTS.md - 1)).toBe('mobile');
+    expect(branchFor(BREAKPOINTS.sm)).toBe('tablet');
+    expect(branchFor(BREAKPOINTS.sm - 1)).toBe('mobile');
   });
 });

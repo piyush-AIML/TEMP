@@ -388,7 +388,7 @@ perStationVh(N) = clamp(400 / N)  to the range [60, 80] vh
 | 7 | 60vh (clamped) | 420vh |
 | 8 | 60vh (clamped) | 480vh |
 
-The act stays ~4.5 screens regardless of pillar count.
+The act stays ~4 screens regardless of pillar count.
 
 **Reserve the next accents, pre-verified.** With the wheel at 39/184/222/260/336, the largest free gap is 39→184 (**145°**, midpoint ≈ **112°, green**) — that is slot 6. Slots 6 and 7 ship as **contrast-measured values exported from `colors.ts` but emitting no CSS** until a pillar uses them, so a future pillar never means inventing a hue under deadline. That is how palettes rot.
 
@@ -475,7 +475,7 @@ These run under **Vitest** — which `EDUCRAFT_PRODUCTION.md` already names as S
 
 | Motion | Value | Token |
 |---|---|---|
-| headline line stagger | 80ms | between `fast` and `instant` |
+| headline line stagger | 80ms | none — below `instant` (100ms), the shortest token that exists, so a deliberate standalone value |
 | station content in | 400ms | `emphasis` |
 | walk scrub smoothing | `scrub: 1` | — |
 | ribbon draw | 700ms | `reveal` |

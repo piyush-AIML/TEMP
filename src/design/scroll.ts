@@ -5,9 +5,19 @@
  * to import from anywhere including the Vitest node environment.
  */
 
-/** Tailwind-aligned breakpoints. Keep in sync with globals.css if it gains a custom screen. */
+import { durationMs } from './motion';
+
+/**
+ * The spec §8 band edges: `>= lg` is desktop, `sm <= w < lg` is tablet, below
+ * `sm` is mobile. They agree with the Tailwind ladder at `lg` and at `sm` — note
+ * `tokens.ts` holds the canonical *layout* ladder, whose `md` is 768, a
+ * different question from this one.
+ *
+ * Deliberately NOT derived from `tokens.ts`: importing would let a future
+ * layout edit silently move the tablet branch.
+ */
 export const BREAKPOINTS = {
-  md: 640,
+  sm: 640,
   lg: 1024,
 } as const;
 
@@ -24,8 +34,16 @@ export const WALK_BASE_VH = 400;
 export const WALK_MIN_VH = 60;
 export const WALK_MAX_VH = 80;
 
-/** Vertical scroll distance granted to each pillar station, in viewport heights. */
+/**
+ * Vertical scroll distance granted to each pillar station, in viewport heights.
+ *
+ * An unusable count falls back to the ceiling rather than propagating: `NaN`
+ * would otherwise flow into a ScrollTrigger `end` as a silent `NaN` scroll
+ * length. `Infinity` is deliberately NOT caught here — it takes the ordinary
+ * path to the floor, which is the correct answer for an absurdly large count.
+ */
 export function perStationVh(pillarCount: number): number {
+  if (Number.isNaN(pillarCount)) return WALK_MAX_VH;
   if (pillarCount <= 0) return WALK_MAX_VH;
   const ideal = WALK_BASE_VH / pillarCount;
   return Math.min(WALK_MAX_VH, Math.max(WALK_MIN_VH, ideal));
@@ -39,7 +57,7 @@ export function perStationVh(pillarCount: number): number {
  */
 export function branchFor(widthPx: number): ScrollBranch {
   if (widthPx >= BREAKPOINTS.lg) return 'desktop';
-  if (widthPx >= BREAKPOINTS.md) return 'tablet';
+  if (widthPx >= BREAKPOINTS.sm) return 'tablet';
   return 'mobile';
 }
 
@@ -50,9 +68,12 @@ export function branchFor(widthPx: number): ScrollBranch {
 export const SCRUB = 1;
 
 /**
- * Motion ceilings, in milliseconds, expressed as multiples of the `motion.ts`
- * duration tokens so there is still one source of truth for timing.
- * See Landing-Redesign-Plan.md §10.2.
+ * Motion ceilings, in milliseconds. See Landing-Redesign-Plan.md §10.2.
+ *
+ * Three of the four are derived from the `motion.ts` duration tokens through
+ * `durationMs`, so `motion.ts` stays the single source for timing and a token
+ * change moves these with it. `headlineStaggerMs` is the exception and is a
+ * standalone literal — see its own note.
  */
 export const CEILINGS = {
   /**
@@ -62,10 +83,10 @@ export const CEILINGS = {
    * than `instant` to derive this from, so 80 is a standalone value.
    */
   headlineStaggerMs: 80,
-  /** Station content entering — `motion.duration.emphasis` * 1000. */
-  stationEnterMs: 400,
-  /** Journey ribbon draw — `motion.duration.reveal` * 1000. */
-  ribbonDrawMs: 700,
-  /** Any UI feedback must not exceed this — `motion.duration.fast` * 1000. */
-  uiFeedbackMaxMs: 160,
+  /** Station content entering — `motion.duration.emphasis`, 400ms. */
+  stationEnterMs: durationMs('emphasis'),
+  /** Journey ribbon draw — `motion.duration.reveal`, 700ms. */
+  ribbonDrawMs: durationMs('reveal'),
+  /** Any UI feedback must not exceed this — `motion.duration.fast`, 160ms. */
+  uiFeedbackMaxMs: durationMs('fast'),
 } as const;
