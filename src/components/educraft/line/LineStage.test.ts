@@ -134,8 +134,9 @@ describe('LineStage render-only mode', () => {
     // The `true` default's *behaviour* is not reachable from here: markup does
     // not depend on `draw` at all, so no assertion in this file can tell a
     // default of `true` from one of `false` (measured on Task 4's mutation
-    // pass: inverting the default leaves the suite green). That half is the
-    // owner's QA, numbered by `?calibrate=1`.
+    // pass: inverting the default leaves the suite green). What exercises it is
+    // the owner's QA — Way, Proof and Doors take the default, while the two
+    // scrubbed acts pass `draw={false}` and are the ones `?calibrate=1` numbers.
     expect(render({ paths: ['M 0 0 L 1 1'] })).toBe(
       render({ paths: ['M 0 0 L 1 1'], draw: true })
     );
