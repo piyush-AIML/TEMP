@@ -30,7 +30,7 @@
 
 | File | Responsibility |
 |---|---|
-| `vitest.config.ts` | Test runner config — node environment, `@/` alias |
+| `vitest.config.mts` | Test runner config — node environment, `@/` alias (`.mts`, not `.ts` — see Task 1 Step 2) |
 | `src/lib/contrast.ts` | Pure WCAG relative-luminance + contrast-ratio maths. No deps, no DOM. |
 | `src/lib/contrast.test.ts` | Assertions for the WCAG maths, against hex literals (Task 1) |
 | `src/design/colors.test.ts` | The AA enforcement test over the token table (Task 2) |
@@ -65,7 +65,7 @@ This task builds the harness and proves the WCAG maths against hex literals, so 
 
 **Files:**
 - Modify: `package.json`
-- Create: `vitest.config.ts`, `src/lib/contrast.ts`, `src/lib/contrast.test.ts`
+- Create: `vitest.config.mts`, `src/lib/contrast.ts`, `src/lib/contrast.test.ts`
 
 **Interfaces:**
 - Consumes: nothing
@@ -84,9 +84,17 @@ Add to `package.json` `"scripts"` (keep the existing keys, insert alphabetically
 "test:watch": "vitest",
 ```
 
+Also raise the declared Node floor. `vite@8` (pulled in by vitest) requires `^20.19.0 || >=22.12.0`, but `package.json` currently declares `"node": ">=20.9.0"` — so a machine at the declared floor gets `EBADENGINE` and a harness that may not run. Change it to:
+
+```json
+"node": ">=20.19.0"
+```
+
+This is a real correction, not a formality: the declared floor must be able to run the declared toolchain.
+
 - [ ] **Step 2: Write the Vitest config**
 
-Create `vitest.config.ts`:
+Create `vitest.config.mts` — **note the `.mts` extension, not `.ts`.** This project's `package.json` has no `"type": "module"`, so a `.ts` config is loaded as CommonJS-with-ESM-syntax, and Vite prints a `configLoader: 'native'` compatibility warning on every run. That warning makes the test output non-pristine, which Step 6 requires. `.mts` marks the file as unambiguously ESM and silences it — verified: with `.ts` the warning appears, with `.mts` it does not and the suite still passes.
 
 ```ts
 import { defineConfig } from 'vitest/config';
@@ -97,6 +105,9 @@ import { fileURLToPath } from 'node:url';
  * in this stage deliberately cover **pure** functions (contrast maths, scroll
  * geometry) so that scroll calibration is verifiable without a DOM or a
  * browser. See Landing-Redesign-Plan.md §10.1.
+ *
+ * The `.mts` extension is deliberate: no "type": "module" in package.json, so
+ * a `.ts` config triggers Vite's configLoader compatibility warning.
  */
 export default defineConfig({
   test: {
@@ -166,6 +177,14 @@ describe('relativeLuminance', () => {
   it('expands 3-digit hex', () => {
     expect(relativeLuminance('#fff')).toBeCloseTo(relativeLuminance('#ffffff'), 9);
     expect(relativeLuminance('#000')).toBeCloseTo(relativeLuminance('#000000'), 9);
+  });
+
+  it('throws on a non-hex input rather than returning NaN', () => {
+    // `relativeLuminance` is part of the module's public interface and Task 2+
+    // callers can reach it directly, so it must guard its own input rather
+    // than relying on contrastRatio's guard.
+    expect(() => relativeLuminance('rebeccapurple')).toThrow(/hex/i);
+    expect(() => relativeLuminance(undefined as unknown as string)).toThrow(/hex/i);
   });
 });
 
@@ -245,19 +264,30 @@ function linearise(channel: number): number {
   return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
 }
 
-/** WCAG relative luminance, 0 (black) to 1 (white). */
-export function relativeLuminance(hex: string): number {
-  const [r, g, b] = toRgb(hex);
-  return 0.2126 * linearise(r) + 0.7152 * linearise(g) + 0.0722 * linearise(b);
-}
-
 /** Guards against a silently `undefined` token producing a NaN ratio. */
 function isHex(value: unknown): value is string {
   return typeof value === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value);
 }
 
+/**
+ * WCAG relative luminance, 0 (black) to 1 (white).
+ *
+ * Guards its own input: this is exported and later tasks call it directly, so
+ * an unguarded `parseInt` here would hand back a silent `NaN` — the exact
+ * failure the guard exists to prevent.
+ */
+export function relativeLuminance(hex: string): number {
+  if (!isHex(hex)) {
+    throw new Error(`relativeLuminance expects a hex colour, received ${String(hex)}`);
+  }
+  const [r, g, b] = toRgb(hex);
+  return 0.2126 * linearise(r) + 0.7152 * linearise(g) + 0.0722 * linearise(b);
+}
+
 /** WCAG contrast ratio, 1:1 to 21:1. Order-independent. */
 export function contrastRatio(a: string, b: string): number {
+  // Names both operands, which is more useful than relativeLuminance's
+  // single-value message when a palette token is missing.
   if (!isHex(a) || !isHex(b)) {
     throw new Error(`contrastRatio expects hex colours, received ${String(a)} and ${String(b)}`);
   }
@@ -269,12 +299,14 @@ export function contrastRatio(a: string, b: string): number {
 - [ ] **Step 6: Run the test to verify it passes**
 
 Run: `npm run test`
-Expected: **PASS, 11/11**, with pristine output — no warnings, no stray console noise. Note that `contrastRatio('#00b3b8', '#ffffff')` is asserted to be within 0.01 of **2.58**, which is the exact figure the design spec quotes for the shipped brand-teal failure (`Landing-Redesign-Plan.md` §1.4). That assertion is what ties the utility to the real measurement rather than to itself.
+Expected: **PASS, 10/10**, with pristine output — no warnings, no stray console noise. Note that `contrastRatio('#00b3b8', '#ffffff')` is asserted to be within 0.01 of **2.58**, which is the exact figure the design spec quotes for the shipped brand-teal failure (`Landing-Redesign-Plan.md` §1.4). That assertion is what ties the utility to the real measurement rather than to itself.
+
+If the Vite `configLoader: 'native'` warning appears, Step 2's filename is wrong — it must be `vitest.config.mts`.
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add package.json package-lock.json vitest.config.ts src/lib/contrast.ts src/lib/contrast.test.ts
+git add package.json package-lock.json vitest.config.mts src/lib/contrast.ts src/lib/contrast.test.ts
 git commit -m "test: add vitest harness and the WCAG contrast maths
 
 First test suite in the repo. vitest is node-environment and covers pure
@@ -286,6 +318,21 @@ The suite asserts the WCAG implementation against known-good hex literals,
 including the AA boundary (#767676 passes, #777777 fails) and the exact
 shipped brand-teal failure the design spec quotes: #00b3b8 on white is
 2.58:1 (Landing-Redesign-Plan.md §1.4).
+
+Two review findings folded in:
+
+- The config is vitest.config.mts, not .ts. package.json has no
+  \"type\": \"module\", so a .ts config loads as CJS-with-ESM-syntax and Vite
+  prints a configLoader compatibility warning on every run, making the test
+  output non-pristine. Verified: .ts warns, .mts does not.
+
+- relativeLuminance guards its own input. It is exported and later tasks call
+  it directly, so an unguarded parseInt would return a silent NaN rather than
+  failing loudly on a partially-migrated palette.
+
+engines.node is also raised from >=20.9.0 to >=20.19.0: vite@8 requires
+^20.19.0 || >=22.12.0, so the previously declared floor could not run the
+toolchain this commit adds.
 
 The palette-enforcement test arrives in the next commit with the token shape
 it checks — a test cannot reference types that do not exist yet without
