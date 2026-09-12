@@ -485,8 +485,15 @@ describe('brand chrome', () => {
     expect(worst(brand.tealTextLight, LIGHT_CANVASES)).toBeGreaterThanOrEqual(AA_TEXT);
   });
 
-  it('indigo has a dark-mode partner that clears AA on dark', () => {
-    expect(worst(brand.indigoDark, DARK_CANVASES)).toBeGreaterThanOrEqual(AA_TEXT);
+  it('the primary CTA pairing clears AA: gold fill against indigo-deep text', () => {
+    // Button.tsx's `primary` variant is `bg-ec-gold text-ec-indigo-dark
+    // hover:bg-ec-gold-dark`. Measuring tokens only against canvases cannot
+    // see a broken token-against-token pair — and this one silently regressed
+    // to 2.64:1 (hover 1.86:1) when `--ec-gold` was darkened as if it were a
+    // text token. Assert the hover state too, not just the resting one.
+    expect(contrastRatio(brand.goldFillLight, brand.indigoDeep)).toBeGreaterThanOrEqual(AA_TEXT);
+    expect(contrastRatio(brand.goldHoverLight, brand.indigoDeep)).toBeGreaterThanOrEqual(AA_TEXT);
+    expect(contrastRatio(brand.goldFillDark, brand.indigoDeep)).toBeGreaterThanOrEqual(AA_TEXT);
   });
 
   it('slate clears AA in both themes', () => {
@@ -633,15 +640,24 @@ export const reservedPillarAccents: readonly PillarAccent[] = [
  */
 export const brand = {
   indigoLight: '#1E2A78',
-  /** Dark-mode partner. The old `#1E2A78` measured 1.51:1 on dark. */
-  indigoDark: '#8E9AE0',
   indigoDeep: '#141D57',
   tealTextLight: '#0C7078',
   tealTextDark: '#4FD4DC',
   tealGraphicLight: '#12A0AC',
   tealGraphicDark: '#2FBAC4',
-  goldTextLight: '#8A5A00',
-  goldTextDark: '#F5C95E',
+  /**
+   * Gold is a FILL family, not a text family — it is the primary CTA's
+   * background. `goldFillLight` pairs with `indigoDeep` as the CTA's
+   * foreground; that pairing is asserted in the test, because measuring
+   * tokens only against canvases cannot catch a broken token-against-token
+   * pair.
+   */
+  goldFillLight: '#F4B942',
+  goldFillDark: '#F5C95E',
+  goldHoverLight: '#C58F1B',
+  goldHoverDark: '#E8B94A',
+  goldSoftLight: '#F8CD73',
+  goldSoftDark: '#F8CD73',
   goldGraphicLight: '#B8860B',
   goldGraphicDark: '#E8B94A',
   slateLight: '#4A5468',
@@ -738,9 +754,18 @@ Replace the brand, programme, and semantic token values:
   --ec-teal-light: #12a0ac;
   /* Non-text teal, for strokes and the strand. */
   --ec-teal-graphic: #12a0ac;
-  --ec-gold: #8a5a00;
-  --ec-gold-dark: #6b4600;
-  --ec-gold-light: #b8860b;
+  /* Gold keeps the FILL tier here, and must not be confused with a text token.
+     `--ec-gold` is the primary CTA's background, paired with
+     `text-ec-indigo-dark`: Button.tsx's `primary` variant is
+     `bg-ec-gold text-ec-indigo-dark hover:bg-ec-gold-dark`, used by Hero,
+     Navbar, Footer, FinalCTA, the enquiry form and the floating button.
+     Darkening it to a text-safe amber drops that pairing to 2.64:1 (hover
+     1.86:1) — which is exactly what an earlier draft of this task did. The
+     fill must stay bright; gold used as *text* on a light surface is a
+     separate, pre-existing problem tracked for Stage 3. */
+  --ec-gold: #f4b942;
+  --ec-gold-dark: #c58f1b;
+  --ec-gold-light: #f8cd73;
   --ec-gold-graphic: #b8860b;
 
   --ec-canvas: #ffffff;
@@ -785,7 +810,7 @@ Replace the brand, programme, and semantic token values:
   --ec-teal-light: #4fd4dc;
   --ec-teal-graphic: #2fbac4;
   --ec-gold: #f5c95e;
-  --ec-gold-dark: #f5c95e;
+  --ec-gold-dark: #e8b94a;
   --ec-gold-light: #f8cd73;
   --ec-gold-graphic: #e8b94a;
 
