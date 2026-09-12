@@ -4,8 +4,10 @@
 *planning* rather than re-deriving. Each entry lists what is already decided, what is deliberately
 still open, and what must be true before the stage can be planned at all.
 
-**Only Stage 1 has an executed plan.** Stages 2–4 are designed but not decomposed — the entries below
-are the inputs to that decomposition, not the decomposition.
+**Stage 1 is complete and Stage 2 is under way** — its plan is at
+`.claude/plans/landing-redesign-stage-2.md` until the stage closes and it moves here. Stages 3–4 are
+designed but not decomposed — the entries below are the inputs to that decomposition, not the
+decomposition.
 
 ## The planning contract
 
@@ -13,9 +15,9 @@ To plan a stage: read its entry below, then its "decided" spec sections, then ru
 `writing-plans` flow. To execute it, use the `run-a-stage` skill. When a stage closes, its plan moves
 into this directory and gains an entry in the table.
 
-**Why these plans do not exist yet, deliberately:** each stage's task breakdown depends on what the
-previous stage actually produced. Stage 2's tasks cannot be written before Stage 1's interfaces
-exist, because the plan must name them. Writing them speculatively produces a plan that is wrong in
+**Why a stage's plan waits for the stage before it:** each stage's task breakdown depends on what the
+previous stage actually produced. Stage 2's tasks could not be written before Stage 1's interfaces
+existed, because the plan must name them. Writing them speculatively produces a plan that is wrong in
 ways nobody notices until execution.
 
 ---
@@ -23,7 +25,7 @@ ways nobody notices until execution.
 | Stage | Scope | Status |
 |---|---|---|
 | [**1 — Foundation**](stage-1.md) | Test harness · palette v2 · pillar registry · scroll maths · line geometry · `LineStage` | **Complete.** All 7 tasks done, reviewed and committed. |
-| **2 — The Acts** | The five acts replacing the 12 homepage sections | **Planned 2026-09-13** — plan at `.claude/plans/landing-redesign-stage-2.md` (live; moves here on close). **Not started.** |
+| **2 — The Acts** | The five acts replacing the 12 homepage sections | **In progress** — plan at `.claude/plans/landing-redesign-stage-2.md` (live; moves here on close), with the current task recorded in [`state.md`](state.md). This row does not track it task by task. |
 | **3 — Components & Handoff Routes** | shadcn primitives · interactive component redesigns · the four handoff routes | Designed, **not planned** |
 | **4 — Cleanup** | Retire the WebGL tree · relax the React pin · finalise the docs | Designed, **not planned** |
 
@@ -42,19 +44,23 @@ ways nobody notices until execution.
 | §9 | Accessibility and the reduced-motion contract (`gsap.matchMedia()`, because CSS can no longer guarantee it) |
 | §10.2 | The timing table, and that `design/motion.ts` stays the single source |
 
-**Interfaces Stage 1 leaves for you** — all exist, are exported, and are individually tested. **Read
-the note below on the join before planning the strand.**
+**Interfaces Stage 1 left for the strand** — all exist, are exported, and are individually tested;
+the two marked below were extended in Stage 2's first task. **Read the note below on the join before
+planning the strand.**
 
 - `src/design/scroll.ts` — `perStationVh(n)`, `branchFor(width)`, `BREAKPOINTS`, `SCRUB`, `CEILINGS`
 - `src/components/educraft/line/station.ts` — `stationPositions(n)`, `drawAt(progress, i, n)`
-- `src/components/educraft/line/anchors.ts` — `ACT_ANCHORS`, `ACT_ORDER`, `Anchor`
-- `src/components/educraft/line/pathBuilders.ts` — `pathFor`, `assertContinuity`
+- `src/components/educraft/line/anchors.ts` — `ACT_ANCHORS`, `ACT_ORDER`, `Anchor`, and `VERTICAL_CHAIN` (added in Stage 2, Task 1)
+- `src/components/educraft/line/pathBuilders.ts` — `pathFor`, `assertContinuity`, and `polylinePath` (added in Stage 2, Task 1, and used by `frames.ts`'s ribbon)
 - `src/components/educraft/line/LineStage.tsx` — the strand renderer (currently **unconsumed**; Stage 2 is its first caller)
 - `src/lib/gsap.ts` — `registerGsap`, `EASE`, `REDUCED_MOTION_QUERY`, `gsap`, `ScrollTrigger`, `useGSAP`
 
-> ### The join is `line/frames.ts` — resolved in Stage 2
+> ### The join is `line/frames.ts` — designed in Stage 2
 >
-> The three modules now have a caller. **The reconciliation is viewBox
+> The three modules now have a caller *module*. **Nothing draws a strand yet**:
+> `frames.ts` has no caller of its own, so the warning this block replaced — that
+> the shipped code never draws a strand — is still true on screen until the
+> page's call site lands later in the stage. **The reconciliation is viewBox
 > selection, not arithmetic:** a vertical act renders `0 0 1 1`, so act-local
 > anchors *are* viewBox coordinates verbatim, and the walk renders `0 0 N 1`
 > over an element `N × 100vw` wide, so `stationPositions`' `x = i` becomes the
