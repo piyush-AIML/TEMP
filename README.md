@@ -6,7 +6,15 @@ Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS v4 
 
 ## 📚 Documentation
 
-**[`EDUCRAFT_PRODUCTION.md`](EDUCRAFT_PRODUCTION.md) is the master document** — current production state, architecture, conventions, design system, fixed-bug ledger, pending inputs, the background roadmap, and the next implementation project (Student & Professor Dashboard). Read it first; it supersedes all other documentation and is kept in sync with the code. There are no other design/plan documents in this repo.
+**[`EDUCRAFT_PRODUCTION.md`](EDUCRAFT_PRODUCTION.md) is the master document** — current production state, architecture, conventions, design system, fixed-bug ledger, pending inputs, the background roadmap, and the active implementation project. Read it first; it is kept in sync with the code and **§26 records which of its own sections are superseded**.
+
+Companion documents (the master doc's §§24 and 26 are the synced master-side references for these):
+
+| Document | Covers |
+|---|---|
+| [`Landing-Redesign-Plan.md`](Landing-Redesign-Plan.md) | **Active project** — the "One Line" homepage redesign: 5 acts, GSAP + Motion, palette v2, pillar extensibility |
+| [`Dashboard-Implementation-Plan.md`](Dashboard-Implementation-Plan.md) | The Student & Professor Dashboard (Stages 0–4 shipped; Stage 5 QA & Deploy open) |
+| [`TECH-STACK.md`](TECH-STACK.md) | Installed versions, plus the approved-but-not-yet-installed stack for the redesign |
 
 ## 🚀 Getting Started
 

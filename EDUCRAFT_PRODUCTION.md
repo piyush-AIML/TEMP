@@ -5,6 +5,7 @@
 - **Authority:** Verified against the live repository on 2026-09-04 — source tree (§5) from a direct file listing, git remote `piyush-AIML/TEMP`, route set unchanged since the 2026-08-30 build — and re-verified by the full loop on 2026-09-04: `npm run lint` ✓ · `npx tsc --noEmit` ✓ · `npm run build` ✓ (29 routes, all static except `/api/enquiry`). The original body was consolidated from `prod.md` and cross-checked against the archived V2 plan and V1 record.
 - **Purpose:** The **master document** for Educraft — current production state, conventions, blockers, background roadmap, and the next implementation project (Dashboard, §24). A fresh session should be able to pick up the entire system from this file alone, without opening any other documentation.
 - **Supersedes and replaces (deleted 2026-09-04, content absorbed into this file):** `prod.md`, `README.md` (kept as a short GitHub pointer only), `Educraft_V1_Previous_State.md` (historical facts absorbed into §23), `Educraft_V2_Experience_Web_Design_Implementation_Plan.md` (implementation complete — archived; do not re-read or plan from it), and `Educraft_V3_Next_Version_Planner.md` (absorbed into §25). The Dashboard implementation plan lives on as its own file — `Dashboard-Implementation-Plan.md` (kept by user request; this doc's §24 is the synced, master-side reference for it).
+- **Active next project (2026-09-12):** the **Landing Redesign** — [`Landing-Redesign-Plan.md`](Landing-Redesign-Plan.md). **This doc's §26 is the synced, master-side reference for it.** The redesign **supersedes §8 (Homepage Architecture), §10 (WebGL / Graphics), §11 (Motion / Interaction), and §18 rules 4 & 7**, and explicitly overrides the old "no GSAP" rule and the "no new library" constraint. §26.9 carries the full supersession list — read it before treating any of those sections as current.
 - **What is NOT source of truth here:** The V2 plan was a *design proposal*. Large parts of it were never built or were built differently than proposed — notably `ProgrammeScene` and `CTAAtmosphere` (planned WebGL scenes; the shipped system uses SVG for both, see §10), GSAP/ScrollTrigger, Lenis smooth-scroll, analytics, error monitoring, and the entire automated test suite. Nothing in the V2 plan should be treated as implemented unless it is explicitly confirmed in this document. §25 roadmap items are intent only — never current state.
 - **Open verification items (`VERIFY`):** only the business contact details in §12 and §22 remain (a stakeholder input, not a code matter). Repository slug, file tree, and route inventory are confirmed from the live repo.
 
@@ -41,11 +42,11 @@
 
 | | |
 |---|---|
-| **Version** | `Prod.ver-0.1.0` (V2 marketing baseline) — 0.1.0 was the theme-aware brand-lockup swap (`public/logo.png` / `logo-dark.png` replacing the GraduationCap+wordmark lockup and `public/logo.svg`, plus Navbar, Footer, and `layout.tsx` icon updates). No marketing route changes since 0.0.2. Dashboard work is committed by the owner under `Prod-version:0.1.x` tags — latest **`6f91f33` `Prod-version:0.1.2 -- Course Allocation`** (2026-09-05: the course-setup slice — the §24.6 `courses.ts` spec, §24.8; preceded by `7276481` `-- Minor UI changes`, the StatCard follow-up; both pushed live). |
+| **Version** | `Prod.ver-0.1.0` (V2 marketing baseline) — 0.1.0 was the theme-aware brand-lockup swap (`public/logo.png` / `logo-dark.png` replacing the GraduationCap+wordmark lockup and `public/logo.svg`, plus Navbar, Footer, and `layout.tsx` icon updates). No marketing route changes since 0.0.2. Dashboard work is committed by the owner under `Prod-version:0.1.x` tags — latest **`29c96a6` `Prod-version:0.1.3 -- Course Allocation & Student Enrollment Rework`** (2026-09-05: the course-setup slice reworked — enrollment notifications, normalized emails, hardened domain, full post-creation management surface; preceded by `6f91f33` `-- Course Allocation`, `7276481` `-- Minor UI changes`). |
 | **Last verified** | 2026-09-05 (Stage 4 loop) — `npm run lint` ✓ · `npx tsc --noEmit` ✓ · `npm run build` ✓ |
 | **Route count** | 29 routes total — 16 marketing pages, 5 programme detail pages included in that count, plus system routes; all statically generated except `POST /api/enquiry` |
 | **Origin** | V1 was a single-page landing prototype (see §23). V2 fully implemented the 77-section design plan (now deleted — content absorbed; treat as archived). Deferred V2 items live in the background roadmap, §25. |
-| **Next project** | Student & Professor **Dashboard** — Stages 0–1 **shipped 2026-09-04**, Stage 2 (Professor Core) **shipped 2026-09-05**, Stage 3 (Meetings & Planner) **shipped 2026-09-05**, Stage 4 (Polish) **shipped 2026-09-05**, course-setup slice **shipped 2026-09-05**; **Stage 5 (QA & Deploy) is next** (§24) |
+| **Next project** | **Landing Redesign — "One Line"** (§26, plan in [`Landing-Redesign-Plan.md`](Landing-Redesign-Plan.md)), design **approved 2026-09-12**, ready to implement. *Deferred:* Dashboard **Stage 5 (QA & Deploy)** (§24) — Stages 0–4 and the course-setup slice all shipped 2026-09-05. |
 
 ---
 
@@ -181,6 +182,8 @@ Note on placement (differs from the original plan's sketch): `EnquireButton` and
 
 ## 8. Homepage Architecture
 
+> **⚠️ SUPERSEDED 2026-09-12 by §26 (Landing Redesign).** The 12-section arc below is the **current shipped** state and remains accurate as a description of what is live — but it is no longer the design of record. §26 replaces it with **5 acts** and retires sections 01, 02, 03, 05, 06 and 11. Read §26 before changing anything here. The table is retained because it is the accurate "before" state and the source of the §26 diagnosis.
+
 Narrative arc: **Understand → Explore → Trust → Imagine → Choose → Act.**
 
 | # | Section | Signature interaction | Notes |
@@ -212,6 +215,8 @@ JSON-LD: `Course` + `BreadcrumbList`. Per-programme metadata and OG image.
 
 ## 10. WebGL / Graphics Architecture
 
+> **⚠️ BEING RETIRED 2026-09-12 by §26 (Landing Redesign).** The entire `three/` tree described below is **reachable only from `landing/Hero.tsx`** — verified 2026-09-12: every `three` / `@react-three/fiber` / `@react-three/drei` import in the codebase is inside that one directory, and nothing else imports it. The redesign retires the orbit scene, and with it `three`, `@react-three/fiber`, `@react-three/drei`, `@types/three`, `useSceneActive`, and **the React `~19.2.8` pin** (which exists solely for R3F's `peer react: ">=19 <19.3"` range). Retained below as the accurate description of what is live until §26 ships.
+
 One coordinated system in `three/` (V1's `HeroScene`/`CourseOrbit3D`/`FloatingParticles` — three separate canvases — were deleted; V2 consolidated to one):
 
 - `core/CanvasShell` — frameloop pauses off-screen via `useSceneActive`; `AdaptiveDpr`; `dpr [1, 1.5]`.
@@ -225,6 +230,8 @@ One coordinated system in `three/` (V1's `HeroScene`/`CourseOrbit3D`/`FloatingPa
 ---
 
 ## 11. Motion / Interaction Architecture
+
+> **⚠️ SUPERSEDED 2026-09-12 by §26 (Landing Redesign).** The hand-rolled hook system below is the **current shipped** state, but §26 replaces it on the landing surface with **GSAP ScrollTrigger + Motion** (the "no GSAP" rule is explicitly overridden — §26.9). Root cause the redesign fixes: `useScrollProgress` calls `setProgress` on every rAF tick, re-rendering the whole subtree each frame, which is why scroll-linked motion cannot reach 60fps. `useScrollProgress` and `useParallax` are retired once GSAP lands. `CursorProvider` is proposed for retirement (§26.9). The dashboard keeps using these hooks; the change is scoped to the marketing surface.
 
 **Hooks (`src/hooks/`):**
 - `useScrollProgress(ref, offsetTop?, mode: 'full' | 'visible')` — rAF-throttled. `'full'` (default): 0 = enter, 1 = full exit — use for pinned sections. `'visible'`: 1 = bottom edge reaches viewport bottom — use for path-draw sequences. Exports `clamp01`, `lerp`.
@@ -303,10 +310,10 @@ Hard-won, do-not-regress rules (source of the fixed-bug ledger in §19):
 1. **`overflow-hidden` on a pinned-section ancestor breaks `position: sticky`** — it becomes the sticky element's scroll box. `StudentJourney` and `ProgrammeExplorer` must keep section-level overflow visible; overflow handling belongs only on the sticky inner element.
 2. **Hydration:** anything derived from next-themes' `theme` (or any other post-mount state) inside SSR'd markup must be gated on a `mounted` flag.
 3. **zod v4 API:** use `{ message }`, not `{ errorMap }`; `path` is `PropertyKey[]`; don't import `SafeParseReturnType` — `flattenZodErrors` takes a structural type.
-4. **R3F:** imperative scene-graph mutation inside `useFrame` needs `// eslint-disable-next-line react-hooks/immutability` — this is the canonical pattern here, not React state.
+4. ~~**R3F:** imperative scene-graph mutation inside `useFrame` needs `// eslint-disable-next-line react-hooks/immutability` — this is the canonical pattern here, not React state.~~ **SUPERSEDED 2026-09-12 — R3F is retired (§26).** The equivalent rule for the redesign: **GSAP writes styles to the DOM directly and must never be mixed with Motion on the same property of the same element** (§26 §3.2).
 5. **Tailwind 4:** only literal class names in source — no dynamically constructed class strings (§6).
 6. **tw-animate-css:** `animate-in` keyframes only fire on key-remount (used for stage/tab crossfades).
-7. `THREE.Clock` deprecation warning is emitted by R3F 9.7.0 internals (latest stable) — harmless, disappears with R3F's next patch. Do not upgrade to a 10.0 canary just to silence it.
+7. ~~`THREE.Clock` deprecation warning is emitted by R3F 9.7.0 internals (latest stable) — harmless, disappears with R3F's next patch. Do not upgrade to a 10.0 canary just to silence it.~~ **OBSOLETE 2026-09-12 — R3F is retired, so the warning disappears with it (§26).**
 8. **Route groups never contribute URL segments** — `(dashboard)/professor/page.tsx` is served at `/professor`, and a page.tsx at a group root resolves at the group's URL root (`(dashboard)/page.tsx` collides with `(site)/page.tsx` at `/`). To own a URL prefix, use a **real folder** (`dashboard/`). Also: Clerk v7 `auth()` **throws** on any route its middleware/proxy matcher didn't cover — keep the auth matcher aligned with real routes.
 
 ---
@@ -394,7 +401,7 @@ V2's design principles (non-negotiable — they live on in §25): visuals must e
 
 ## 24. Next Implementation Project — Student & Professor Dashboard
 
-> **Status:** Stages 2–4 shipped 2026-09-05 (§24.8): Professor Core · AWS S3 storage (smoke gate passed; browser E2E remains the owner's check) · invite flow + minimal admin area · Stage 3 Meetings & Planner · **Stage 4 Polish — SHIPPED 2026-09-05** (mobile drawer, student notification-preferences editor, first loading/error/not-found boundaries, access-control audit clean — §24.8). **Course-setup slice — SHIPPED 2026-09-05** (the long-open gap is closed: professor "Enroll student" on the Roster tab + admin course creation with professor assignment; the seed is no longer the only writer of `CourseProfessors`/`Enrollment` rows — §24.8), **then reworked in the working tree the same day** (owner-reported usage flaws → enrollment notifications, normalized emails, hardened domain, and the full post-creation management surface — see the final §24.8 block). **Next: Stage 5 — QA & Deploy** (§24.5). The project is an authenticated, role-based dashboard module on top of this site — the existing marketing site stays untouched. The kept roadmap plan lives in [`Dashboard-Implementation-Plan.md`](Dashboard-Implementation-Plan.md) — this section is the master-side reference, kept in sync with it (route-group note in §24.4: the file's `(marketing)` label maps to this repo's actual `(site)` group).
+> **Status:** Stages 2–4 shipped 2026-09-05 (§24.8): Professor Core · AWS S3 storage (smoke gate passed; browser E2E remains the owner's check) · invite flow + minimal admin area · Stage 3 Meetings & Planner · **Stage 4 Polish — SHIPPED 2026-09-05** (mobile drawer, student notification-preferences editor, first loading/error/not-found boundaries, access-control audit clean — §24.8). **Course-setup slice — SHIPPED 2026-09-05** (the long-open gap is closed: professor "Enroll student" on the Roster tab + admin course creation with professor assignment; the seed is no longer the only writer of `CourseProfessors`/`Enrollment` rows — §24.8), **then reworked the same day and committed as `29c96a6` `Prod-version:0.1.3 -- Course Allocation & Student Enrollment Rework`** (owner-reported usage flaws → enrollment notifications, normalized emails, hardened domain, and the full post-creation management surface — see the final §24.8 block). **Next: Stage 5 — QA & Deploy** (§24.5) — *deferred 2026-09-12 in favour of the Landing Redesign (§26), which the owner sequenced first.* The project is an authenticated, role-based dashboard module on top of this site — the existing marketing site stays untouched. The kept roadmap plan lives in [`Dashboard-Implementation-Plan.md`](Dashboard-Implementation-Plan.md) — this section is the master-side reference, kept in sync with it (route-group note in §24.4: the file's `(marketing)` label maps to this repo's actual `(site)` group).
 > **Current live deploy (staging/preview domain):** `temp-tau-opal.vercel.app` — running `6f91f33` (Stages 3–4 + course-setup slice) since 2026-09-05, owner-verified working after deploy (an earlier local 404 report was stale-dev-server artifact, not code — §20 operational note). Production domain still unset — see §22 blockers, env var `NEXT_PUBLIC_SITE_URL`.
 
 ### 24.1 Goals & Non-Goals
@@ -438,7 +445,7 @@ Existing stack it must extend: Next.js 16 (App Router, Turbopack) · React 19 ·
 | File uploads | UploadThing or Supabase Storage | Avoids hand-rolled S3 signing for v1. |
 | Realtime notifications | **Polling + DB-backed `Notification` table first**; Supabase Realtime/Pusher only if instant push is truly needed | Don't over-engineer v1. |
 | Data fetching | RSC + Server Actions for most CRUD; TanStack Query client-side only where optimistic updates/polling are needed (notification bell) | |
-| Styling/UI | Reuse existing Tailwind 4 setup. **shadcn/ui status:** `components.json` config exists at repo root but **no shadcn deps are installed** (no radix/cva in package.json) — the site ships hand-rolled `components/educraft/ui/`. Decide: install shadcn for data-heavy widgets (tables/calendars/modals) or keep hand-rolling in the same visual language | New-york style, lucide icon library, aliases point at `@/components/ui` etc. |
+| Styling/UI | Reuse existing Tailwind 4 setup. **shadcn/ui status: DECIDED 2026-09-12 (§26.8) — shadcn IS adopted, for behaviour primitives only.** `components/ui/` holds unstyled shadcn primitives (Dialog, Accordion, Tabs, Popover/Tooltip — adopted for correct focus traps, `aria-expanded`, roving focus and portals); `components/educraft/ui/` keeps the branded hand-rolled components. **shadcn supplies behaviour, never look** — and it inherits the Educraft palette for free, because `globals.css` already defines the full shadcn variable contract (`--background`, `--card`, `--primary`, `--ring`, …) and `components.json` is already configured. `react-hook-form` is deliberately **not** adopted (the settled `useActionState` + `ActionResult` + zod-at-the-edge contract stays). | New-york style, lucide icon library, aliases point at `@/components/ui` etc. |
 | Calendar/scheduling UI | react-big-calendar or FullCalendar | Upcoming classes / meetings views. |
 | Forms | React Hook Form + zod (professor-side forms: tasks, materials, classes) | zod v4 already in the stack; RHF is new. |
 
@@ -565,7 +572,7 @@ src/ (this repo — verified 2026-09-04)
 - **New modules:** `validators/courses.ts` (`enrollStudentInputSchema`, `createCourseInputSchema`, `COURSE_VERTICALS`) · `domain/courses.ts` · `actions/courses.ts` (`enrollStudent` professor-gated, `createCourse` admin-gated; enroll revalidates BOTH role layouts, create revalidates admin) · `dashboard/admin.ts`. DomainError codes added: `USER_NOT_FOUND` / `USER_NOT_STUDENT` / `USER_NOT_PROFESSOR` / `ALREADY_ENROLLED` / `COURSE_CODE_TAKEN`. No schema change, no migration, no seed change.
 - Verified 2026-09-05: lint ✓ · tsc ✓ · build ✓ (commit `6f91f33`). **Browser E2E is the owner's check:** admin creates a course assigning `killerme69blank@gmail.com` → that professor sees it under My Courses and can open it; professor enrolls `pika38212@gmail.com` by email → roster row appears immediately, the student sees the course + Coursework etc. on next visit, and the meetings student picker gains them; unknown-email and duplicate-enroll error paths read honestly.
 
-**Course-setup slice — REWORKED 2026-09-05 (working tree; awaiting the owner's commit — the original slice had usage flaws + flow blockers the owner hit: no enrollment feedback, case-sensitive email matching, the fragile comma-string professor field, and zero management after creation).** The rework:
+**Course-setup slice — REWORKED 2026-09-05, committed `29c96a6` `Prod-version:0.1.3` (the original slice had usage flaws + flow blockers the owner hit: no enrollment feedback, case-sensitive email matching, the fragile comma-string professor field, and zero management after creation).** The rework:
 - **Enrollment notifications.** `ENROLLMENT` NotificationType (migration `20260905164701_add_enrollment_notification`, applied on live Neon) + an `enrollment` pref channel (5th switch in the student prefs editor; exhaustive `NOTIFICATION_PREF_MAP`/prefs schema updated; absent stored key = ON, drift-safe). Fan-out on enroll AND re-enroll (`relatedEntity course:<id>` deep link) and on professor removal (no link — the student can no longer open it); copy names the course ("Enrolled in X (LING-101)" / "Removed from …").
 - **Normalized emails everywhere in this slice.** Validators trim + lowercase (`normalizeEmail`), so DB lookups are case-insensitive by construction (`Student@Example.com` no longer misses).
 - **Hardened domain** (`domain/courses.ts`): enroll's read-then-write runs in a `$transaction`; P2002 (code, composite keys) mapped to domain errors everywhere — no more raw 500s on races or duplicate emails; professor emails deduped + capped (8). Create is all-or-nothing with per-email reasons enumerated ("Could not assign: x@y.com (no Educraft account yet…); …"); adding to an *existing* course is partial-success with honest copy (added / already-assigned / failed). `updateCourseForAdmin` (code uniqueness excluding self), `unenrollStudentForProfessor` (soft `DROPPED`, reactivatable), `deleteCourseForAdmin` (collects FILE keys → best-effort storage deletes → row delete, FK cascades; accounts untouched). New DomainError codes: `COURSE_NOT_FOUND` / `NOT_ENROLLED` / `PROFESSOR_NOT_ASSIGNED` / `PROFESSOR_RESOLUTION_FAILED`.
@@ -635,7 +642,7 @@ src/ (this repo — verified 2026-09-04)
 17. Lighthouse baseline + Core Web Vitals field data; bundle inspection; confirm LCP < 2.5s / CLS < 0.1 / INP < 200ms on real devices.
 18. Shared rate-limit store for multi-instance deploys.
 19. A11y audit pass: keyboard-only walk of mega menu + staged form, screen-reader pass, contrast check of programme accents (esp. `achieve` gold on light).
-20. Dependency hygiene: adopt the R3F patch that clears the THREE.Clock warning when it ships.
+20. ~~Dependency hygiene: adopt the R3F patch that clears the THREE.Clock warning when it ships.~~ **OBSOLETE 2026-09-12 — R3F/three are retired (§26), so the warning goes with them.**
 
 ### Design principles to protect (non-negotiable)
 - Visuals must explain learning/progress/connection — never decoration for its own sake.
@@ -645,7 +652,127 @@ src/ (this repo — verified 2026-09-04)
 
 ### Checklist for starting a work session
 1. Read this file (master): §18 conventions/fixed-bug ledger, §20 verification loop, §22 blockers first.
-2. If Dashboard work: §24, then its §24.8 decisions. If marketing-site work: pick the highest unblocked §25 item.
+2. If Dashboard work: §24, then its §24.8 decisions. **If marketing-site or landing work: §26 (Landing Redesign) first — it is the active project and it supersedes §8, §10, §11 and §18 rules 4 & 7.** Otherwise pick the highest unblocked §25 item that §26 does not already cover.
 3. Run `npm run lint` → `npx tsc --noEmit` → `npm run build` before and after changes (§20).
 4. The user performs all website viewing/visual QA — never launch browsers or curl the site from the assistant side.
 5. When a Tier item ships, move it to a "Done in V3.x" note here with the commit hash.
+
+---
+
+## 26. Active Project — Landing Redesign ("One Line")
+
+> **Master-side reference.** The full design is [`Landing-Redesign-Plan.md`](Landing-Redesign-Plan.md) (2026-09-12). This section is the synced summary and the supersession record; when the two disagree, **the plan file wins on design detail, this section wins on project state.**
+
+**Status:** design **approved by the owner 2026-09-12**; implementation not started. Sits *ahead of* Dashboard Stage 5 (§24.5).
+
+### 26.1 Scope
+
+The `(site)` homepage **plus the four routes it hands off to** — `/programmes`, `/programmes/[slug]`, `/methodology`, `/impact`. **No route is deleted.** `/about`, `/insights`, `/insights/[slug]`, the `/for-*` pages, `/contact`, `/careers`, `/partnerships` and the legal pages are out of scope and unchanged. The dashboard is untouched.
+
+### 26.2 The diagnosis (measured 2026-09-12)
+
+The hero→pillars handoff reads as broken because it is a **vocabulary switch, not a timing bug**. The first three shipped sections say the same thing in three visual languages: `Hero`'s WebGL orbit scene, `Ecosystem`'s SVG orbital map, and `ProgrammeExplorer`'s 550vh pinned narrative of the same five.
+
+Notably, §1's own visual-metaphor table lists **Path** first ("Progress, learning journeys, movement") — and the rest of the site obeys it (`StudentJourney`, `Methodology`, `ProgrammeGraphic`, `EcosystemGraphic`, `PathLines`). The hero was the only section not speaking the documented primary metaphor.
+
+| Measure | Shipped state |
+|---|---|
+| Sections on the homepage | 12 |
+| Approximate desktop height | ~20+ screens |
+| Pinned regions | `ProgrammeExplorer` 550vh + `StudentJourney` 552vh — ~11 screens between them |
+| `card-surface` boxes | **24** (+ ~9 nested); **18 of them in four consecutive sections** |
+| Sections with zero cards | 3 of 12 |
+| "Portfolios, dashboards, and checkpoints" | repeated **×4** |
+| The `Five X. One Y.` headline template | **×5** |
+
+### 26.3 The design
+
+**Retire the orbit; promote the drawn path from motif to connective tissue; make the hero its origin.** The strand that enters the hero forks into the five pillars, carries the learner journey, and converges into the CTA. Identity lives in **nodes and typography** — the strand stays one brand colour (a five-hue gradient would read as a chart legend, not a system).
+
+**12 sections → 5 acts.** Origin (~170vh, incl. the 70vh fork) · Five Pillars (~510vh incl. a 110vh journey ribbon — the one act that earns its length because it *is* the product) · The Educraft Way (~190vh, merging `WhyDifferent` + `Methodology`) · Proof (~150vh, `Impact` + `Testimonials`) · Doors + Close (~130vh). **Total ~11.5 screens, zero card-surfaces.**
+
+**Engine split (a rule):** GSAP + ScrollTrigger owns anything scrubbed or pinned; Motion owns anything discrete or state-driven; **never both on the same property of the same element.** Registration lives only in `src/lib/gsap.ts`.
+
+**Responsive rule:** the thread always runs parallel to the axis you scroll — desktop pins and scrubs horizontally; tablet is a vertical spine with **no pin** (pin-plus-horizontal on 768px fights the browser's own gestures); mobile uses **native `overflow-x` snap, never a pinned track on touch** (a pinned horizontal track is how you break vertical page scroll). Reduced motion removes all pinning and renders a plain vertical document in identical DOM order — enforced via `gsap.matchMedia()`, because once GSAP drives, **CSS can no longer make the reduced-motion guarantee**.
+
+### 26.4 Palette v2 — calibrated
+
+Ten measured AA failures in the shipped palette, all light-mode text or dark-mode wash. Worst: `--ec-teal` `#00b3b8` as text = **2.58:1** (and it is the *brand* colour, used for eyebrows site-wide); `achieve` `#c58f1b` = **2.87:1** (the long-open §15 audit item, now quantified); `--ec-p-thrive-soft` on dark `--ec-canvas-deep` = **1.00:1** (invisible).
+
+v2 gives each pillar three measured tiers (`text` / `graphic` / `soft`), verified against **all four light and all three dark canvases**. All text tiers ≥5.00:1 light, ≥6.99:1 dark. Brand chrome gains a real dark partner (`#8E9AE0` — today's `#1E2A78` on dark is **1.51:1**), and **teal splits into text and graphic tiers** (one vivid teal cannot serve both). `excel` (NEET & JEE) moves off brand indigo to **rose `#C2185B`**, resolving the old collision where two of the five "identities" were the brand's own colours.
+
+Two properties make it a system: **equi-luminant** (the five text tiers' luminance spans 0.030, so no pillar shouts louder) and **hue-spread 39°·184°·222°·260°·336°**. Two honest caveats: equi-luminance means cyan `learn` and rose `excel` can converge for red-green colour-blind readers — mitigated by the hard rule that **a pillar accent is never the only signal** — and the dark washes are lifted into the 1.15–1.25 band.
+
+### 26.5 Extensibility — the answer to "how does a new pillar or course arrive"
+
+| | New **course** | New **programme** | New **pillar** |
+|---|---|---|---|
+| What it is | a DB row | TS data (`programmes.ts`) | a whole vertical |
+| Created by | admin, at runtime | developer | developer |
+| Needs deploy | **no** | yes | yes |
+| Touches the landing page | **never** | changes a station's detail page | **changes the walk itself** |
+
+A **course never touches the landing page** — the landing page is *pillar*-driven. (Known unsolved constraint: `Course.vertical` must be one of the pillar slugs, so a course outside the five verticals has no path today; needs a product decision when it arises.)
+
+**Today a sixth pillar needs 8+ file edits, most of them pure mirroring, enforced only by a comment that says "keep in sync."** The fix: derive `PillarId` from the `pillars` array, so every `Record<PillarId, …>` **fails to compile** until updated — the comment becomes a type error. Six parallel `pillarStyles` maps collapse to one `pillarAccent` registry with thin re-exports preserved (no call-site churn). The three divergent names per pillar (`id` `'learn'` / `vertical` `'Linguistics'` / slug `'linguistics'` — which already disagree on `wellbeing-counseling` vs `Wellbeing & Counselling`) collapse to one co-located record, with `COURSE_VERTICALS` derived from a key-only module. Landing geometry becomes **functions of N**, and `perStationVh(N) = clamp(400/N)` to `[60, 80]` so the walk stays ~4 screens at 5, 6 or 7 pillars. Slots 6–7 are pre-measured for AA so no future hue is invented under deadline. **Runbook: §7.4 of the plan.**
+
+### 26.6 Interactive components & shadcn — see §24.3 (decided) and plan §11.3
+
+Enquiry modal moves to shadcn `Dialog`; FAQ to shadcn `Accordion`; the mega menu adopts Act 1's node device with arrow-key navigation and focus-into-menu (neither exists today); `FloatingEnquiryButton` appears only after Act 0 so it stops competing with the hero CTAs; `MagneticButton`'s hand-rolled physics is replaced by Motion springs.
+
+### 26.7 Calibration & verification
+
+Because the assistant never launches a browser (§20), calibration is **encoded as pure functions with Vitest tests** — `stationPositions(N)`, `perStationVh(N)`, `pathFor`, `drawAt`, and `assertContinuity` (each act's exit anchor must equal the next act's entry anchor). The palette table becomes a contrast test, so a future palette edit cannot silently regress AA. This is Stage 5's planned test suite (§24.5 item 1) arriving early, not new scope. A dev-only **`?calibrate=1` overlay** prints scrub progress, active station, draw fraction and breakpoint branch so the owner's visual QA produces reportable numbers rather than impressions. The three-command loop (§20) remains the mechanical gate; `rm -rf .next` after file deletions, **never while a dev server runs**.
+
+### 26.8 Dependency changes
+
+| Action | Package |
+|---|---|
+| add | `gsap` 3.15 + `@gsap/react` (ScrollTrigger free under the standard license since 3.13) |
+| add | `motion` 13.2 (peer `react ^18 \|\| ^19` — compatible with the current pin) |
+| add | shadcn deps (`@radix-ui/*` per component, `class-variance-authority`) |
+| add (dev) | `vitest` |
+| **remove** | `three`, `@react-three/fiber`, `@react-three/drei`, `@types/three` |
+| **relax** | `react`/`react-dom` `~19.2.8` → `^19` — **only after** R3F is gone |
+
+Net: removing R3F is a JS win on the landing page even after adding GSAP + Motion, because the hero currently ships a `dynamic({ ssr: false })` WebGL bundle. **`TECH-STACK.md` must be updated in the same pass** — its "Motion: hand-rolled hooks, no GSAP" row and its React-pin rationale both become wrong.
+
+### 26.9 Supersession & rule overrides (owner-granted 2026-09-12)
+
+The owner explicitly lifted the constraints that would block this work, with the sole condition that **the website must not break**.
+
+| Superseded / overridden | Where | Replacement |
+|---|---|---|
+| "Motion: hand-rolled hooks, no GSAP" | `TECH-STACK.md` §Visuals & motion | GSAP 3.15 + Motion 13.2 (§26.3, §26.8) |
+| "no new framework / no new library" | §24.5, §24.3 | Lifted for this project (shadcn, GSAP, Motion, Vitest) |
+| §8 Homepage Architecture (12-section arc) | §8 | §26.3 — 5 acts |
+| §10 WebGL / Graphics Architecture | §10 | Retired; `three/` tree removed (§26.8) |
+| §11 Motion / Interaction Architecture | §11 | GSAP + Motion on the marketing surface; hooks survive in the dashboard |
+| §18 rule 4 (R3F `useFrame` / `react-hooks/immutability`) | §18 | GSAP-owned properties must not be shared with Motion |
+| §18 rule 7 (`THREE.Clock` warning) | §18 | Obsolete — R3F retired |
+| §25 Tier D item 20 (adopt R3F patch) | §25 | Obsolete — R3F retired |
+| `components.json` "install shadcn or keep hand-rolling" open decision | §24.3 | Decided: shadcn for behaviour only (§26.6) |
+
+**Not overridden:** §18 rules 1, 2, 3, 5, 6, 8 (the `overflow-hidden`/sticky rule, hydration gating, zod v4 syntax, literal-only Tailwind classes, `tw-animate-css` key-remount, and route-group/proxy coverage) all remain in force, as do §20's verification loop and the visual-QA working agreement (owner views; assistant never launches a browser).
+
+### 26.10 Fixed defects the redesign must resolve
+
+1. `Impact` asserts **`4 Audiences served — Schools · Parents · Students · Partners`** while `AudienceEntryPoints` says "Three doors" and renders 3, and `data/navigation.ts` defines exactly 3. `Partners` has no entry point. **Resolve to 3**, in both places it appears (landing **and** `/impact`, which repeats the stat block verbatim).
+2. `AudienceEntryPoints` imports `a.headline` and `a.ctaLabel` from `data/navigation.ts` but never renders them — better copy already exists, unused.
+3. The hero's `Explore Programmes` opens the **modal** while `View all programmes` **navigates** — the same words doing two different jobs.
+4. `/impact` duplicates the four-value stat block from the landing page; the two must not restate each other after the redesign.
+
+### 26.11 Open items carried from the plan
+
+| # | Item |
+|---|---|
+| 1 | **`CursorProvider` (custom cursor) — resolved: retired.** Reads as jank more often than premium; fights touch and reduced-motion users. |
+| 2 | **Act 1 dwell — resolved: 80vh/station** (400vh act, `clamp(400/N)` to `[60, 80]`), taking another half-screen off the page while keeping the five stations readable. Still the single tunable knob. |
+| 3 | `Course.vertical` cannot express a course outside the five pillars (§26.5) — product decision, deferred |
+| 4 | **Seed testimonials remain a launch blocker (§22)** — and this design leans on them harder as proof, making replacement more urgent, not less |
+| 5 | Live-deploy claims in §24 / §2 have not been re-verified since 2026-09-05 (owner's check) — §2's version line has been corrected, but the Vercel commit and the four-value stat claim on `/impact` have not been re-verified |
+| 6 | If the four handoff routes' budget is cut, the seam between the new homepage and the old `/methodology` will be visible |
+
+### 26.12 Definition of done
+
+Homepage renders **5 acts** with **no `card-surface`**; desktop height **~11.5 screens** with no pinned region over 400vh; the strand is continuously present hero→CTA with `assertContinuity` passing; **every accent clears AA on every canvas in both themes, enforced by test**; reduced motion renders a plain vertical document with all strands drawn and identical DOM order; mobile uses native snap with vertical page scroll always working; the four handoff routes carry the system and `/impact` no longer restates the homepage; §26.10's four defects fixed; interactive components redesigned (§26.6); `tsc` / `lint` / `build` clean and Vitest green; **adding a 6th pillar produces compile errors, not silence** (dry-run verified); no route deleted; `TECH-STACK.md` and this file updated including the removed R3F / React-pin note.
