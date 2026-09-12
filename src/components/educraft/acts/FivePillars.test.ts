@@ -40,8 +40,9 @@ describe('Act 1 — the walk', () => {
   });
 
   it('carries no cards', () => {
-    // §14's definition of done: no `card-surface` on the landing page. The
-    // retired ProgrammeExplorer was 24 card-surfaces plus 9 nested.
+    // §14's definition of done: no `card-surface` on the landing page, against
+    // §1's inventory of **24, plus ~9 nested** — spread across the eight retired
+    // sections, not carried by any one of them.
     expect(render()).not.toContain('card-surface');
   });
 
@@ -56,9 +57,14 @@ describe('Act 1 — the walk', () => {
 
   it('renders the progress rail as real buttons with sr-only labels', () => {
     // §9: "Real <button>s that scroll to their station. Keyboard users walk the
-    // pillars with Tab and ←/→. Not decorative dots."
+    // pillars with Tab and ←/→." §4 states the reason, not a further quote:
+    // "Not decorative dots."
     const markup = render();
     expect((markup.match(/<button/g) ?? []).length).toBe(2);
+    // `type='button'` is deliberate and was unpinned: a bare <button> defaults
+    // to submit, and this rail is one markup change away from living inside a
+    // form. Measured — dropping the attribute left the suite green.
+    expect((markup.match(/type="button"/g) ?? []).length).toBe(2);
     expect(markup).toContain('sr-only');
     for (const name of ['Learn', 'Include']) expect(markup).toContain(`Go to ${name}`);
   });
@@ -74,7 +80,7 @@ describe('Act 1 — the walk', () => {
     expect(markup).toContain('M 1 0.5 L 2 0.5');
   });
 
-  it('scales to six pillars with no markup change', () => {
+  it('scales to six pillars with no code change', () => {
     const six = [...STATIONS, { ...STATIONS[0], pillarId: 'thrive' as const, pillarName: 'Thrive' }];
     expect(render(six)).toContain('viewBox="0 0 3 1"');
     expect((render(six).match(/<button/g) ?? []).length).toBe(3);
