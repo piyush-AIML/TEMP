@@ -16,7 +16,7 @@
 - **Never run `rm -rf .next` while a dev server is running** — a dev server whose `.next` is deleted loses route registrations and serves 404s until restarted (`EDUCRAFT_PRODUCTION.md` §20).
 - **Tailwind 4 requires literal class names.** `bg-ec-${x}` generates no CSS. Every pillar→class mapping must be written out literally.
 - **Colour values are exact.** Copy them verbatim from Task 2. Do not round, "improve", or re-derive them — every value in this plan was measured against its canvases and the Task 1 test enforces the result.
-- **AA floors:** pillar/brand text tiers ≥ **4.5:1** against *every* canvas they can sit on (light: `#ffffff`, `#f6f9fc`, `#eaf3fb`, `#eaf6ff`; dark: `#0b0f1e`, `#10152a`, `#141b38`). Graphic (non-text) tiers ≥ **3:1** against `#ffffff` (light) and `#0b0f1e` (dark).
+- **AA floors:** pillar/brand text tiers ≥ **4.5:1** against *every* canvas they can sit on (light: `#ffffff`, `#f6f9fc`, `#eaf3fb`, `#eaf6ff`; dark: `#0b0f1e`, `#10152a`, `#141b38`, `#141d57`). Graphic (non-text) tiers ≥ **3:1** against `#ffffff` (light) and `#0b0f1e` (dark).
 - **Reduced motion is a hard requirement.** Any GSAP setup must be paired with `gsap.matchMedia()` handling `(prefers-reduced-motion: reduce)` rendering the final state — CSS can no longer guarantee it once GSAP drives.
 - **Do not touch the dashboard.** `src/app/dashboard/**` and `src/components/dashboard/**` are out of scope for the entire redesign.
 - **The visual-QA working agreement holds:** the assistant never launches a browser. The owner performs all visual QA.
@@ -32,7 +32,8 @@
 |---|---|
 | `vitest.config.ts` | Test runner config — node environment, `@/` alias |
 | `src/lib/contrast.ts` | Pure WCAG relative-luminance + contrast-ratio maths. No deps, no DOM. |
-| `src/design/colors.test.ts` | The AA enforcement test over the token table |
+| `src/lib/contrast.test.ts` | Assertions for the WCAG maths, against hex literals (Task 1) |
+| `src/design/colors.test.ts` | The AA enforcement test over the token table (Task 2) |
 | `src/design/scroll.ts` | Pure calibration constants + `perStationVh` / breakpoint branch selection |
 | `src/design/scroll.test.ts` | Tests for the above |
 | `src/components/educraft/line/station.ts` | `stationPositions(N)`, `drawAt(progress, i, N)` |
@@ -60,15 +61,15 @@
 
 ## Task 1: Test harness + the palette contrast test
 
-The harness proves itself by **failing on the current palette** — that failure is the encoded evidence for spec §1.4, and Task 2 turns it green.
+This task builds the harness and proves the WCAG maths against hex literals, so it ends **green and buildable**. The palette-enforcement test (`src/design/colors.test.ts`) belongs to Task 2, in the same commit as the token shape it checks: a test cannot reference a type shape that does not exist yet without breaking `tsc`, which is the defect the pre-flight scan caught in an earlier draft of this plan.
 
 **Files:**
 - Modify: `package.json`
-- Create: `vitest.config.ts`, `src/lib/contrast.ts`, `src/design/colors.test.ts`
+- Create: `vitest.config.ts`, `src/lib/contrast.ts`, `src/lib/contrast.test.ts`
 
 **Interfaces:**
 - Consumes: nothing
-- Produces: `contrastRatio(a: string, b: string): number`, `relativeLuminance(hex: string): number`, `LIGHT_CANVASES: readonly string[]`, `DARK_CANVASES: readonly string[]` — all consumed by Task 2's green run and by every later palette edit.
+- Produces: `contrastRatio(a: string, b: string): number`, `relativeLuminance(hex: string): number`, `LIGHT_CANVASES: readonly string[]`, `DARK_CANVASES: readonly string[]`, `AA_TEXT`, `AA_NON_TEXT` — all consumed by Task 2 and by every later palette edit.
 
 - [ ] **Step 1: Install Vitest and add scripts**
 
@@ -131,7 +132,211 @@ export function contrastRatio(a: string, b: string): number {
 }
 ```
 
-Update the expectation for Step 4: the run fails with `Error: not implemented` from `relativeLuminance` **and** with the `exposes all six tiers` assertion — because the shipped `colors.ts` uses `main`/`strong`/`soft`/`darkMain`, not the three-tier shape. Both failures are intended.
+Create `src/lib/contrast.test.ts`:
+
+```ts
+import { describe, expect, it } from 'vitest';
+import { contrastRatio, relativeLuminance } from './contrast';
+
+/**
+ * Tests for the WCAG maths itself.
+ *
+ * These assert against **hex literals, not the palette**, so this file
+ * compiles and passes no matter what `src/design/colors.ts` currently
+ * exports. The palette-enforcement test is `src/design/colors.test.ts`,
+ * which Task 2 adds in the same commit as the token shape it checks — a test
+ * cannot reference a type shape that does not exist yet without breaking
+ * `tsc`.
+ */
+
+describe('relativeLuminance', () => {
+  it('is 1 for white and 0 for black', () => {
+    expect(relativeLuminance('#ffffff')).toBeCloseTo(1, 6);
+    expect(relativeLuminance('#000000')).toBeCloseTo(0, 6);
+  });
+
+  it('increases monotonically with lightness', () => {
+    const greys = ['#000000', '#333333', '#767676', '#bbbbbb', '#ffffff'];
+    const lums = greys.map(relativeLuminance);
+    for (let i = 1; i < lums.length; i += 1) {
+      expect(lums[i]).toBeGreaterThan(lums[i - 1]);
+    }
+  });
+
+  it('expands 3-digit hex', () => {
+    expect(relativeLuminance('#fff')).toBeCloseTo(relativeLuminance('#ffffff'), 9);
+    expect(relativeLuminance('#000')).toBeCloseTo(relativeLuminance('#000000'), 9);
+  });
+});
+
+describe('contrastRatio', () => {
+  it('gives the maximum 21:1 for black on white', () => {
+    expect(contrastRatio('#000000', '#ffffff')).toBeCloseTo(21, 2);
+  });
+
+  it('gives 1:1 for a colour against itself', () => {
+    expect(contrastRatio('#00b3b8', '#00b3b8')).toBeCloseTo(1, 6);
+  });
+
+  it('is order-independent', () => {
+    expect(contrastRatio('#0c7078', '#ffffff')).toBeCloseTo(
+      contrastRatio('#ffffff', '#0c7078'),
+      9
+    );
+  });
+
+  it('places the AA boundary where WCAG does', () => {
+    // #767676 on white is the canonical just-passes grey (4.54:1); #777777 is
+    // the canonical just-fails one.
+    expect(contrastRatio('#767676', '#ffffff')).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio('#777777', '#ffffff')).toBeLessThan(4.5);
+  });
+
+  it('reproduces the shipped brand-teal failure measured in the spec', () => {
+    // Landing-Redesign-Plan.md §1.4 — #00b3b8 as text on white is 2.58:1.
+    expect(contrastRatio('#00b3b8', '#ffffff')).toBeCloseTo(2.58, 2);
+  });
+
+  it('throws on a non-hex input instead of silently returning NaN', () => {
+    expect(() => contrastRatio('rebeccapurple', '#ffffff')).toThrow(/hex/i);
+    expect(() => contrastRatio(undefined as unknown as string, '#ffffff')).toThrow(/hex/i);
+    expect(() => contrastRatio('', '#ffffff')).toThrow(/hex/i);
+  });
+});
+```
+
+- [ ] **Step 4: Run the test to verify it fails**
+
+Run: `npm run test`
+Expected: FAIL — every assertion fails with `Error: not implemented` thrown from `relativeLuminance`. The resolver must find and run `src/lib/contrast.test.ts`, which also proves the `@/` alias and the `include` glob are wired correctly.
+
+- [ ] **Step 5: Write the minimal implementation**
+
+Replace the stub bodies in `src/lib/contrast.ts`:
+
+```ts
+/** Canvases a token can sit on. Values copied from globals.css. */
+export const LIGHT_CANVASES = ['#ffffff', '#f6f9fc', '#eaf3fb', '#eaf6ff'] as const;
+export const DARK_CANVASES = ['#0b0f1e', '#10152a', '#141b38', '#141d57'] as const;
+
+export const AA_TEXT = 4.5;
+export const AA_NON_TEXT = 3;
+
+/** `#rgb` or `#rrggbb` → [r, g, b] in 0-255. */
+function toRgb(hex: string): [number, number, number] {
+  const value = hex.replace('#', '');
+  const full =
+    value.length === 3
+      ? value
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : value;
+  return [
+    parseInt(full.slice(0, 2), 16),
+    parseInt(full.slice(2, 4), 16),
+    parseInt(full.slice(4, 6), 16),
+  ];
+}
+
+/** WCAG 2.1 sRGB linearisation. */
+function linearise(channel: number): number {
+  const c = channel / 255;
+  return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+/** WCAG relative luminance, 0 (black) to 1 (white). */
+export function relativeLuminance(hex: string): number {
+  const [r, g, b] = toRgb(hex);
+  return 0.2126 * linearise(r) + 0.7152 * linearise(g) + 0.0722 * linearise(b);
+}
+
+/** Guards against a silently `undefined` token producing a NaN ratio. */
+function isHex(value: unknown): value is string {
+  return typeof value === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value);
+}
+
+/** WCAG contrast ratio, 1:1 to 21:1. Order-independent. */
+export function contrastRatio(a: string, b: string): number {
+  if (!isHex(a) || !isHex(b)) {
+    throw new Error(`contrastRatio expects hex colours, received ${String(a)} and ${String(b)}`);
+  }
+  const [lighter, darker] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+```
+
+- [ ] **Step 6: Run the test to verify it passes**
+
+Run: `npm run test`
+Expected: **PASS, 11/11**, with pristine output — no warnings, no stray console noise. Note that `contrastRatio('#00b3b8', '#ffffff')` is asserted to be within 0.01 of **2.58**, which is the exact figure the design spec quotes for the shipped brand-teal failure (`Landing-Redesign-Plan.md` §1.4). That assertion is what ties the utility to the real measurement rather than to itself.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add package.json package-lock.json vitest.config.ts src/lib/contrast.ts src/lib/contrast.test.ts
+git commit -m "test: add vitest harness and the WCAG contrast maths
+
+First test suite in the repo. vitest is node-environment and covers pure
+functions only, because the assistant never launches a browser
+(EDUCRAFT_PRODUCTION.md §20) — so the redesign's safety net is maths that
+can be verified without a DOM.
+
+The suite asserts the WCAG implementation against known-good hex literals,
+including the AA boundary (#767676 passes, #777777 fails) and the exact
+shipped brand-teal failure the design spec quotes: #00b3b8 on white is
+2.58:1 (Landing-Redesign-Plan.md §1.4).
+
+The palette-enforcement test arrives in the next commit with the token shape
+it checks — a test cannot reference types that do not exist yet without
+breaking tsc, which an earlier draft of this plan did."
+```
+
+---
+
+## Task 2: Palette v2 token migration
+
+Adds the palette-enforcement test and the calibrated values that satisfy it. **Purely additive at the class level** — no component *class names* change, though two live `programmeColors` consumers must be updated (Step 10).
+
+This task carries its own RED/GREEN: Step 1 restructures `colors.ts` to the new shape while keeping the **shipped** hex values, Step 3 runs the new test against them and captures the real failing ratios, and Step 4 installs the measured values.
+
+**Files:**
+- Modify: `src/design/colors.ts`, `src/app/globals.css`
+- Modify (required by the pre-flight scan — the new `programmeColors` shape removes `main`/`strong`/`darkMain`, which two live files read):
+  `src/app/(site)/programmes/[slug]/opengraph-image.tsx`, `src/components/educraft/three/scenes/EcosystemScene.tsx`
+- Create: `src/design/colors.test.ts` (Step 2 — this task owns it)
+
+**Interfaces:**
+- Consumes: `contrastRatio`, `LIGHT_CANVASES`, `DARK_CANVASES`, `AA_TEXT`, `AA_NON_TEXT` from Task 1
+- Produces: `programmeColors: Record<PillarColorKey, PillarAccent>` where `PillarAccent = { textLight, textDark, graphicLight, graphicDark, softLight, softDark }`; `reservedPillarAccents: readonly PillarAccent[]`; `brand` — all consumed by Task 3's registry and Task 7's `LineStage`.
+
+- [ ] **Step 1: Restructure `colors.ts` to the new shape, carrying the OLD values**
+
+This is the **RED phase**. Rewrite `src/design/colors.ts` to the exact structure shown in Step 4, but populate it with the **currently shipped hex values**, mapped mechanically:
+
+| new field | old field |
+|---|---|
+| `textLight` | `strong` |
+| `graphicLight` | `main` |
+| `softLight` | `soft` |
+| `textDark` | `darkMain` |
+| `graphicDark` | `darkMain` |
+| `softDark` | `soft` |
+
+Also add the `PillarAccent` type and the new `brand` / `canvas` / `borderColor` / `semantic` objects, populated with the **shipped** values.
+
+Declare `reservedPillarAccents` as an **empty** array for now:
+
+```ts
+/** Slots 6-7. Populated with measured values in Step 4. */
+export const reservedPillarAccents: readonly PillarAccent[] = [];
+```
+
+The reserved-slot test then iterates zero entries and passes vacuously at Step 3 — which is fine, because it is a placeholder state one step away from being replaced. Do not invent placeholder hexes for it.
+
+Do **not** use the v2 values yet. The point of this step is to get a compiling shape so the test below can run and print real numbers.
+
+- [ ] **Step 2: Write the palette enforcement test**
 
 Create `src/design/colors.test.ts`:
 
@@ -165,8 +370,6 @@ describe('pillar accents', () => {
     const accent = programmeColors[id];
 
     it(`${id}: exposes all six tiers`, () => {
-      // Guards against a partial migration — on the shipped palette this fails
-      // first and explains why the ratios below are NaN.
       expect(accent).toBeDefined();
       expect(Object.keys(accent).sort()).toEqual([
         'graphicDark',
@@ -226,106 +429,18 @@ describe('brand chrome', () => {
 });
 ```
 
-- [ ] **Step 4: Run the test to verify it fails**
+- [ ] **Step 3: Run the test to verify it fails**
 
-Run: `npm run test`
-Expected: FAIL — `Error: not implemented` thrown from `relativeLuminance`, and `programmeColors[id].textLight` is `undefined` because the current `colors.ts` has a different shape (`main`/`strong`/`soft`/`darkMain`).
+Run: `npm run test src/design/colors.test.ts`
+Expected: **FAIL**, and the failure output must quote **real ratios** — e.g. `learn: light text tier clears AA on every light canvas` failing with a received value near `2.58` (`#00b3b8`, the brand teal currently sitting in `learn.graphicLight`/`textLight`), and the three dark-wash tests failing around `1.0`. This output is the **encoded evidence for spec §1.4** — copy the failing ratios into the commit message.
 
-- [ ] **Step 5: Write the minimal implementation**
+If the output instead reports `contrastRatio expects hex colours, received undefined`, the Step 1 restructure is incomplete — every one of the six tiers must be a populated hex string.
 
-Replace the stub bodies in `src/lib/contrast.ts`:
+- [ ] **Step 4: Replace the placeholder values with the measured v2 set**
 
-```ts
-/** Canvases a token can sit on. Values copied from globals.css. */
-export const LIGHT_CANVASES = ['#ffffff', '#f6f9fc', '#eaf3fb', '#eaf6ff'] as const;
-export const DARK_CANVASES = ['#0b0f1e', '#10152a', '#141b38', '#141d57'] as const;
+Now rewrite `src/design/colors.ts` with the **exact** values below. These are the measured, AA-verified palette. Do not adjust, round, or "improve" any value.
 
-export const AA_TEXT = 4.5;
-export const AA_NON_TEXT = 3;
-
-/** `#rgb` or `#rrggbb` → [r, g, b] in 0-255. */
-function toRgb(hex: string): [number, number, number] {
-  const value = hex.replace('#', '');
-  const full =
-    value.length === 3
-      ? value
-          .split('')
-          .map((c) => c + c)
-          .join('')
-      : value;
-  return [
-    parseInt(full.slice(0, 2), 16),
-    parseInt(full.slice(2, 4), 16),
-    parseInt(full.slice(4, 6), 16),
-  ];
-}
-
-/** WCAG 2.1 sRGB linearisation. */
-function linearise(channel: number): number {
-  const c = channel / 255;
-  return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-}
-
-/** WCAG relative luminance, 0 (black) to 1 (white). */
-export function relativeLuminance(hex: string): number {
-  const [r, g, b] = toRgb(hex);
-  return 0.2126 * linearise(r) + 0.7152 * linearise(g) + 0.0722 * linearise(b);
-}
-
-/** Guards against a silently `undefined` token producing a NaN ratio. */
-function isHex(value: unknown): value is string {
-  return typeof value === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value);
-}
-
-/** WCAG contrast ratio, 1:1 to 21:1. Order-independent. */
-export function contrastRatio(a: string, b: string): number {
-  if (!isHex(a) || !isHex(b)) {
-    throw new Error(`contrastRatio expects hex colours, received ${String(a)} and ${String(b)}`);
-  }
-  const [lighter, darker] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
-  return (lighter + 0.05) / (darker + 0.05);
-}
-```
-
-- [ ] **Step 6: Run the test to confirm the harness works**
-
-Run: `npm run test`
-Expected: FAIL, but now for the *right* reason — assertions reporting the shipped palette's true ratios, e.g. `learn: light text tier clears AA` failing with a received value of `2.58` (that is `#00b3b8`, the brand teal, currently aliased into the `learn` slot). Confirm at least six pillar failures and the three brand failures. **This failing output is the evidence for spec §1.4 — record it in the commit message.**
-
-- [ ] **Step 7: Commit**
-
-```bash
-git add package.json package-lock.json vitest.config.ts src/lib/contrast.ts src/design/colors.test.ts
-git commit -m "test: add vitest and the palette AA contrast test
-
-The test fails on the shipped palette by design — it encodes the measured
-failures from Landing-Redesign-Plan.md §1.4: --ec-teal at 2.58:1 as text,
-achieve at 2.87:1, learn/include below 4.5:1, and dark-mode soft washes at
-1.00-1.06. Task 2 turns it green.
-
-vitest is node-environment and covers pure functions only, because the
-assistant never launches a browser (EDUCRAFT_PRODUCTION.md §20)."
-```
-
----
-
-## Task 2: Palette v2 token migration
-
-Turns Task 1's test green. **Purely additive at the class level** — no component file changes.
-
-**Files:**
-- Modify: `src/design/colors.ts`, `src/app/globals.css`
-- Modify (required by the pre-flight scan — the new `programmeColors` shape removes `main`/`strong`/`darkMain`, which two live files read):
-  `src/app/(site)/programmes/[slug]/opengraph-image.tsx`, `src/components/educraft/three/scenes/EcosystemScene.tsx`
-- Test: `src/design/colors.test.ts` (from Task 1 — no edits)
-
-**Interfaces:**
-- Consumes: `contrastRatio`, `LIGHT_CANVASES`, `DARK_CANVASES`, `AA_TEXT`, `AA_NON_TEXT` from Task 1
-- Produces: `programmeColors: Record<PillarColorKey, PillarAccent>` where `PillarAccent = { textLight, textDark, graphicLight, graphicDark, softLight, softDark }`; `reservedPillarAccents: readonly PillarAccent[]`; `brand` — all consumed by Task 3's registry and Task 7's `LineStage`.
-
-- [ ] **Step 1: Rewrite `src/design/colors.ts`**
-
-Replace the whole file. Values are exact — do not adjust them.
+Replace the whole file:
 
 ```ts
 /**
@@ -490,14 +605,14 @@ export const semantic = {
 } as const;
 ```
 
-- [ ] **Step 2: Run the test — pillar and brand assertions should pass**
+- [ ] **Step 5: Run the test to verify it passes**
 
-Run: `npm run test`
-Expected: PASS for every `pillar accents` and `brand chrome` assertion.
+Run: `npm run test src/design/colors.test.ts`
+Expected: **PASS, 34/34**, output pristine. Every pillar and brand tier now clears its floor, and the three previously-invisible dark washes report ratios inside the 1.15-1.25 band.
 
-Note: the reserved-slot test will pass too — both reserved accents were measured to the same floors. If a reserved accent fails, that is a real signal: fix its value, do not weaken the test.
+Note: the reserved-slot test passes too — both reserved accents were measured to the same floors. If a reserved accent fails, that is a real signal: fix its value, do not weaken the test.
 
-- [ ] **Step 3: Update `globals.css` — the `@theme inline` block**
+- [ ] **Step 6: Update `globals.css` — the `@theme inline` block**
 
 In `src/app/globals.css`, replace the Programme accents block inside `@theme inline` with:
 
@@ -530,7 +645,7 @@ In `src/app/globals.css`, replace the Programme accents block inside `@theme inl
 
 Leave the existing `--color-ec-indigo*`, `--color-ec-teal`, `--color-ec-gold`, `--color-ec-sky`, and neutral mappings in place — they are unchanged in name, and `text-ec-teal` / `text-ec-gold` now resolve to the corrected text-safe values without any component being touched.
 
-- [ ] **Step 4: Update `globals.css` — the `:root` (light) block**
+- [ ] **Step 7: Update `globals.css` — the `:root` (light) block**
 
 Replace the brand, programme, and semantic token values:
 
@@ -583,7 +698,7 @@ Replace the brand, programme, and semantic token values:
   --ec-info: #2563eb;
 ```
 
-- [ ] **Step 5: Update `globals.css` — the `.dark` block**
+- [ ] **Step 8: Update `globals.css` — the `.dark` block**
 
 ```css
   --ec-indigo: #3b4896;
@@ -629,7 +744,7 @@ Replace the brand, programme, and semantic token values:
   --ec-info: #60a5fa;
 ```
 
-- [ ] **Step 6: Fix the one non-token teal consumer**
+- [ ] **Step 9: Fix the one non-token teal consumer**
 
 In the same file, the `::selection` rule uses teal as a **fill**, so it must use the graphic tier now that `--ec-teal` is text-darkened:
 
@@ -639,7 +754,7 @@ In the same file, the `::selection` rule uses teal as a **fill**, so it must use
   }
 ```
 
-- [ ] **Step 7: Update the two live `programmeColors` consumers**
+- [ ] **Step 10: Update the two live `programmeColors` consumers**
 
 The old shape (`main` / `strong` / `soft` / `darkMain`) no longer exists, so these two files will fail `tsc` until updated. Both use the accent in a **graphic** role on a **dark** surface.
 
@@ -663,14 +778,14 @@ In `src/components/educraft/three/scenes/EcosystemScene.tsx`, the node colours a
 
 (replacing `return dark ? c.darkMain : c.strong;` at line 47.)
 
-- [ ] **Step 8: Run the full loop**
+- [ ] **Step 11: Run the full loop**
 
 Run: `npx tsc --noEmit && npm run lint && npm run test && npm run build`
 Expected: all four pass. `npm run build` must emit the same 29 routes as before — this task changes no routing.
 
 If `tsc` reports any *other* consumer of `programmeColors`, stop and add it to the ruling list rather than inventing a mapping — the scan found exactly two.
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 12: Commit**
 
 ```bash
 git add src/design/colors.ts src/app/globals.css "src/app/(site)/programmes/[slug]/opengraph-image.tsx" src/components/educraft/three/scenes/EcosystemScene.tsx
@@ -688,6 +803,13 @@ Purely additive at the class level: text-ec-learn, bg-ec-learn,
 border-ec-learn and bg-ec-learn-soft keep working with corrected values,
 so no component's classNames change. New -graphic tokens cover strokes and
 nodes.
+
+This commit also adds the palette-enforcement test the previous commit
+deliberately omitted: a test cannot reference a type shape that does not
+exist yet without breaking tsc. The RED phase is preserved honestly — Step 1
+carried the shipped values into the new shape so Step 3 could capture the
+real failing ratios (learn 2.58, achieve 2.87, the dark washes ~1.0) rather
+than an uninformative crash.
 
 The one breaking change is the programmeColors *shape* (main/strong/darkMain
 -> six role themes). Two live readers — the programme OG image, which used a
@@ -2006,7 +2128,7 @@ Nothing consumes LineStage yet; the page is unchanged."
 | §6 palette v2 (all tiers, brand chrome, dark washes) | 2 |
 | §6.5 "accent is never the only signal" | Enforced by contract, not code — Stage 2's acts must comply |
 | §7.3 derived `PillarId`, collapsed registry, derived `COURSE_VERTICALS` | 3 |
-| §7.3 reserved accent slots 6–7 | 2 (`reservedPillarAccents`) + tested in 1 |
+| §7.3 reserved accent slots 6–7 | 2 (`reservedPillarAccents`) + AA-tested in 2 |
 | §7.4 runbook | 3 Step 8 dry-run |
 | §8 responsive contract | 4 (`branchFor`) |
 | §10.1 pure functions + Vitest | 1, 4, 5, 6 |
@@ -2019,6 +2141,10 @@ Nothing consumes LineStage yet; the page is unchanged."
 **Placeholder scan:** clean — no TBD/TODO/"similar to Task N"; every code step carries real code and every run step carries an exact command and expected result.
 
 **Type consistency:** `Anchor` is defined once in `anchors.ts` and imported by `station.ts` and `pathBuilders.ts`; `PathShape` is defined and used only in `pathBuilders.ts`; `PillarAccent` (colour tiers) in `colors.ts` and `PillarAccentClasses` (Tailwind classes) in `pillarStyles.ts` are deliberately distinct names that never cross; `perStationVh` is defined in `scroll.ts` and consumed only by tests in this stage; `drawAt(progress, index, pillarCount)` keeps the same argument order everywhere it appears.
+
+**Correction applied after the first implementer round.** As originally written, Task 1 created `src/design/colors.test.ts` — a test that reads `programmeColors[id].textLight`, `reservedPillarAccents`, and `brand.tealTextLight`. None of those exist until Task 2, so the file did not compile: `npx tsc --noEmit` reported 11 errors, `next build` failed its TypeScript gate, and every test failed at the `isHex` guard with `received undefined` rather than printing the ratios the plan predicted. That left the branch **unbuildable between Task 1 and Task 2**, contradicting this plan's own Global Constraint.
+
+The fix is structural, not cosmetic: a test cannot reference a type shape that does not exist yet without breaking `tsc`, so **the token-table test now belongs to the task that introduces the shape**. Task 1 covers the WCAG maths against hex literals and ends green and buildable; Task 2 owns `src/design/colors.test.ts` and earns a genuine RED→GREEN by first carrying the shipped values into the new shape (Steps 1–3) and then installing the measured ones (Steps 4–5). The `isHex` guard added in Task 1 is what makes a partial migration fail loudly instead of silently producing `NaN` ratios.
 
 ---
 
