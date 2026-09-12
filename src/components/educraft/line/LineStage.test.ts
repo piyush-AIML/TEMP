@@ -111,3 +111,38 @@ describe('LineStage markup', () => {
     expect(markup.indexOf('<span')).toBeGreaterThan(markup.indexOf('</svg>'));
   });
 });
+
+describe('LineStage render-only mode', () => {
+  it('produces byte-identical markup with draw disabled', () => {
+    // Render-only must change *behaviour*, never markup. Act 1's own GSAP reads
+    // `[data-line-path]` and the inline `strokeDashoffset: 1`; if either
+    // disappeared, the act's tween would start from the wrong place.
+    const drawn = render({ paths: ['M 0 0 L 1 1'] });
+    const undrawn = render({ paths: ['M 0 0 L 1 1'], draw: false });
+    expect(undrawn).toBe(drawn);
+  });
+
+  it('still emits the draw hook and the initial dash offset', () => {
+    const markup = render({ paths: ['M 0 0 L 1 1'], draw: false });
+    expect(markup).toContain('data-line-path');
+    expect(markup).toContain('stroke-dashoffset:1');
+  });
+
+  it('defaults to drawing, so Stage 1 call sites are unaffected', () => {
+    expect(render({ paths: ['M 0 0 L 1 1'] })).toBe(
+      render({ paths: ['M 0 0 L 1 1'], draw: true })
+    );
+  });
+
+  it('takes a supplied viewBox verbatim, overriding the numeric default', () => {
+    // Every act in this stage passes its frame's string, so this is the path
+    // that makes act-local anchors viewBox coordinates.
+    expect(render({ paths: ['M 0 0 L 1 1'], viewBox: '0 0 1 1' })).toContain('viewBox="0 0 1 1"');
+  });
+
+  it('keeps composing the frame from numbers when no override is given', () => {
+    expect(render({ paths: ['M 0 0 L 1 1'], viewBoxWidth: 5, viewBoxHeight: 1 })).toContain(
+      'viewBox="0 0 5 1"'
+    );
+  });
+});

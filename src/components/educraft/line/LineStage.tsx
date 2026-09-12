@@ -67,6 +67,9 @@ const IN_VIEW_START = 'top 85%';
  * survives. A *varying* style value would be written and would fight GSAP —
  * which is why the initial dash state belongs in that constant literal and the
  * animation belongs to GSAP.
+ *
+ * `draw` controls only the animated branch; the reduced-motion final state is
+ * unconditional.
  */
 export type LineStageProps = {
   /** Path `d` strings, one per strand. The first is the primary strand. */
@@ -118,6 +121,44 @@ export type LineStageProps = {
    * decision rather than a flag.
    */
   scrub?: boolean;
+  /**
+   * Draw the strand when it scrolls into view. Set `false` for **render-only**
+   * mode: the markup is byte-identical (every path keeps its `data-line-path`
+   * hook and its inline `strokeDashoffset: 1`) and no draw tween is created, so
+   * the caller owns the animation.
+   *
+   * Act 1 needs this and cannot be served by `scrub`: its rail draws **one
+   * segment per station**, against `drawAt(progress, i, n)`'s per-slice
+   * fractions, rather than every path against one shared range. Its pin and its
+   * track tween are a single ScrollTrigger the act owns, which is also the
+   * answer to this component's `pin` ∧ `scrub` non-composition — the two are
+   * never asked to compose here.
+   *
+   * **Reduced motion is still this component's job.** The
+   * `REDUCED_MOTION_QUERY` branch sets every strand to `strokeDashoffset: 0`
+   * whether or not `draw` is set, because that is not an animation — it is the
+   * final state, and the contract is that the reduced-motion page renders every
+   * strand fully drawn in identical DOM order (spec §9). A render-only caller
+   * must therefore keep its own animation inside a `not all and …` branch, so
+   * that under reduced motion this component is the only writer.
+   */
+  draw?: boolean;
+
+  /**
+   * The SVG's `viewBox` as a string, overriding the `viewBoxWidth` ×
+   * `viewBoxHeight` composition below.
+   *
+   * The acts supply their **frame** rather than its dimensions, so the join's
+   * policy lives in exactly one place: `ACT_VIEW_BOX` for the four vertical
+   * acts, `walkFrame(n).viewBox` and `ribbonFrame(...).viewBox` for the two
+   * horizontal ones. Without this the policy is restated as numbers at five
+   * call sites, which is the drift `frames.ts` exists to prevent — and it is
+   * not hypothetical: the first draft of this plan had the constant and both
+   * frame strings with **no reader at all**, while five call sites passed
+   * `viewBoxWidth={1} viewBoxHeight={1}` or their equivalent. The correctness
+   * review of Task 2 measured it.
+   */
+  viewBox?: string;
   className?: string;
   /** Content anchored onto the strand. Positioned by the caller. */
   children?: ReactNode;
@@ -139,6 +180,8 @@ export function LineStage({
   pin = false,
   pinDistanceVh = 100,
   scrub = false,
+  draw = true,
+  viewBox,
   className,
   children,
   label,
@@ -172,21 +215,26 @@ export function LineStage({
         const scopeEl = root.current;
         if (!scopeEl) return;
 
-        const tweens = gsap.utils.toArray<SVGPathElement>('[data-line-path]', scopeEl).map((el, index) =>
-          gsap.fromTo(
-            el,
-            { strokeDashoffset: 1 },
-            {
-              strokeDashoffset: 0,
-              ease: EASE.out,
-              duration: scrub ? DRAW_SCRUB_S : DRAW_IN_VIEW_S,
-              delay: scrub ? 0 : index * DRAW_STAGGER_S,
-              scrollTrigger: scrub
-                ? { trigger: root.current, start: 'top 80%', end: 'bottom 60%', scrub: SCRUB }
-                : { trigger: root.current, start: IN_VIEW_START, once: true },
-            }
-          )
-        );
+        // Render-only: the caller drives these paths. Nothing is created here,
+        // so nothing needs killing — but the pin below still applies, because
+        // pinning is a scroll mechanic and not a draw.
+        const tweens = draw
+          ? gsap.utils.toArray<SVGPathElement>('[data-line-path]', scopeEl).map((el, index) =>
+              gsap.fromTo(
+                el,
+                { strokeDashoffset: 1 },
+                {
+                  strokeDashoffset: 0,
+                  ease: EASE.out,
+                  duration: scrub ? DRAW_SCRUB_S : DRAW_IN_VIEW_S,
+                  delay: scrub ? 0 : index * DRAW_STAGGER_S,
+                  scrollTrigger: scrub
+                    ? { trigger: root.current, start: 'top 80%', end: 'bottom 60%', scrub: SCRUB }
+                    : { trigger: root.current, start: IN_VIEW_START, once: true },
+                }
+              )
+            )
+          : [];
 
         if (pin) {
           ScrollTrigger.create({
@@ -206,13 +254,13 @@ export function LineStage({
 
       return () => mm.revert();
     },
-    { scope: root, dependencies: [paths.join('|'), pin, scrub, pinDistanceVh] }
+    { scope: root, dependencies: [paths.join('|'), pin, scrub, pinDistanceVh, draw] }
   );
 
   return (
     <div ref={root} className={cn('relative w-full', className)}>
       <svg
-        viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+        viewBox={viewBox ?? `0 0 ${viewBoxWidth} ${viewBoxHeight}`}
         preserveAspectRatio='none'
         className='h-full w-full'
         aria-hidden='true'
