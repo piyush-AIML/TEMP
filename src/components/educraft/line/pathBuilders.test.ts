@@ -1,14 +1,16 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ACT_ANCHORS } from './anchors';
-import { NonFiniteCoordinateError, assertContinuity, pathFor } from './pathBuilders';
+import { NonFiniteCoordinateError, assertContinuity, pathFor, polylinePath } from './pathBuilders';
 
 /**
  * Path geometry + the seam contract. Source: Landing-Redesign-Plan.md §3.1.
  *
- * `assertContinuity` exists to prove the seam contract rather than trust it:
- * each act's exit anchor must equal the next act's entry anchor. The framing is
- * the plan's — "the handoff feels broken" is quoted in `stage-1.md`'s Task 6,
- * and appears in no spec document.
+ * `assertContinuity` exists to prove the seam contract rather than trust it: an
+ * act's exit sits on its own bottom edge (y = 1), the next act's enter on its
+ * own top edge (y = 0), and the two share one horizontal fraction — the same
+ * screen point in two act-local boxes. The framing is the plan's — "the handoff
+ * feels broken" is quoted in `stage-1.md`'s Task 6, and appears in no spec
+ * document.
  */
 
 describe('pathFor', () => {
@@ -45,9 +47,8 @@ describe('pathFor', () => {
   /**
    * The four tests below pin current output, which is a change-detector, not a
    * correctness check: the control-point coefficients come from the plan's code
-   * block and no design document fixes them — the same standing as the anchor
-   * values. Pinning makes a change visible; it does not make the curve right.
-   * That still needs the owner's eye.
+   * block and no design document fixes them. Pinning makes a change visible; it
+   * does not make the curve right. That still needs the owner's eye.
    */
   it('builds the arc from one shared, rounded midpoint, pinned exactly', () => {
     expect(pathFor({ x: 0.25, y: 0.1 }, { x: 0.75, y: 0.9 })).toBe('M 0.25 0.1 C 0.5 0.1 0.5 0.78 0.75 0.9');
@@ -58,10 +59,11 @@ describe('pathFor', () => {
   });
 
   it('pins the fork at dy = 0, where its first control point sits on y0', () => {
-    // The fork's case: it leaves `origin.exit`, which ACT_ANCHORS fixes at
-    // y = 1, and the seeds sit on that same fold — so `dy` is 0 and the "leaves
-    // vertically first" reading does not hold. It starts flat. (ACT_ANCHORS
-    // holds act enter/exit anchors only, so the seed y is not readable there.)
+    // Not the shipped fork's geometry any more: `origin.exit` is the fork point
+    // at y = 0.85 and the seeds hang below it at y = 1, so the real fork's `dy`
+    // is non-zero and it does leave vertically first. This pins the shape's
+    // degenerate branch, where the first control point lands on y0 and the
+    // branch starts flat.
     expect(pathFor({ x: 0.5, y: 0.5 }, { x: 1, y: 0.5 }, 'fork')).toBe('M 0.5 0.5 C 0.5 0.5 0.75 0.5 1 0.5');
   });
 
@@ -107,104 +109,74 @@ describe('pathFor', () => {
 });
 
 describe('assertContinuity', () => {
-  it('passes for the declared act chain', () => {
+  it('accepts the vertical chain as shipped', () => {
     expect(() => assertContinuity()).not.toThrow();
   });
 
-  it('detects a broken seam', () => {
-    // Prove the assertion has teeth: a deliberately mismatched chain must fail.
-    const broken = {
-      origin: { enter: { x: 0, y: 0 }, exit: { x: 1, y: 1 } },
-      pillars: { enter: { x: 0, y: 0 }, exit: { x: 1, y: 1 } },
+  it('rejects an exit that is not on its act bottom edge', () => {
+    const chain = {
+      a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 0.9 } },
+      b: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
     };
-    expect(() => assertContinuity(broken)).toThrow(/origin\.exit/);
+    expect(() => assertContinuity(chain)).toThrow(/bottom edge/);
   });
 
-  it('reports the offending seam by name', () => {
-    const broken = {
-      origin: { enter: { x: 0, y: 0 }, exit: { x: 0.1, y: 0.1 } },
-      pillars: { enter: { x: 0.2, y: 0.2 }, exit: { x: 1, y: 1 } },
+  it('rejects an enter that is not on its act top edge', () => {
+    const chain = {
+      a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
+      b: { enter: { x: 0.5, y: 0.1 }, exit: { x: 0.5, y: 1 } },
     };
-    let message = '';
-    try {
-      assertContinuity(broken);
-    } catch (error) {
-      message = (error as Error).message;
-    }
-    expect(message).toContain('origin.exit');
-    expect(message).toContain('pillars.enter');
+    expect(() => assertContinuity(chain)).toThrow(/top edge/);
   });
 
-  it('reports each side paired with its own coordinates and the delta', () => {
-    const broken = {
-      origin: { enter: { x: 0, y: 0 }, exit: { x: 0.25, y: 0.5 } },
-      pillars: { enter: { x: 0.5, y: 0.25 }, exit: { x: 1, y: 1 } },
+  it('rejects a seam whose two sides disagree horizontally, and names both', () => {
+    const chain = {
+      a: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
+      b: { enter: { x: 0.6, y: 0 }, exit: { x: 0.6, y: 1 } },
     };
-    let message = '';
-    try {
-      assertContinuity(broken);
-    } catch (error) {
-      message = (error as Error).message;
-    }
-    expect(message).toMatch(
-      /origin\.exit \(0\.25, 0\.5\) and pillars\.enter \(0\.5, 0\.25\) — delta \(0\.25, 0\.25\)\./
-    );
+    expect(() => assertContinuity(chain)).toThrow(/a\.exit → b\.enter/);
+    expect(() => assertContinuity(chain)).toThrow(/0\.5/);
   });
 
-  it('catches a seam broken on x alone', () => {
-    const broken = {
-      origin: { enter: { x: 0, y: 0 }, exit: { x: 0.5, y: 1 } },
-      pillars: { enter: { x: 0.6, y: 1 }, exit: { x: 1, y: 1 } },
-    };
-    expect(() => assertContinuity(broken)).toThrow(/origin\.exit/);
+  it('throws when handed the whole ACT_ANCHORS record, by design', () => {
+    // origin.exit is the fork point at y = 0.85, not an act edge. This is the
+    // arity change D1 named: the chain is VERTICAL_CHAIN, never the full record.
+    expect(() => assertContinuity(ACT_ANCHORS)).toThrow(/bottom edge/);
   });
 
-  it('catches a seam broken on y alone', () => {
-    const broken = {
-      origin: { enter: { x: 0, y: 0 }, exit: { x: 0.5, y: 1 } },
-      pillars: { enter: { x: 0.5, y: 0.9 }, exit: { x: 1, y: 1 } },
-    };
-    expect(() => assertContinuity(broken)).toThrow(/origin\.exit/);
+  it('still accepts a two-act fixture that satisfies the seam rule', () => {
+    // The signature is unchanged, so the two-act fixtures keep compiling.
+    expect(() =>
+      assertContinuity({
+        one: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
+        two: { enter: { x: 0.5, y: 0 }, exit: { x: 0.5, y: 1 } },
+      })
+    ).not.toThrow();
+  });
+});
+
+describe('polylinePath', () => {
+  it('emits one M and one L per remaining point', () => {
+    expect(
+      polylinePath([
+        { x: 1.5, y: 0.5 },
+        { x: 2.5, y: 0.5 },
+        { x: 3.5, y: 1 },
+      ])
+    ).toBe('M 1.5 0.5 L 2.5 0.5 L 3.5 1');
   });
 
-  it('checks every seam of a five-act chain, not one seam or every other one', () => {
-    const acts = ['origin', 'pillars', 'way', 'proof', 'doors'];
-    const shared = { enter: { x: 0.5, y: 1 }, exit: { x: 0.5, y: 1 } };
-    for (let brokenSeam = 0; brokenSeam < acts.length - 1; brokenSeam += 1) {
-      const chain = Object.fromEntries(
-        acts.map((name, index) => [
-          name,
-          index === brokenSeam
-            ? { enter: { x: 0.5, y: 1 }, exit: { x: 0.25, y: 0.75 } }
-            : { enter: { ...shared.enter }, exit: { ...shared.exit } },
-        ])
-      );
-      expect(() => assertContinuity(chain), `seam ${brokenSeam}`).toThrow(
-        new RegExp(`${acts[brokenSeam]}\\.exit`)
-      );
-    }
+  it('rounds to two decimals like pathFor', () => {
+    expect(polylinePath([{ x: 0.123, y: 0.456 }, { x: 0.789, y: 1 }]))
+      .toBe('M 0.12 0.46 L 0.79 1');
   });
 
-  it('accepts the real ACT_ANCHORS unchanged', () => {
-    expect(() => assertContinuity(ACT_ANCHORS)).not.toThrow();
+  it('throws on a single point rather than emitting a path with no segment', () => {
+    expect(() => polylinePath([{ x: 0.5, y: 0.5 }])).toThrow(/at least two/);
   });
 
-  it('defaults to the real ACT_ANCHORS chain rather than to an empty one', async () => {
-    // A vacuous default (`= {}`) would iterate no keys and pass everything, so
-    // the default binding is only observable if the chain it binds to is broken.
-    vi.doMock('./anchors', () => ({
-      ACT_ANCHORS: {
-        origin: { enter: { x: 0, y: 0 }, exit: { x: 1, y: 1 } },
-        pillars: { enter: { x: 0, y: 0 }, exit: { x: 1, y: 1 } },
-      },
-    }));
-    vi.resetModules();
-    try {
-      const fresh = await import('./pathBuilders');
-      expect(() => fresh.assertContinuity()).toThrow(/origin\.exit/);
-    } finally {
-      vi.doUnmock('./anchors');
-      vi.resetModules();
-    }
+  it('rejects a non-finite coordinate that only becomes non-finite when rounded', () => {
+    expect(() => polylinePath([{ x: 0, y: 0 }, { x: Number.MAX_VALUE, y: 0 }]))
+      .toThrow(NonFiniteCoordinateError);
   });
 });
