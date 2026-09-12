@@ -1617,7 +1617,8 @@ import { describe, expect, it } from 'vitest';
 import { ACT_ANCHORS } from '@/components/educraft/line/anchors';
 import { forkPaths } from '@/components/educraft/line/frames';
 import { pathFor } from '@/components/educraft/line/pathBuilders';
-import Origin from './Origin';
+import { EnquiryModalProvider } from '@/context/EnquiryModalContext';
+import Origin, { type OriginProps } from './Origin';
 
 const PROPS = {
   eyebrow: 'Global Digital Education Platform',
@@ -1630,8 +1631,14 @@ const PROPS = {
   pillarCount: 5,
 } as const;
 
-const render = (overrides: Partial<typeof PROPS> = {}) =>
-  renderToStaticMarkup(createElement(Origin, { ...PROPS, ...overrides }));
+// Rendered the way the app mounts it: the provider lives in
+// `app/(site)/layout.tsx`, and `EnquireButton` throws without it. Overrides are
+// typed by the component's props, not `typeof PROPS` — `as const` makes
+// `pillarCount` the literal `5`, so the sixth-pillar case cannot type-check.
+const render = (overrides: Partial<OriginProps> = {}) =>
+  renderToStaticMarkup(
+    createElement(EnquiryModalProvider, null, createElement(Origin, { ...PROPS, ...overrides }))
+  );
 
 describe('Act 0 — Origin', () => {
   it('renders the hero copy verbatim', () => {
@@ -1810,7 +1817,7 @@ import EnquireButton from '@/components/educraft/ui/EnquireButton';
 import { ButtonNextLink } from '@/components/educraft/ui/Button';
 import Eyebrow from '@/components/educraft/ui/Eyebrow';
 import { ACT_ANCHORS } from '@/components/educraft/line/anchors';
-import { forkPaths, seedAnchors } from '@/components/educraft/line/frames';
+import { ACT_VIEW_BOX, forkPaths, seedAnchors } from '@/components/educraft/line/frames';
 import { pathFor } from '@/components/educraft/line/pathBuilders';
 import { LineStage } from '@/components/educraft/line/LineStage';
 import MaskLine from '@/components/educraft/motion/MaskLine';
@@ -1932,7 +1939,7 @@ export default function Origin({
 
         <div ref={copy} className='relative mx-auto w-full max-w-3xl md:mx-0 md:max-w-2xl'>
           <Eyebrow className='text-ec-teal'>{eyebrow}</Eyebrow>
-          <h1 className='type-display-l mt-5 text-ec-ink dark:text-white'>
+          <h1 className='type-display-xl mt-5 text-ec-ink dark:text-white'>
             {h1Lines.map((line, index) => (
               <MaskLine key={line} delay={index * HEADLINE_STAGGER_S}>
                 {line}
@@ -1961,6 +1968,8 @@ Three things the implementer must **not** "improve":
 1. **No `overflow-hidden` on any ancestor of `div[ref=root]`.** That element is pinned; an ancestor with `overflow: hidden` becomes its scroll box and silently breaks the pin. This is the repo's first architectural rule and the reason the retired `StudentJourney` carries a comment about it.
 2. **`viewBox={ACT_VIEW_BOX}`** is the join, not an oversight: it makes the act-local anchors viewBox coordinates verbatim. Passing `1200×800` (the default) is what produced the 0.26px arc at Stage 1's close. It reads the frame from `frames.ts` rather than restating `1, 1` here, so the policy has exactly one home.
 3. **The seed `<span>`s are positioned by `seedAnchors` output, and `aria-hidden` on the wrapper.** They are the same values the branches end on; hand-placing them reintroduces the drift the join exists to remove.
+
+*(Corrected 2026-09-13, on Task 5's implementation: the H1 above read `type-display-l`, contradicting this task's own instruction to keep whatever `Hero.tsx` used for the eyebrow/H1/lede sizes — Hero's H1 is `type-display-xl`, a measured step larger, `clamp(3rem, 6.5vw + 0.75rem, 5.25rem)` against `clamp(2.5rem, 5vw + 1rem, 4.25rem)`. The instruction won and `type-display-xl` shipped. The trust line keeps the snippet's `type-body-s` rather than Hero's `type-caption`, because the instruction named only the eyebrow, the H1 and the lede. **If the smaller H1 was the intent, it is a one-class change** — the owner should say so rather than leave the snippet and the code disagreeing.)*
 
 - [ ] **Step 6: Run the tests to verify they pass**
 
