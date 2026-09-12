@@ -7,21 +7,23 @@
  * the seam contract holds, but it is called from the test suite and from
  * nothing else — no runtime module calls it, so nothing checks this file at
  * load time. `anchors.test.ts` is what pins the values in the meantime, and it
- * is the only thing that pins the absolute ones: `assertContinuity` compares
- * anchors against anchors, which is a purely relative check and can never see a
- * single anchor move.
+ * has to, because `assertContinuity`'s check is relative: it is blind to the
+ * two free ends — `origin.enter` and `doors.exit` — and to a coordinated edit
+ * that moves both copies of a seam. It is *not* blind to a single anchor move:
+ * eight of the ten anchors are written twice, as act i's `exit` and act i+1's
+ * `enter`, so moving one copy of a seam breaks that seam and fails.
  *
  * **Frames.** x and y here are **act-local**: x runs 0..1 across one act's own
  * strip and y runs 0..1 down that act's own band. This is *not* the frame
  * `stationPositions` (station.ts) uses — its x is **track-local**, one station
- * per viewport — and it is not viewport coordinates either. `pathFor` (Task 6)
- * does not bridge them: it is frame-agnostic, converting two points *in one
- * frame* into a path string without knowing or needing to know which frame that
- * is. The transform would be `trackX = actIndex + actLocalX`, and `pathFor`
- * receives two bare points with no act identity, so it cannot compute an act
- * index. The caller in Stage 2 — the only thing that knows which act a point
- * belongs to — supplies both endpoints in a single frame. Nothing should read
- * these values as track widths.
+ * per viewport, and its y is the constant walk baseline rather than an act
+ * band — and it is not viewport coordinates either. The two are different
+ * geometry, not one frame needing conversion: the vertical strand segments are
+ * built from these anchors, the horizontal walk's rail from those station
+ * positions, and how they compose on screen is a layout decision owned by the
+ * Stage 2 caller. `pathFor` (Task 6) is frame-agnostic — it turns two points
+ * *in one frame* into a path string and neither knows nor needs to know which
+ * frame that is. Nothing should read these values as track widths.
  *
  * Kept in one place because both ends of every seam read from here.
  */

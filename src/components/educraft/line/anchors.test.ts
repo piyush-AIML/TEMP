@@ -7,9 +7,11 @@ import { ACT_ANCHORS, ACT_ORDER, type ActName } from './anchors';
  * **Why this file exists.** Before it, `anchors.ts` was invisible to the entire
  * gate: no test imported it, so a discontinuous seam, a renamed act key or a
  * deleted act all stayed green. `assertContinuity` (Task 6, `pathBuilders.ts`)
- * will check that neighbouring acts agree *with each other* — that is a
- * relative check, and it can never see an absolute value move. So the actual
- * numbers are pinned literally below, and this file is the only place they are.
+ * now checks that neighbouring acts agree *with each other* — a relative check,
+ * blind to the two free ends (`origin.enter`, `doors.exit`) and to a coordinated
+ * edit that moves both copies of a seam, but not to a single anchor move. So the
+ * actual numbers are pinned literally below, and this file is the only place
+ * they are.
  *
  * The coordinates are **invented for the design**: the plan's Task 5 code block
  * (`stage-1.md`) does carry `enter: { x: 0.72, y: 0 }`, so they are not absent

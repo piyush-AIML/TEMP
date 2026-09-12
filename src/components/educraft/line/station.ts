@@ -8,12 +8,14 @@ import type { Anchor } from './anchors';
  * sixth or seventh pillar with no rewrite.
  *
  * **Frames.** `stationPositions` x is **track-local**: station `i` sits `i`
- * track-widths from the first, one station per viewport. `anchors.ts` x/y are a
- * different frame — **act-local**. `pathFor` (Task 6) does not reconcile them:
- * it is frame-agnostic, taking two points in a single frame
- * (`trackX = actIndex + actLocalX` needs an act identity its signature never
- * carries). The caller in Stage 2, which knows which act a point belongs to,
- * supplies both endpoints in one frame.
+ * track-widths from the first, one station per viewport, on the constant walk
+ * baseline `y`. `anchors.ts` x/y are a different frame — **act-local**: x across
+ * one act's own strip, y down that act's own band. The two are different
+ * geometry, not one frame needing conversion: the walk's rail is built from
+ * these positions, the vertical strand segments from those anchors, and how the
+ * two compose on screen is a layout decision owned by the Stage 2 caller.
+ * `pathFor` (Task 6) is frame-agnostic — it takes two points in a single frame
+ * and neither knows nor needs to know which one that is.
  *
  * `drawAt` *provides* the scale-by-pillar-count replacement for the shipped
  * Methodology section's hardcoded `/ 5.5` divisor, which cannot scale. That old

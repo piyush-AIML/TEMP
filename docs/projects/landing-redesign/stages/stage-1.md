@@ -1787,6 +1787,14 @@ calibration is verifiable without a browser."
 
 ## Task 6: Path builders + the continuity assertion
 
+> **Superseded by `b1282cb` and the fix commit that carries this note — the code blocks below are the plan as written, not as shipped.** What differs, and why:
+>
+> - **The module docstring's frame sentence is false.** "Coordinates are normalised (x in track-widths, y in band-heights)" contradicts `anchors.ts`, which Task 5 pinned to **act-local** x/y. The repair that briefly replaced it ("`pathFor` owns the transform") was withdrawn as unverified too: `pathFor` is **frame-agnostic** — it takes two points already in one frame, and the vertical strand segments (from the act-local anchors) and the horizontal rail (from the track-local station positions) are different geometry, not one frame needing conversion. Marked inline at Step 3.
+> - **Step 4's count is wrong.** The listing below has 9 `it()` blocks, not 8. Marked inline at Step 4.
+> - **The commit message's "reported" is unsourced.** "the handoff feels broken" appears only in this plan (`:1809` and the Step 5 listing below) — no report, ticket or spec carries it, so it is this plan's framing. The shipped message also drops the false frame sentence. Marked inline at Step 5.
+> - **`pathFor`/`PathShape` are not consumed by Task 7.** Task 7's `LineStage` takes pre-computed `paths: string[]` and imports nothing from `./pathBuilders`; the Interfaces line above is as originally written.
+> - Two shipped additions rather than corrections: `assertContinuity` iterates `Object.keys(chain)` — insertion order, not `ACT_ORDER` — and `pathFor` throws a named `NonFiniteCoordinateError` for a non-finite coordinate instead of emitting a `d` the browser drops silently.
+
 **Files:**
 - Create: `src/components/educraft/line/pathBuilders.ts`, `src/components/educraft/line/pathBuilders.test.ts`
 
@@ -1885,6 +1893,8 @@ Expected: FAIL — `Failed to resolve import "./pathBuilders"`.
 
 - [ ] **Step 3: Write the implementation**
 
+> **Superseded (see the Task 6 note above):** the frame sentence in the docstring below — "x in track-widths, y in band-heights" — is not what shipped; `pathFor` is frame-agnostic. The shipped file also adds the non-finite guard and shares one rounded midpoint.
+
 Create `src/components/educraft/line/pathBuilders.ts`:
 
 ```ts
@@ -1974,6 +1984,8 @@ export function assertContinuity(chain: ActChain = ACT_ANCHORS): void {
 Run: `npm run test src/components/educraft/line/pathBuilders.test.ts`
 Expected: PASS (8 assertions).
 
+> **Correction (see the Task 6 note above):** the listing above has 9 `it()` blocks, not 8 — an arithmetic slip in the plan.
+
 If `assertContinuity` throws on the real `ACT_ANCHORS`, the anchors in Task 5 are inconsistent — fix `ACT_ANCHORS` rather than loosening the assertion.
 
 - [ ] **Step 5: Run the full loop and commit**
@@ -1992,6 +2004,8 @@ assertContinuity() is the fix for the reported 'hero -> pillars feels broken':
 it proves each act's exit anchor equals the next act's entry anchor and names
 both sides of a broken seam. A negative test confirms it has teeth."
 ```
+
+> **Correction (see the Task 6 note above):** the shipped commit message drops the false frame sentence "normalised anchors (x in track-widths, y in band-heights)", and "the reported 'hero -> pillars feels broken'" is this plan's own framing — nothing else reports it.
 
 ---
 
