@@ -257,6 +257,23 @@ describe('the reduced-motion fallback in globals.css', () => {
     expect(rule!.index).toBeGreaterThan(open);
     expect(rule!.index).toBeLessThan(close);
   });
+
+  it('neutralises the walk track under reduced motion', () => {
+    // §9: no pin, no scrub, no horizontal track — the same page, same words, in
+    // the order a screen reader already needs. The CSS is the only place this
+    // can be guaranteed, since GSAP may have written a transform by then.
+    //
+    // Sliced from the block's braces rather than searched for in the whole file,
+    // for the reason above: a rule hoisted out of the media query would satisfy
+    // `toContain` while shipping an unconditional `transform: none`.
+    const media = GLOBALS_CSS.indexOf(`@media ${REDUCED_MOTION_QUERY}`);
+    expect(media).toBeGreaterThan(-1);
+    const { open, close } = blockSpan(GLOBALS_CSS, media);
+    const block = GLOBALS_CSS.slice(open, close);
+    expect(block).toContain('[data-walk-track]');
+    expect(block).toContain('transform: none !important');
+    expect(block).toContain('[data-walk-station]');
+  });
 });
 
 /**

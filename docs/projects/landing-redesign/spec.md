@@ -212,7 +212,7 @@ Copy stays **verbatim** — it is good; the staging was the problem. Eyebrow `Gl
 
 ### Act 1 — Five Pillars (~510vh — the largest act, and it is the product)
 
-**Desktop: pin + horizontal scrub.** A track of N stations, `x` tweened `0 → -(100 × (N−1))vw`, `scrub: 1`, `end` derived from `perStationVh(N)`. The strand runs horizontally through the track; each station's segment draws as it arrives.
+**Desktop: pin + horizontal scrub.** A track of N stations, `x` tweened `0 → -(100 × N)vw` — **not** `(N−1)`, which puts station `i` at `i/(N−1)` of the walk while `drawAt`'s slices and the rail's scroll target both put it at `i/N`, a disagreement that reaches `1/N` of the pin (80vh of a 400vh walk at five pillars). One viewport of travel per dwell is what makes the station, its segment and its rail button one axis. **[Corrected 2026-09-13, Stage 2 Task 6 — this sentence is the authority the code follows, so leaving it false was not an option.]** `scrub: 1`, `end` derived from `perStationVh(N)`. The strand runs horizontally through the track; each station's segment draws as it arrives.
 
 Each station has **no container**:
 

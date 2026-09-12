@@ -535,4 +535,21 @@ html {
   [data-line-path] {
     stroke-dashoffset: 0 !important;
   }
+  /* The walk is a pinned horizontal track, and §9 requires the reduced-motion
+     page to be a plain vertical document in identical DOM order. The track is
+     neutralised in CSS rather than in JS because the JS branch would have to
+     undo a transform that GSAP may have already written. */
+  [data-walk-track] {
+    overflow: visible !important;
+    display: block !important;
+  }
+  [data-walk-track] > * {
+    width: 100% !important;
+    transform: none !important;
+    flex-direction: column !important;
+  }
+  [data-walk-station] {
+    width: 100% !important;
+    height: auto !important;
+  }
 }
