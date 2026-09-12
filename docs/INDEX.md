@@ -31,6 +31,7 @@ you rarely need the first two by hand.
 | [`design/`](design/) | What are the visual rules? Why these colours? | system · palette · motion |
 | [`surfaces/`](surfaces/) | How does each user-facing area work? | homepage · programme-pages · shell-and-nav · enquiry · seo |
 | [`projects/`](projects/) | What is planned, in progress, or done? | landing-redesign · dashboard |
+| [`projects/*/stages/README.md`](projects/landing-redesign/stages/README.md) | **Planning a stage that isn't planned yet?** Decided / open / prerequisites / leftover interfaces, per stage | landing-redesign |
 | [`decisions/`](decisions/) | Why is it this way, and what did it cost? | numbered ADRs |
 
 Per-subtree conventions do **not** live here — they are in `.claude/rules/`, which load

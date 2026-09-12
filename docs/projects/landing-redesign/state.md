@@ -8,6 +8,12 @@ Last updated: 2026-09-12 · branch `landing-redesign` · spec [`spec.md`](spec.m
 paused after Task 3 by choice, to build this knowledge base. Stages 2–4 are *designed* (`spec.md`
 §2–§12) but **not planned** — no stage plan exists for them yet.
 
+> **Planning a future stage? Read [`stages/README.md`](stages/README.md) first.** It is the stage
+> index and holds each unplanned stage's **planning inputs**: what is already decided (with spec
+> pointers), what is deliberately still open, the interfaces the previous stage leaves behind, and
+> what must be true before the stage can be planned at all. It exists so planning a stage is
+> *planning*, not re-deriving.
+
 | # | Task | State | Commits |
 |---|---|---|---|
 | 1 | Vitest harness + WCAG contrast maths | done | `ef4944d` `64ba6ee`, fixes `571a5ac` `00273f7` |
