@@ -19,8 +19,13 @@ describe('perStationVh', () => {
   /**
    * The band itself, pinned to literals. Without this the floor and ceiling
    * cases below compare `perStationVh` against the very constant under test, so
-   * each moves with the constant and pins nothing — `WALK_MAX_VH` anywhere >= 80
-   * and `WALK_MIN_VH` anywhere in ~[57.14, 66.67] left every assertion green.
+   * each moves with the constant and pins nothing. Measured against the
+   * pre-pin test, the windows that left every assertion green were:
+   *   WALK_MIN_VH in [400/7, 66.75)   — 400/7 inclusive, 66.75 excluded
+   *   WALK_MAX_VH in [80, 400/3]
+   * A wrong constant anywhere in either window passed the whole suite, which is
+   * why the literals below are load-bearing and must not be relaxed back to
+   * comparisons against the constants.
    */
   it('pins the calibration band to spec §7.3 (60vh floor, 80vh ceiling)', () => {
     expect(WALK_MIN_VH).toBe(60);
@@ -55,11 +60,17 @@ describe('perStationVh', () => {
 
   it('falls back to the ceiling for NaN, and to the floor for a huge count', () => {
     // The guard exists so a bad count can never become a silent NaN scroll
-    // length in a ScrollTrigger `end`. `Infinity` deliberately does NOT take
-    // that path: an absurdly large count is the floor's job, not the ceiling's,
-    // so catching it with `!Number.isFinite` would be a regression.
+    // length in a ScrollTrigger `end`. It tests the quotient, so it catches
+    // both a NaN input and any input that divides to NaN — the `undefined` case
+    // below is the one guarding the argument alone would have missed.
+    // `Infinity` deliberately does NOT take that path: an absurdly large count
+    // is the floor's job, not the ceiling's, so catching it with
+    // `!Number.isFinite` would be a regression.
     expect(perStationVh(Number.NaN)).toBe(WALK_MAX_VH);
     expect(perStationVh(Number.NaN)).toBe(80);
+    // @ts-expect-error — out-of-contract input, deliberately bypassing the type
+    // to exercise the runtime guard a JS caller could reach.
+    expect(perStationVh(undefined)).toBe(80);
     expect(perStationVh(Number.POSITIVE_INFINITY)).toBe(60);
     expect(perStationVh(1e9)).toBe(60);
   });

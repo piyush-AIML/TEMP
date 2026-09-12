@@ -39,13 +39,16 @@ export const WALK_MAX_VH = 80;
  *
  * An unusable count falls back to the ceiling rather than propagating: `NaN`
  * would otherwise flow into a ScrollTrigger `end` as a silent `NaN` scroll
- * length. `Infinity` is deliberately NOT caught here — it takes the ordinary
- * path to the floor, which is the correct answer for an absurdly large count.
+ * length. The guard tests the *quotient*, not the argument, because guarding
+ * the argument only catches a `NaN` input — an out-of-contract value that
+ * divides to `NaN` would slip through. `Infinity` is deliberately NOT caught:
+ * `400 / Infinity` is `0`, so it takes the ordinary path to the floor, which is
+ * the right answer for an absurdly large count.
  */
 export function perStationVh(pillarCount: number): number {
-  if (Number.isNaN(pillarCount)) return WALK_MAX_VH;
   if (pillarCount <= 0) return WALK_MAX_VH;
   const ideal = WALK_BASE_VH / pillarCount;
+  if (Number.isNaN(ideal)) return WALK_MAX_VH;
   return Math.min(WALK_MAX_VH, Math.max(WALK_MIN_VH, ideal));
 }
 

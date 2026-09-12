@@ -1350,6 +1350,14 @@ incomplete registry, then reverted."
 
 ## Task 4: Install GSAP + Motion, add `design/scroll.ts`
 
+> **Superseded by `d1be7db` — the code blocks below are the plan as written, not as shipped.** Three deliberate changes, all from the Task 4 review:
+>
+> - `BREAKPOINTS.md` → **`BREAKPOINTS.sm`**. 640 is the Tailwind `sm` edge, not `md` (which is 768, and is what `tokens.ts` encodes for *layout*); these are the spec §8 band edges. The key was mislabelled, not the value, and the band is deliberately not derived from `tokens.ts` so a future layout edit cannot move the tablet branch.
+> - `stationEnterMs`, `ribbonDrawMs` and `uiFeedbackMaxMs` are now **derived via `durationMs`** from `motion.ts` rather than restated as literals, per spec §10.2: "`design/motion.ts` stays the single source". Values are unchanged (400 / 700 / 160); the members are now typed `number`.
+> - The `headlineStaggerMs` note is corrected: 80ms is **below `instant`** (100ms), the shortest token that exists, so it maps to no token and stays a deliberate standalone literal. The listing's "between `fast` (160) and `instant` (100)" is arithmetically false.
+>
+> Also updated in the same commit: the test listing gained literal pins for the floor and ceiling (the plan's assertions compared `perStationVh` against the constants under test, so a wrong constant anywhere in `WALK_MIN_VH ∈ [400/7, 66.75)` or `WALK_MAX_VH ∈ [80, 400/3]` passed the whole suite), and `perStationVh`'s `NaN` guard now tests the quotient rather than the argument. The plan's "PASS (9 assertions)" is 11 `it()` blocks as shipped.
+
 **Files:**
 - Modify: `package.json`
 - Create: `src/design/scroll.ts`, `src/design/scroll.test.ts`
