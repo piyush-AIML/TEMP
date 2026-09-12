@@ -514,6 +514,8 @@ If the output instead reports `contrastRatio expects hex colours, received undef
 
 Now rewrite `src/design/colors.ts` with the **exact** values below. These are the measured, AA-verified palette. Do not adjust, round, or "improve" any value.
 
+**`colors.ts` and `globals.css` must carry identical hex values.** `colors.ts` is the documentation-and-test source; the CSS custom properties in `globals.css` are what actually paint. A value that exists only in `colors.ts` passes the test suite and renders nothing — every token here has a mirrored pair in Step 6/7/8. When you correct a hex in one file, correct it in the other in the same step. (This invariant was learned the hard way: a mid-task correction once named only `colors.ts`, and without the mirror both washes would have stayed invisible in the browser while all 34 tests passed.)
+
 Replace the whole file:
 
 ```ts
@@ -682,7 +684,7 @@ export const semantic = {
 - [ ] **Step 5: Run the test to verify it passes**
 
 Run: `npm run test src/design/colors.test.ts`
-Expected: **PASS, 34/34**, output pristine. Every pillar and brand tier now clears its floor, and the three previously-invisible dark washes report ratios inside the 1.15-1.25 band.
+Expected: **PASS, 34/34**, output pristine. Every pillar and brand tier now clears its floor, and all five dark washes clear **≥1.15** on `#0b0f1e` and **≥1.02** on `#141b38` (no upper bound — see spec §6.3).
 
 Note: the reserved-slot test passes too — both reserved accents were measured to the same floors. If a reserved accent fails, that is a real signal: fix its value, do not weaken the test.
 
@@ -804,13 +806,13 @@ Replace the brand, programme, and semantic token values:
   --ec-p-include-soft: #131f3d;
   --ec-p-thrive: #b49bee;
   --ec-p-thrive-graphic: #9e7fe4;
-  --ec-p-thrive-soft: #1e1836;
+  --ec-p-thrive-soft: #221b3c;
   --ec-p-achieve: #f5c95e;
   --ec-p-achieve-graphic: #e8b94a;
   --ec-p-achieve-soft: #2a2110;
   --ec-p-excel: #f285a8;
   --ec-p-excel-graphic: #ec6a99;
-  --ec-p-excel-soft: #331423;
+  --ec-p-excel-soft: #391627;
 
   --ec-success: #4ade80;
   --ec-warning: #fbbf24;
