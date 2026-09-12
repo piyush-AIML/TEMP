@@ -35,7 +35,11 @@ next-env.d.ts
 # editors / tools
 .vscode/
 .idea/
-.claude
+
+# Claude Code — SHARED project config IS committed (.claude/rules, .claude/skills,
+# .claude/hooks, .claude/settings.json). These two are per-machine, so they are not.
+.claude/settings.local.json
+.claude/active-project
 
 # subagent-driven-development scratch (ledgers, briefs, review packages)
 .superpowers/

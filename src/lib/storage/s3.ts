@@ -24,8 +24,9 @@ import { StorageNotConfiguredError } from './types';
  * `Content-Type` header with the raw bytes as the body (no multipart — S3
  * presigned PUTs take raw bodies; see FileDropzone).
  *
- * AWS setup (bucket + IAM + CORS) is documented in EDUCRAFT_PRODUCTION.md
- * §24.9 — the IAM user needs only s3:PutObject/GetObject/DeleteObject scoped
+ * AWS setup (bucket + IAM + CORS) is documented in
+ * docs/platform/deployment-env.md — the IAM user needs only
+ * s3:PutObject/GetObject/DeleteObject scoped
  * to `arn:aws:s3:::<bucket>/materials/*` (HeadObject falls under GetObject),
  * and the bucket CORS must allow PUT/GET/HEAD from the app origins.
  */
