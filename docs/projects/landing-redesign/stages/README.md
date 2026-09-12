@@ -43,7 +43,7 @@ ways nobody notices until execution.
 | §10.2 | The timing table, and that `design/motion.ts` stays the single source |
 
 **Interfaces Stage 1 leaves for you** — all exist, are exported, and are individually tested. **Read
-the join warning below before planning the strand.**
+the note below on the join before planning the strand.**
 
 - `src/design/scroll.ts` — `perStationVh(n)`, `branchFor(width)`, `BREAKPOINTS`, `SCRUB`, `CEILINGS`
 - `src/components/educraft/line/station.ts` — `stationPositions(n)`, `drawAt(progress, i, n)`
@@ -52,35 +52,20 @@ the join warning below before planning the strand.**
 - `src/components/educraft/line/LineStage.tsx` — the strand renderer (currently **unconsumed**; Stage 2 is its first caller)
 - `src/lib/gsap.ts` — `registerGsap`, `EASE`, `REDUCED_MOTION_QUERY`, `gsap`, `ScrollTrigger`, `useGSAP`
 
-> ### ⚠ The Line layer has no defined join — Stage 2 owns the coordinate system
+> ### The join is `line/frames.ts` — resolved in Stage 2
 >
-> Stage 1 shipped three correct pure modules and a correct renderer, and **nothing in the shipped
-> code ever draws a strand.** `LineStage` imports `cn`, `motion`, `SCRUB` and GSAP — not `anchors`,
-> `station` or `pathBuilders`. Wiring them naively does not work, and the failure is silent:
+> The three modules now have a caller. **The reconciliation is viewBox
+> selection, not arithmetic:** a vertical act renders `0 0 1 1`, so act-local
+> anchors *are* viewBox coordinates verbatim, and the walk renders `0 0 N 1`
+> over an element `N × 100vw` wide, so `stationPositions`' `x = i` becomes the
+> centre of slot `i` with a half-slot offset — which is the whole of the
+> transform R8 placed with the caller. The rail's slices then match `drawAt`'s
+> windows by construction: slice `i` is `[i, i+1]`, station `i` at its midpoint.
 >
-> - **The frames are not just a different origin — they are different units.** `anchors.ts` x/y are
->   **act-local 0..1**. `stationPositions` x is **track-widths, one per viewport** (so `x = 0..N−1`,
->   not 0..1) and its y is **viewport heights**. `pathFor` is deliberately frame-agnostic: R8 ruled it
->   cannot reconcile them, because the transform needs an act identity its signature never carries.
-> - **Nothing maps those frames into the space `LineStage` renders in.** Its `viewBox` defaults to
->   `1200×800` — a unit space neither module speaks. Measured: feeding `stationPositions(5)` straight
->   through `pathFor` into the default viewBox gives a rail occupying **0.33%** of the SVG width, and
->   `origin`'s arc renders **0.26px × 1.13px** at 1440×900.
-> - **Three of the five acts are currently a zero-length path.** `ACT_ANCHORS` gives `pillars`, `way`
->   and `proof` `{x:0.5,y:1} → {x:0.5,y:1}` — no travel. Whether that is intended is a **design
->   question for the owner**, not a bug: it was pinned by test, and pinning makes a change visible
->   without making the values correct.
-> - **`pathFor`'s `'fork'` shape has no callers anywhere**, and no module generates Act 0's five seed
->   anchors. `ACT_ANCHORS` contains no seed node.
-> - **`assertContinuity` cannot be wired as it stands.** Driven with real geometry it throws a *false*
->   alarm; called with no argument it re-validates a frozen literal against itself. Its premise also
->   needs examining: it enforces `exit == enter` as values, but act-local those are each act's own
->   edge, one act-band apart on screen.
->
-> None of this is a Stage 1 defect — the exit criteria always said "`LineStage` exists but is unused;
-> Stage 2 binds it", and R8 placed frame reconciliation with the caller. It is recorded here because
-> the destructive reading of "use them, do not re-invent" is to assemble the three modules and expect
-> a strand.
+> `assertContinuity` was **re-specified**, not wired as shipped: it demanded
+> `exit == enter` as raw values, which no correct vertical chain can satisfy,
+> because each anchor is expressed in its own act's box. It now checks the
+> shape of a seam.
 
 **Open — decide while planning:**
 
@@ -91,7 +76,8 @@ the join warning below before planning the strand.**
 - **`CursorProvider`.** §13 item 1 records the ruling to retire it. Whether that happens here or in Stage 4 is open.
 
 **Prerequisite: met.** Stage 1 is complete — all seven tasks landed, and the six interfaces above
-exist and are tested. The join warning above is the one thing Stage 1 does *not* hand you.
+exist and are tested. The join was the one thing Stage 1 did *not* hand you; the note above records
+where it now lives.
 
 ---
 

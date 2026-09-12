@@ -69,3 +69,54 @@ point belongs to and how large the act's strip is on screen.
   frame, and the strand renders at the wrong scale — silently, because the SVG is `aria-hidden` and
   nothing in the suite can see it. The mitigation is that the frames are now named in three module
   docstrings, in `stages/README.md`'s join warning, and here.
+
+## Stage 2 update — 2026-09-13
+
+**The decision above stands unchanged. Its stated consequence — "how they compose on screen is a
+layout decision owned by the Stage 2 caller" — now has an answer**, recorded here so a reader who
+stops at this file learns it rather than re-deriving it.
+
+The caller is `src/components/educraft/line/frames.ts` (Stage 2 Task 2), and **the reconciliation is
+viewBox selection, not arithmetic** — which is what makes R8's "no per-point arithmetic maps one onto
+the other" a non-obstacle rather than a dead end. A vertical act renders `ACT_VIEW_BOX` (`0 0 1 1`)
+over a box sized to its own band, so the act-local anchors *are* viewBox coordinates verbatim and
+`anchors.ts` needs no transform. The walk renders `0 0 N 1` over an element `N × 100vw` wide and
+`100vh` tall, so one unit is one viewport and `stationPositions`' `x = i` (track widths) becomes the
+centre of slot `i` with a single **half-slot offset** — the whole of the transform, and it lives in
+the caller, as R8 requires. `station.ts` is unmodified. The measured symptom is gone: the rail spans
+the full width of its frame instead of 0.33% of it.
+
+The same module gives the other consequences somewhere to land. `pathFor`'s `'fork'` shape — which had
+**no callers anywhere** — is called by `forkPaths`, fed by `seedAnchors`, which generates the seed
+nodes `ACT_ANCHORS` does not carry; `assertForkSeam` enforces the `dy > 0` reading the shape's
+docstring describes rather than assuming it. At the other end `assertRibbonSeam` checks the ribbon's
+exit against `ACT_ANCHORS.pillars.exit` **as a fraction of its own frame**, which is the comparison a
+seam makes and the one a units comparison would get wrong while looking like a pass. Neither is
+called at runtime yet — `page.tsx` becomes the single call site for all three seam assertions in
+Stage 2's last task, which is the call site Stage 1 left open.
+
+Each of the consequences below the decision now has an outcome, one of them from a later task rather
+than from this module:
+
+- **"A naive seam check will throw a false alarm"** — correct, and the repair was to *re-specify*
+  `assertContinuity`, not to weaken it. It now checks the shape of a seam (each act's exit on its own
+  bottom edge, the next's enter on its own top edge, one shared horizontal fraction) instead of
+  `exit == enter` as raw values, which no correct vertical chain satisfies. Recorded at stage close in
+  ADR 0008.
+- **"The anchor values, arc coefficients and fork shape remain invented"** — still true, and it is
+  the one consequence Stage 2 does not retire. Pinning these by test makes a change visible, not
+  correct; they still need the owner's eye. What has changed is narrow and worth stating exactly: the
+  fork's `dy` is non-zero for the first time (`FORK` at y = 0.85, the seeds at y = 1), so the vertical
+  leave the shape's docstring describes is now its real geometry rather than the horizontal bulge this
+  file records, and `assertForkSeam` turns a return to `dy = 0` into a test failure. The arc
+  coefficients and the anchor values themselves are untouched by that.
+- **"The walk's draw disagrees with the spec's tween by (N−1)/N"** — resolved in Stage 2 by changing
+  the *tween*, which is the side this file said needed revisiting: the walk tweens N viewports rather
+  than `N − 1` (Tasks 6–7), so the tween, `drawAt`'s slices and `walkFrame`'s N one-unit segments all
+  put station `i` at `i/n`. The frame's shape is what forces it — slice `i` is `[i, i+1]` with
+  station `i` at its midpoint, asserted directly in `frames.test.ts` — and the resolved tween is the
+  one Stage 1's ruling had already offered.
+- `stages/README.md`'s **⚠ join warning has been replaced by the outcome**, since it asserted that
+  the join did not exist. The mitigation sentence above therefore now points at a note rather than a
+  warning; the frames are still named there.
+
