@@ -11,8 +11,10 @@ import { ACT_ANCHORS, ACT_ORDER, type ActName } from './anchors';
  * relative check, and it can never see an absolute value move. So the actual
  * numbers are pinned literally below, and this file is the only place they are.
  *
- * The coordinates are **invented for the design** — they appear in no spec,
- * plan or design doc. Changing one is a design change, and it should cost an
+ * The coordinates are **invented for the design**: the plan's Task 5 code block
+ * (`stage-1.md`) does carry `enter: { x: 0.72, y: 0 }`, so they are not absent
+ * from every document — but no design document *fixes* these values. They still
+ * need the owner's eye, and changing one is a design change that should cost an
  * edit here.
  */
 

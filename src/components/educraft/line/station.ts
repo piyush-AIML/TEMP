@@ -9,8 +9,11 @@ import type { Anchor } from './anchors';
  *
  * **Frames.** `stationPositions` x is **track-local**: station `i` sits `i`
  * track-widths from the first, one station per viewport. `anchors.ts` x/y are a
- * different frame — **act-local**. Reconciling the two is `pathFor`'s job
- * (Task 6); nothing here or there tries to do it twice.
+ * different frame — **act-local**. `pathFor` (Task 6) does not reconcile them:
+ * it is frame-agnostic, taking two points in a single frame
+ * (`trackX = actIndex + actLocalX` needs an act identity its signature never
+ * carries). The caller in Stage 2, which knows which act a point belongs to,
+ * supplies both endpoints in one frame.
  *
  * `drawAt` *provides* the scale-by-pillar-count replacement for the shipped
  * Methodology section's hardcoded `/ 5.5` divisor, which cannot scale. That old
