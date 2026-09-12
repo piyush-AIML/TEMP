@@ -3,6 +3,15 @@ paths:
   - "src/app/(site)/**"
   - "src/components/educraft/**"
   - "src/app/layout.tsx"
+  # The marketing site's own surfaces, which sit outside the (site) group:
+  - "src/app/api/enquiry/**"
+  - "src/app/opengraph-image.tsx"
+  - "src/app/sitemap.ts"
+  - "src/app/robots.ts"
+  # Shared client infrastructure the marketing pages depend on:
+  - "src/hooks/**"
+  - "src/context/**"
+  - "src/components/theme/**"
 ---
 
 # Marketing site conventions

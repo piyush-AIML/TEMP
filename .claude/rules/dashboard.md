@@ -4,6 +4,10 @@ paths:
   - "src/components/dashboard/**"
   - "src/lib/auth.ts"
   - "src/proxy.ts"
+  # The dashboard's fetch routes — covered by the proxy matcher rules below.
+  - "src/app/api/dashboard/**"
+  # Clerk's sign-in page. It belongs to the auth boundary this rule owns.
+  - "src/app/(auth)/**"
 ---
 
 # Dashboard conventions

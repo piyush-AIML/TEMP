@@ -2,6 +2,7 @@
 paths:
   - "src/lib/**"
   - "src/data/**"
+  - "src/types/**"
 ---
 
 # `src/lib` and `src/data` conventions
