@@ -527,4 +527,12 @@ html {
   .ambient-pulse {
     animation: none;
   }
+  /* The strand's initial state is inline (stroke-dashoffset: 1), so this needs
+     !important to win without JS. Values match the matchMedia branch exactly, and
+     this query never matches when the animated branch runs, so it cannot fight GSAP.
+     `REDUCED_MOTION_QUERY` in src/lib/gsap.ts must carry this same query text —
+     asserted in gsap.test.ts. */
+  [data-line-path] {
+    stroke-dashoffset: 0 !important;
+  }
 }
