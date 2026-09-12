@@ -114,9 +114,11 @@ describe('LineStage markup', () => {
 
 describe('LineStage render-only mode', () => {
   it('produces byte-identical markup with draw disabled', () => {
-    // Render-only must change *behaviour*, never markup. Act 1's own GSAP reads
-    // `[data-line-path]` and the inline `strokeDashoffset: 1`; if either
-    // disappeared, the act's tween would start from the wrong place.
+    // Render-only must change *behaviour*, never markup. Act 1's own GSAP
+    // targets `[data-line-path]` and depends on the inline
+    // `strokeDashoffset: 1` as the state its first update replaces; if either
+    // disappeared, its tween would have nothing to target, or would start from
+    // the drawn state.
     const drawn = render({ paths: ['M 0 0 L 1 1'] });
     const undrawn = render({ paths: ['M 0 0 L 1 1'], draw: false });
     expect(undrawn).toBe(drawn);
@@ -128,7 +130,12 @@ describe('LineStage render-only mode', () => {
     expect(markup).toContain('stroke-dashoffset:1');
   });
 
-  it('defaults to drawing, so Stage 1 call sites are unaffected', () => {
+  it('emits identical markup whether draw is omitted or passed explicitly', () => {
+    // The `true` default's *behaviour* is not reachable from here: markup does
+    // not depend on `draw` at all, so no assertion in this file can tell a
+    // default of `true` from one of `false` (measured on Task 4's mutation
+    // pass: inverting the default leaves the suite green). That half is the
+    // owner's QA, numbered by `?calibrate=1`.
     expect(render({ paths: ['M 0 0 L 1 1'] })).toBe(
       render({ paths: ['M 0 0 L 1 1'], draw: true })
     );

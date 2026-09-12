@@ -1381,7 +1381,7 @@ Every string the acts render, with its source. **Almost nothing is new**: the re
 
 ## Task 4: `LineStage`'s render-only mode
 
-The Stage 1 rulings name this gap twice: *"`LineStage` cannot serve Act 1 as shipped. It has no render-only mode, and it documents that `pin` and `scrub: true` 'do not compose' — which is exactly Act 1's required mechanic."* Act 1 owns a track tween and a pin whose ranges are the same trigger, and it draws each rail segment against `drawAt` rather than all of them against one range — so it needs the renderer without the renderer's animation. This task adds that, and does **not** make `pin` and `scrub` compose: Act 1 owns its own ScrollTriggers, which is the composition.
+The gap is recorded in two places, neither of them as a quotation: `state.md` §4 names it as one of this task's two, and Stage 1's `rulings.md` records the `pin ∧ scrub` non-composition among the Stage 2 interface items it lists without implementing (R36). *(Corrected 2026-09-13, on Task 4's claims pass: this paragraph previously carried a verbatim quotation attributed to the Stage 1 rulings that the rulings do not contain — the substance was theirs, the quoted sentence was this plan's own.)* Act 1 owns a track tween and a pin whose ranges are the same trigger, and it draws each rail segment against `drawAt` rather than all of them against one range — so it needs the renderer without the renderer's animation. This task adds that, and does **not** make `pin` and `scrub` compose: Act 1 owns its own ScrollTriggers, which is the composition.
 
 It also lands one second additive prop, `viewBox`, for a reason the Task 2 correctness review measured: `ACT_VIEW_BOX` and both of `frames.ts`'s frame strings had **no reader anywhere**, while five call sites restated the join's policy as raw numbers. The frame override makes the policy live in one place and gives all three constants a consumer.
 
@@ -1400,9 +1400,11 @@ Append to `LineStage.test.ts` — the existing `renderToStaticMarkup` helpers ar
 ```ts
 describe('LineStage render-only mode', () => {
   it('produces byte-identical markup with draw disabled', () => {
-    // Render-only must change *behaviour*, never markup. Act 1's own GSAP reads
-    // `[data-line-path]` and the inline `strokeDashoffset: 1`; if either
-    // disappeared, the act's tween would start from the wrong place.
+    // Render-only must change *behaviour*, never markup. Act 1's own GSAP
+    // targets `[data-line-path]` and depends on the inline
+    // `strokeDashoffset: 1` as the state its first update replaces; if either
+    // disappeared, its tween would have nothing to target, or would start from
+    // the drawn state.
     const drawn = render({ paths: ['M 0 0 L 1 1'] });
     const undrawn = render({ paths: ['M 0 0 L 1 1'], draw: false });
     expect(undrawn).toBe(drawn);
@@ -1414,7 +1416,12 @@ describe('LineStage render-only mode', () => {
     expect(markup).toContain('stroke-dashoffset:1');
   });
 
-  it('defaults to drawing, so Stage 1 call sites are unaffected', () => {
+  it('emits identical markup whether draw is omitted or passed explicitly', () => {
+    // The `true` default's *behaviour* is not reachable from here: markup does
+    // not depend on `draw` at all, so no assertion in this file can tell a
+    // default of `true` from one of `false` (measured on Task 4's mutation
+    // pass: inverting the default leaves the suite green). That half is the
+    // owner's QA, numbered by `?calibrate=1`.
     expect(render({ paths: ['M 0 0 L 1 1'] })).toBe(
       render({ paths: ['M 0 0 L 1 1'], draw: true })
     );
@@ -1546,7 +1553,7 @@ git commit -m "feat(line): a render-only mode for LineStage
 Act 1 draws one rail segment per station against drawAt's per-slice
 fractions, and owns a single ScrollTrigger for its pin and its track
 tween — neither of which this component's shared-range scrub can express,
-and both of which the Stage 1 rulings named as the gap. draw={false}
+and both of which `state.md` §4 names as this task's gaps. draw={false}
 creates no tween and changes no markup; the reduced-motion branch still
 renders every strand fully drawn, because that is the final state rather
 than an animation."
