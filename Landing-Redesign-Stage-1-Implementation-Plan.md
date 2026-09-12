@@ -117,7 +117,7 @@ Create `src/lib/contrast.ts` with only the constants and function signatures nee
 ```ts
 /** Canvases a token can sit on. Values copied from globals.css. */
 export const LIGHT_CANVASES = ['#ffffff', '#f6f9fc', '#eaf3fb', '#eaf6ff'] as const;
-export const DARK_CANVASES = ['#0b0f1e', '#10152a', '#141b38'] as const;
+export const DARK_CANVASES = ['#0b0f1e', '#10152a', '#141b38', '#141d57'] as const;
 
 export const AA_TEXT = 4.5;
 export const AA_NON_TEXT = 3;
@@ -238,7 +238,7 @@ Replace the stub bodies in `src/lib/contrast.ts`:
 ```ts
 /** Canvases a token can sit on. Values copied from globals.css. */
 export const LIGHT_CANVASES = ['#ffffff', '#f6f9fc', '#eaf3fb', '#eaf6ff'] as const;
-export const DARK_CANVASES = ['#0b0f1e', '#10152a', '#141b38'] as const;
+export const DARK_CANVASES = ['#0b0f1e', '#10152a', '#141b38', '#141d57'] as const;
 
 export const AA_TEXT = 4.5;
 export const AA_NON_TEXT = 3;
@@ -315,6 +315,8 @@ Turns Task 1's test green. **Purely additive at the class level** — no compone
 
 **Files:**
 - Modify: `src/design/colors.ts`, `src/app/globals.css`
+- Modify (required by the pre-flight scan — the new `programmeColors` shape removes `main`/`strong`/`darkMain`, which two live files read):
+  `src/app/(site)/programmes/[slug]/opengraph-image.tsx`, `src/components/educraft/three/scenes/EcosystemScene.tsx`
 - Test: `src/design/colors.test.ts` (from Task 1 — no edits)
 
 **Interfaces:**
@@ -637,15 +639,41 @@ In the same file, the `::selection` rule uses teal as a **fill**, so it must use
   }
 ```
 
-- [ ] **Step 7: Run the full loop**
+- [ ] **Step 7: Update the two live `programmeColors` consumers**
+
+The old shape (`main` / `strong` / `soft` / `darkMain`) no longer exists, so these two files will fail `tsc` until updated. Both use the accent in a **graphic** role on a **dark** surface.
+
+In `src/app/(site)/programmes/[slug]/opengraph-image.tsx`, replace the single `accent` with two role-specific values. Its background is a dark gradient (`#0B0F1E` → `#141D57`), so the **dark** tiers are correct:
+
+```ts
+const accent = programme ? programmeColors[programme.pillarId] : undefined;
+/** Text role on the dark OG gradient — must clear AA there. */
+const accentText = accent?.textDark ?? brand.tealTextDark;
+/** Non-text role for the status dot. */
+const accentDot = accent?.graphicDark ?? brand.tealGraphicDark;
+```
+
+Then use `accentText` where the current code uses `color: accent` (line 42) and `accentDot` where it uses `backgroundColor: accent` (line 46). Add `brand` to the existing `@/design/colors` import.
+
+In `src/components/educraft/three/scenes/EcosystemScene.tsx`, the node colours are a theme-aware graphic role:
+
+```ts
+      return dark ? c.graphicDark : c.graphicLight;
+```
+
+(replacing `return dark ? c.darkMain : c.strong;` at line 47.)
+
+- [ ] **Step 8: Run the full loop**
 
 Run: `npx tsc --noEmit && npm run lint && npm run test && npm run build`
 Expected: all four pass. `npm run build` must emit the same 29 routes as before — this task changes no routing.
 
-- [ ] **Step 8: Commit**
+If `tsc` reports any *other* consumer of `programmeColors`, stop and add it to the ruling list rather than inventing a mapping — the scan found exactly two.
+
+- [ ] **Step 9: Commit**
 
 ```bash
-git add src/design/colors.ts src/app/globals.css
+git add src/design/colors.ts src/app/globals.css "src/app/(site)/programmes/[slug]/opengraph-image.tsx" src/components/educraft/three/scenes/EcosystemScene.tsx
 git commit -m "feat(design): calibrated palette v2 — every accent now clears AA
 
 Turns the Task 1 contrast test green. Ten measured failures are fixed:
@@ -658,7 +686,16 @@ distinct hues now, equi-luminant (luminance spread 0.030).
 
 Purely additive at the class level: text-ec-learn, bg-ec-learn,
 border-ec-learn and bg-ec-learn-soft keep working with corrected values,
-so no component is touched. New -graphic tokens cover strokes and nodes.
+so no component's classNames change. New -graphic tokens cover strokes and
+nodes.
+
+The one breaking change is the programmeColors *shape* (main/strong/darkMain
+-> six role themes). Two live readers — the programme OG image, which used a
+single accent for both text and a dot on a dark gradient, and the retired-
+pending WebGL scene — are updated here rather than given a deprecated
+back-compat field. The OG image now uses the role-correct tier for each,
+which it previously did not.
+
 Slots 6-7 ship measured in colors.ts but emit no CSS until a pillar
 claims one."
 ```
