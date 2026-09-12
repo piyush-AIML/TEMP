@@ -1,50 +1,144 @@
 /**
- * Educraft V2 — color system source of truth (plan §7).
- * Hex values are mirrored into CSS custom properties in globals.css,
- * where light/dark art direction is applied (plan §44).
+ * Educraft — colour system source of truth (Landing Redesign Stage 1).
+ * Hex values are mirrored into CSS custom properties in globals.css, where
+ * light/dark art direction is applied.
+ *
+ * Every value here is **measured**: src/design/colors.test.ts asserts each
+ * text tier clears WCAG AA (4.5:1) on every canvas it can sit on and each
+ * graphic tier clears 3:1. Do not edit a value without re-running that test.
+ *
+ * Contrast rationale — Landing-Redesign-Plan.md §6.
  */
 
+/** A pillar identity in three roles × two themes. */
+export type PillarAccent = {
+  /** Text-safe accent (≥4.5:1 on every canvas). Drives `text-ec-<id>`. */
+  textLight: string;
+  textDark: string;
+  /** Non-text accent for strokes, nodes, the strand (≥3:1). Drives `ec-<id>-graphic`. */
+  graphicLight: string;
+  graphicDark: string;
+  /** Wash behind a station. Drives `bg-ec-<id>-soft`. */
+  softLight: string;
+  softDark: string;
+};
+
+/**
+ * Programme accent identities. `learn`/`include`/`thrive`/`achieve`/`excel` are
+ * five *distinct* hues — note that `learn` and `excel` deliberately no longer
+ * alias the brand teal and brand indigo, which was the old collision.
+ *
+ * Equi-luminant by design: the five text tiers' relative luminance spans 0.030,
+ * so no pillar shouts louder than another. Hue spread 39/184/222/260/336deg.
+ */
+export const programmeColors = {
+  learn: {
+    textLight: '#0C7078',
+    textDark: '#4FD4DC',
+    graphicLight: '#12A0AC',
+    graphicDark: '#2FBAC4',
+    softLight: '#E0F5F7',
+    softDark: '#0C2B30',
+  },
+  include: {
+    textLight: '#2B5FD9',
+    textDark: '#8FB4F5',
+    graphicLight: '#4C82E8',
+    graphicDark: '#6E9BEE',
+    softLight: '#E5EDFD',
+    softDark: '#131F3D',
+  },
+  thrive: {
+    textLight: '#6B3FC4',
+    textDark: '#B49BEE',
+    graphicLight: '#8B62D9',
+    graphicDark: '#9E7FE4',
+    softLight: '#EDE6FB',
+    softDark: '#1E1836',
+  },
+  achieve: {
+    textLight: '#8A5A00',
+    textDark: '#F5C95E',
+    graphicLight: '#B8860B',
+    graphicDark: '#E8B94A',
+    softLight: '#FAEED6',
+    softDark: '#2A2110',
+  },
+  excel: {
+    textLight: '#C2185B',
+    textDark: '#F285A8',
+    graphicLight: '#E0437C',
+    graphicDark: '#EC6A99',
+    softLight: '#FCE4EC',
+    softDark: '#331423',
+  },
+} as const satisfies Record<string, PillarAccent>;
+
+export type PillarColorKey = keyof typeof programmeColors;
+
+/**
+ * Reserved accents for pillars 6 and 7 (Landing-Redesign-Plan.md §7.3).
+ * The largest free hue gap in the current wheel is 39deg -> 184deg (145deg),
+ * so slot 6 is green (~112deg) and slot 7 is a deeper lime (~70deg).
+ *
+ * These ship **measured but unemitted** — no CSS custom properties exist for
+ * them until a real pillar claims one. The point is that a future pillar never
+ * means inventing a hue under deadline. To claim one: move the object into
+ * `programmeColors` under its new id, then extend globals.css.
+ */
+export const reservedPillarAccents: readonly PillarAccent[] = [
+  {
+    textLight: '#1B6B3A',
+    textDark: '#6FCF8F',
+    graphicLight: '#2E8B57',
+    graphicDark: '#5CBE80',
+    softLight: '#E3F3E8',
+    softDark: '#0F2A1B',
+  },
+  {
+    textLight: '#6B5A00',
+    textDark: '#D6CD6B',
+    graphicLight: '#8A7600',
+    graphicDark: '#C4BA55',
+    softLight: '#F4F0D9',
+    softDark: '#26220C',
+  },
+] as const;
+
+/**
+ * Brand chrome. `teal` splits into a text tier and a graphic tier because one
+ * vivid teal cannot serve both: `#00b3b8` reads correctly as a stroke but
+ * measured only 2.58:1 as text, and it was used for eyebrows site-wide.
+ */
 export const brand = {
-  indigo: {
-    950: '#0B0F1E',
-    900: '#141D57',
-    700: '#1E2A78',
-    500: '#3B4896',
-    300: '#7C86C9',
-    100: '#E8EBF8',
-  },
-  teal: {
-    700: '#00898D',
-    600: '#00B3B8',
-    500: '#14C3C8',
-    300: '#3FCBCF',
-    100: '#DFF5F6',
-  },
-  gold: {
-    700: '#B07E14',
-    600: '#C58F1B',
-    500: '#F4B942',
-    400: '#F8CD73',
-    100: '#FBF0D9',
-  },
-  sky: {
-    100: '#EAF6FF',
-    200: '#D8ECFB',
-  },
+  indigoLight: '#1E2A78',
+  /** Dark-mode partner. The old `#1E2A78` measured 1.51:1 on dark. */
+  indigoDark: '#8E9AE0',
+  indigoDeep: '#141D57',
+  tealTextLight: '#0C7078',
+  tealTextDark: '#4FD4DC',
+  tealGraphicLight: '#12A0AC',
+  tealGraphicDark: '#2FBAC4',
+  goldTextLight: '#8A5A00',
+  goldTextDark: '#F5C95E',
+  goldGraphicLight: '#B8860B',
+  goldGraphicDark: '#E8B94A',
+  slateLight: '#4A5468',
+  slateDark: '#9AA3C0',
+  inkLight: '#12172E',
+  inkDark: '#E8ECFB',
 } as const;
 
-/** Neutral canvas layers (plan §7 "Neutrals"). */
+/** Neutral canvas layers. */
 export const canvas = {
   DEFAULT: '#FFFFFF',
   soft: '#F6F9FC',
   deep: '#EAF3FB',
-} as const;
-
-export const ink = {
-  strong: '#0E1330',
-  DEFAULT: '#12172E',
-  muted: '#5B6478',
-  faint: '#8E97B4',
+  sky: '#EAF6FF',
+  DEFAULT_DARK: '#0B0F1E',
+  softDark: '#10152A',
+  deepDark: '#141B38',
+  skyDark: '#151B36',
 } as const;
 
 export const borderColor = {
@@ -57,20 +151,10 @@ export const semantic = {
   warning: '#B45309',
   error: '#DC2626',
   info: '#2563EB',
-  focus: '#1E2A78',
+  successDark: '#4ADE80',
+  warningDark: '#FBBF24',
+  errorDark: '#F87171',
+  infoDark: '#60A5FA',
+  focusLight: '#1E2A78',
+  focusDark: '#7C86C9',
 } as const;
-
-/**
- * Programme accent identities (plan §7 "Programme colors").
- * Each pillar owns: main accent, accessible strong variant, and a soft wash.
- * `main` is used for lines/nodes/decoration; `strong` for text on light canvas.
- */
-export const programmeColors = {
-  learn: { main: '#00B3B8', strong: '#00898D', soft: '#DFF5F6', darkMain: '#3FCBCF' },
-  include: { main: '#4A86D9', strong: '#3B7DD8', soft: '#E7EFFB', darkMain: '#7FA8E8' },
-  thrive: { main: '#8B7BD8', strong: '#6F5CB8', soft: '#EFEBFA', darkMain: '#A795E8' },
-  achieve: { main: '#F4B942', strong: '#C58F1B', soft: '#FBF0D9', darkMain: '#F8CD73' },
-  excel: { main: '#3B4896', strong: '#1E2A78', soft: '#E8EBF8', darkMain: '#7C86C9' },
-} as const;
-
-export type PillarColorKey = keyof typeof programmeColors;

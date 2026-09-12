@@ -57,17 +57,30 @@
   --color-ec-border: var(--ec-border);
   --color-ec-focus: var(--ec-focus);
 
-  /* Programme accents (plan §7) */
+  /* Programme accents (Landing-Redesign-Plan.md §6) — three roles per pillar.
+     `ec-<id>` is the TEXT-safe tier (AA on every canvas); `ec-<id>-graphic`
+     is for strokes and nodes; `ec-<id>-soft` is the station wash. */
   --color-ec-learn: var(--ec-p-learn);
+  --color-ec-learn-graphic: var(--ec-p-learn-graphic);
   --color-ec-learn-soft: var(--ec-p-learn-soft);
   --color-ec-include: var(--ec-p-include);
+  --color-ec-include-graphic: var(--ec-p-include-graphic);
   --color-ec-include-soft: var(--ec-p-include-soft);
   --color-ec-thrive: var(--ec-p-thrive);
+  --color-ec-thrive-graphic: var(--ec-p-thrive-graphic);
   --color-ec-thrive-soft: var(--ec-p-thrive-soft);
   --color-ec-achieve: var(--ec-p-achieve);
+  --color-ec-achieve-graphic: var(--ec-p-achieve-graphic);
   --color-ec-achieve-soft: var(--ec-p-achieve-soft);
   --color-ec-excel: var(--ec-p-excel);
+  --color-ec-excel-graphic: var(--ec-p-excel-graphic);
   --color-ec-excel-soft: var(--ec-p-excel-soft);
+
+  /* Brand chrome — `--color-ec-teal` already maps to `--ec-teal`, which is now
+     the TEXT-safe tier, so `text-ec-teal` is fixed with no rename. This adds
+     only the graphic-role tokens. */
+  --color-ec-teal-graphic: var(--ec-teal-graphic);
+  --color-ec-gold-graphic: var(--ec-gold-graphic);
 
   /* Semantic */
   --color-ec-success: var(--ec-success);
@@ -91,32 +104,44 @@
   --ec-indigo: #1e2a78;
   --ec-indigo-dark: #141d57;
   --ec-indigo-light: #3b4896;
-  --ec-teal: #00b3b8;
-  --ec-teal-dark: #00898d;
-  --ec-teal-light: #3fcbcf;
-  --ec-gold: #f4b942;
-  --ec-gold-dark: #c58f1b;
-  --ec-gold-light: #f8cd73;
+  /* Text-safe teal. Replaces #00b3b8, which measured 2.58:1 as text.
+     The ramp stays meaningful: --ec-teal-dark is a step darker (strictly
+     higher contrast on white, same hue family), --ec-teal-light is the
+     graphic tier used as `dark:text-ec-teal-light` on dark surfaces. */
+  --ec-teal: #0c7078;
+  --ec-teal-dark: #095056;
+  --ec-teal-light: #12a0ac;
+  /* Non-text teal, for strokes and the strand. */
+  --ec-teal-graphic: #12a0ac;
+  --ec-gold: #8a5a00;
+  --ec-gold-dark: #6b4600;
+  --ec-gold-light: #b8860b;
+  --ec-gold-graphic: #b8860b;
 
   --ec-canvas: #ffffff;
   --ec-canvas-soft: #f6f9fc;
   --ec-canvas-deep: #eaf3fb;
   --ec-sky: #eaf6ff;
   --ec-ink: #12172e;
-  --ec-slate: #5b6478;
+  --ec-slate: #4a5468;
   --ec-border: #e4e9f2;
   --ec-focus: #1e2a78;
 
-  --ec-p-learn: #00898d;
-  --ec-p-learn-soft: #dff5f6;
-  --ec-p-include: #3b7dd8;
-  --ec-p-include-soft: #e7effb;
-  --ec-p-thrive: #6f5cb8;
-  --ec-p-thrive-soft: #efebfa;
-  --ec-p-achieve: #c58f1b;
-  --ec-p-achieve-soft: #fbf0d9;
-  --ec-p-excel: #1e2a78;
-  --ec-p-excel-soft: #e8ebf8;
+  --ec-p-learn: #0c7078;
+  --ec-p-learn-graphic: #12a0ac;
+  --ec-p-learn-soft: #e0f5f7;
+  --ec-p-include: #2b5fd9;
+  --ec-p-include-graphic: #4c82e8;
+  --ec-p-include-soft: #e5edfd;
+  --ec-p-thrive: #6b3fc4;
+  --ec-p-thrive-graphic: #8b62d9;
+  --ec-p-thrive-soft: #ede6fb;
+  --ec-p-achieve: #8a5a00;
+  --ec-p-achieve-graphic: #b8860b;
+  --ec-p-achieve-soft: #faeed6;
+  --ec-p-excel: #c2185b;
+  --ec-p-excel-graphic: #e0437c;
+  --ec-p-excel-soft: #fce4ec;
 
   --ec-success: #16a34a;
   --ec-warning: #b45309;
@@ -152,12 +177,14 @@
   --ec-indigo: #3b4896;
   --ec-indigo-dark: #141d57;
   --ec-indigo-light: #7c86c9;
-  --ec-teal: #00b3b8;
-  --ec-teal-dark: #00898d;
-  --ec-teal-light: #3fcbcf;
-  --ec-gold: #f4b942;
-  --ec-gold-dark: #f8cd73;
+  --ec-teal: #4fd4dc;
+  --ec-teal-dark: #2fbac4;
+  --ec-teal-light: #4fd4dc;
+  --ec-teal-graphic: #2fbac4;
+  --ec-gold: #f5c95e;
+  --ec-gold-dark: #f5c95e;
   --ec-gold-light: #f8cd73;
+  --ec-gold-graphic: #e8b94a;
 
   --ec-canvas: #0b0f1e;
   --ec-canvas-soft: #10152a;
@@ -168,16 +195,21 @@
   --ec-border: #232b4d;
   --ec-focus: #7c86c9;
 
-  --ec-p-learn: #3fcbcf;
-  --ec-p-learn-soft: #122a34;
-  --ec-p-include: #7fa8e8;
-  --ec-p-include-soft: #16233d;
-  --ec-p-thrive: #a795e8;
-  --ec-p-thrive-soft: #1d1934;
-  --ec-p-achieve: #f8cd73;
-  --ec-p-achieve-soft: #2b2312;
-  --ec-p-excel: #7c86c9;
-  --ec-p-excel-soft: #161c3a;
+  --ec-p-learn: #4fd4dc;
+  --ec-p-learn-graphic: #2fbac4;
+  --ec-p-learn-soft: #0c2b30;
+  --ec-p-include: #8fb4f5;
+  --ec-p-include-graphic: #6e9bee;
+  --ec-p-include-soft: #131f3d;
+  --ec-p-thrive: #b49bee;
+  --ec-p-thrive-graphic: #9e7fe4;
+  --ec-p-thrive-soft: #1e1836;
+  --ec-p-achieve: #f5c95e;
+  --ec-p-achieve-graphic: #e8b94a;
+  --ec-p-achieve-soft: #2a2110;
+  --ec-p-excel: #f285a8;
+  --ec-p-excel-graphic: #ec6a99;
+  --ec-p-excel-soft: #331423;
 
   --ec-success: #4ade80;
   --ec-warning: #fbbf24;
@@ -217,7 +249,7 @@
     text-rendering: optimizeLegibility;
   }
   ::selection {
-    background: color-mix(in srgb, var(--ec-teal) 25%, transparent);
+    background: color-mix(in srgb, var(--ec-teal-graphic) 25%, transparent);
   }
 }
 

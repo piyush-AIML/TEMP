@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { getProgrammeBySlug } from '@/data/programmes';
 import { pillars } from '@/data/pillars';
-import { programmeColors } from '@/design/colors';
+import { brand, programmeColors } from '@/design/colors';
 
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -13,7 +13,11 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const { slug } = await params;
   const programme = getProgrammeBySlug(slug);
   const pillar = programme ? pillars.find((pl) => pl.id === programme.pillarId) : undefined;
-  const accent = programme ? programmeColors[programme.pillarId].main : '#00B3B8';
+  const accent = programme ? programmeColors[programme.pillarId] : undefined;
+  /** Text role on the dark OG gradient — must clear AA there. */
+  const accentText = accent?.textDark ?? brand.tealTextDark;
+  /** Non-text role for the status dot. */
+  const accentDot = accent?.graphicDark ?? brand.tealGraphicDark;
 
   return new ImageResponse(
     (
@@ -39,11 +43,11 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             fontWeight: 600,
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
-            color: accent,
+            color: accentText,
             marginBottom: '24px',
           }}
         >
-          <div style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: accent }} />
+          <div style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: accentDot }} />
           {pillar?.name} — {pillar?.vertical}
         </div>
         <div

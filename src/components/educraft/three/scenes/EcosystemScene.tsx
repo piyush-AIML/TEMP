@@ -44,7 +44,7 @@ export default function EcosystemScene({ progress = 0 }: EcosystemSceneProps) {
     const dark = resolvedTheme === 'dark';
     return programmes.map((p) => {
       const c = programmeColors[p.pillarId];
-      return dark ? c.darkMain : c.strong;
+      return dark ? c.graphicDark : c.graphicLight;
     });
   }, [resolvedTheme]);
 
