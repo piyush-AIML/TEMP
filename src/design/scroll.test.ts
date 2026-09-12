@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BREAKPOINTS,
+  WALK_BASE_VH,
   WALK_MAX_VH,
   WALK_MIN_VH,
   branchFor,
@@ -17,17 +18,23 @@ import {
 
 describe('perStationVh', () => {
   /**
-   * The band itself, pinned to literals. Without this the floor and ceiling
-   * cases below compare `perStationVh` against the very constant under test, so
-   * each moves with the constant and pins nothing. Measured against the
-   * pre-pin test, the windows that left every assertion green were:
-   *   WALK_MIN_VH in [400/7, 66.75)   — 400/7 inclusive, 66.75 excluded
-   *   WALK_MAX_VH in [80, 400/3]
-   * A wrong constant anywhere in either window passed the whole suite, which is
-   * why the literals below are load-bearing and must not be relaxed back to
+   * The calibration constants themselves, pinned to literals. Without this the
+   * floor and ceiling cases below compare `perStationVh` against the very
+   * constant under test, so each moves with the constant and pins nothing.
+   *
+   * Measured against the pre-pin test, every one of the three had a non-zero
+   * window that left all eleven assertions green:
+   *   WALK_BASE_VH in [400, 400.5)
+   *   WALK_MIN_VH  in [400/7, 66.75)
+   *   WALK_MAX_VH  in [80, 400/3]
+   * The base's top edge is 400 + 0.5 because `toBeCloseTo(400, 0)` tolerates
+   * ±0.5 — the same slack that puts the floor's top edge at 66.75 rather than
+   * 400/6. A wrong value anywhere in any of those windows passed the whole
+   * suite, so the literals below are load-bearing: do not relax them back to
    * comparisons against the constants.
    */
-  it('pins the calibration band to spec §7.3 (60vh floor, 80vh ceiling)', () => {
+  it('pins the calibration constants to spec §7.3 (400vh base, 60vh floor, 80vh ceiling)', () => {
+    expect(WALK_BASE_VH).toBe(400);
     expect(WALK_MIN_VH).toBe(60);
     expect(WALK_MAX_VH).toBe(80);
   });

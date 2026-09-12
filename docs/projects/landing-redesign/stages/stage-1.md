@@ -1356,7 +1356,7 @@ incomplete registry, then reverted."
 > - `stationEnterMs`, `ribbonDrawMs` and `uiFeedbackMaxMs` are now **derived via `durationMs`** from `motion.ts` rather than restated as literals, per spec §10.2: "`design/motion.ts` stays the single source". Values are unchanged (400 / 700 / 160); the members are now typed `number`.
 > - The `headlineStaggerMs` note is corrected: 80ms is **below `instant`** (100ms), the shortest token that exists, so it maps to no token and stays a deliberate standalone literal. The listing's "between `fast` (160) and `instant` (100)" is arithmetically false.
 >
-> Also updated in the same commit: the test listing gained literal pins for the floor and ceiling (the plan's assertions compared `perStationVh` against the constants under test, so a wrong constant anywhere in `WALK_MIN_VH ∈ [400/7, 66.75)` or `WALK_MAX_VH ∈ [80, 400/3]` passed the whole suite), and `perStationVh`'s `NaN` guard now tests the quotient rather than the argument. The plan's "PASS (9 assertions)" is 11 `it()` blocks as shipped.
+> Also updated, across two follow-ups rather than the one above: **`d1be7db`** added literal pins for the floor and ceiling to the test (the plan's assertions compared `perStationVh` against the constants under test, so a wrong constant anywhere in `WALK_MIN_VH ∈ [400/7, 66.75)` or `WALK_MAX_VH ∈ [80, 400/3]` passed the whole suite); **`550f074`** moved `perStationVh`'s `NaN` guard from the argument to the quotient, so an input that divides to `NaN` is caught and not only a `NaN` input; and the follow-up carrying this note pinned the last unpinned constant, `WALK_BASE_VH ∈ [400, 400.5)`. All three constants are now pinned. The plan's "PASS (9 assertions)" is 11 `it()` blocks as shipped.
 
 **Files:**
 - Modify: `package.json`
