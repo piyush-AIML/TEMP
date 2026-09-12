@@ -48,6 +48,7 @@
 | File | Change |
 |---|---|
 | `package.json` | Add `test`/`test:watch` scripts; add `vitest`, `gsap`, `@gsap/react`, `motion` |
+| `tsconfig.json` | Add `"**/*.mts"` to `include` so the `.mts` vitest config stays type-checked |
 | `src/app/globals.css` | Palette values in `:root` / `.dark`; new tokens in `@theme inline` |
 | `src/design/colors.ts` | Palette v2 values + reserved slots 6–7 |
 | `src/data/pillars.ts` | Add `slug`; `as const satisfies readonly Pillar[]`; export `PillarId` / `PillarSlug` |
@@ -64,7 +65,7 @@
 This task builds the harness and proves the WCAG maths against hex literals, so it ends **green and buildable**. The palette-enforcement test (`src/design/colors.test.ts`) belongs to Task 2, in the same commit as the token shape it checks: a test cannot reference a type shape that does not exist yet without breaking `tsc`, which is the defect the pre-flight scan caught in an earlier draft of this plan.
 
 **Files:**
-- Modify: `package.json`
+- Modify: `package.json`, `tsconfig.json`
 - Create: `vitest.config.mts`, `src/lib/contrast.ts`, `src/lib/contrast.test.ts`
 
 **Interfaces:**
@@ -121,6 +122,16 @@ export default defineConfig({
   },
 });
 ```
+
+**Also add `"**/*.mts"` to `tsconfig.json`'s `include` array.** That array is currently `["next-env.d.ts", "**/*.ts", …]`, and the glob `**/*.ts` does **not** match a file ending `.mts` — so renaming the config would silently drop it out of the type-checked program. Without this line the `.mts` fix trades a cosmetic warning for a real coverage loss.
+
+Verify with:
+
+```bash
+npx tsc --noEmit --listFilesOnly | grep vitest.config
+```
+
+It must print `vitest.config.mts`. If it prints nothing, the `include` change did not take.
 
 - [ ] **Step 3: Write the failing test**
 
