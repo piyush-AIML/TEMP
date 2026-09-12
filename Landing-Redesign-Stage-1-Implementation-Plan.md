@@ -59,7 +59,7 @@
 
 ---
 
-## Task 1: Test harness + the palette contrast test
+## Task 1: Test harness + the WCAG contrast maths
 
 This task builds the harness and proves the WCAG maths against hex literals, so it ends **green and buildable**. The palette-enforcement test (`src/design/colors.test.ts`) belongs to Task 2, in the same commit as the token shape it checks: a test cannot reference a type shape that does not exist yet without breaking `tsc`, which is the defect the pre-flight scan caught in an earlier draft of this plan.
 
