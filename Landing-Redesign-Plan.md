@@ -288,7 +288,7 @@ Every text tier clears **AA (4.5:1)** on every canvas in both themes. Every grap
 
 | Token | Light | Dark | Note |
 |---|---|---|---|
-| indigo (primary) | `#1E2A78` (12.67) | `#8E9AE0` (7.13) | today's `#1E2A78` on dark is **1.51:1** — invisible |
+| indigo (primary) | `#1E2A78` (12.67) | `#3B4896` fill | today's `#1E2A78` on dark is **1.51:1** — invisible. **Corrected during implementation:** an earlier draft specified a `#8E9AE0` dark text partner, but no consumer needed it, and the test was left asserting AA for a hex `globals.css` never painted — the "passes the suite and renders nothing" class. The token was dropped rather than emitted for nothing; see §6.6. |
 | teal (text) | `#0C7078` (5.83) | `#4FD4DC` (10.70) | fixes the `text-ec-teal` failure |
 | teal (graphic) | `#12A0AC` (3.16) | `#2FBAC4` (8.12) | for strokes, nodes, the strand |
 | slate | `#4A5468` (7.61) | `#9AA3C0` (7.60) | |
@@ -322,7 +322,19 @@ Two values had to be corrected to meet these floors. `thrive` `#1E1836` scored *
 
 **Equi-luminance has a cost.** Cyan `learn` and rose `excel` differ in hue but not in lightness, so they can converge for red-green colour-blind readers. **This is mitigated by a hard rule, not a hope: a pillar accent is never the only signal.** Every accent ships alongside its text label, and the strand never encodes meaning by colour alone.
 
-**Where identity lives on the strand.** The strand stays **one brand colour** (`--ec-teal`); identity lives in each station's **node and label**. A five-hue gradient along the strand is the tempting choice and the wrong one — it reads as a chart legend, not a premium system, and is exactly the "decoration for its own sake" the design principles forbid.
+**Where identity lives on the strand.** The strand stays **one brand colour** (`--ec-teal-graphic`); identity lives in each station's **node and label**. A five-hue gradient along the strand is the tempting choice and the wrong one — it reads as a chart legend, not a premium system, and is exactly the "decoration for its own sake" the design principles forbid.
+
+### 6.6 Roles are explicit, and two of them are not what they look like
+
+Three corrections the implementation forced, each worth carrying forward:
+
+**Gold is a FILL family, not a text family.** `--ec-gold` is the primary CTA's background, paired with `text-ec-indigo-dark` (`Button.tsx`'s `primary` variant: `bg-ec-gold text-ec-indigo-dark hover:bg-ec-gold-dark`). Treating it as a text token and darkening it for AA dropped that pair from **8.83:1 to 2.64:1** (hover 5.45:1 → 1.86:1). It keeps its fill tier; **gold-as-text on a light surface is a separate, pre-existing problem** (`text-ec-gold` on white is 1.77:1) deferred to Stage 3, which redesigns Footer, FinalCTA and ProgrammePage.
+
+**Teal splits into text and graphic tiers** — one vivid teal cannot serve both, since `#00b3b8` reads correctly as a stroke but measures 2.58:1 as text.
+
+**The test must assert token-against-token pairs, not only tokens against canvases.** The original assertion set measured every token against its backgrounds, and so was structurally blind to a broken foreground/background pair — which is how 34 green assertions coexisted with a 2.64:1 button. The CTA pairing is now asserted directly, in both themes.
+
+**And the mirror invariant is one-directional.** Every value in `colors.ts` must exist in `globals.css` (that file is the test source; the CSS is what paints). The reverse does **not** hold: `--ec-indigo-light`, `--ec-teal-dark` and `.dark --ec-indigo` are ramp steps kept deliberately with no `colors.ts` counterpart. A sweep script must expect those or it will report false positives.
 
 ---
 
