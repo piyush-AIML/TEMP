@@ -112,15 +112,24 @@ export const reservedPillarAccents: readonly PillarAccent[] = [
  */
 export const brand = {
   indigoLight: '#1E2A78',
-  /** Dark-mode partner. The old `#1E2A78` measured 1.51:1 on dark. */
-  indigoDark: '#8E9AE0',
   indigoDeep: '#141D57',
   tealTextLight: '#0C7078',
   tealTextDark: '#4FD4DC',
   tealGraphicLight: '#12A0AC',
   tealGraphicDark: '#2FBAC4',
-  goldTextLight: '#8A5A00',
-  goldTextDark: '#F5C95E',
+  /**
+   * Gold is a FILL family, not a text family — it is the primary CTA's
+   * background. `goldFillLight` pairs with `indigoDeep` as the CTA's
+   * foreground; that pairing is asserted in the test, because measuring
+   * tokens only against canvases cannot catch a broken token-against-token
+   * pair.
+   */
+  goldFillLight: '#F4B942',
+  goldFillDark: '#F5C95E',
+  goldHoverLight: '#C58F1B',
+  goldHoverDark: '#E8B94A',
+  goldSoftLight: '#F8CD73',
+  goldSoftDark: '#F8CD73',
   goldGraphicLight: '#B8860B',
   goldGraphicDark: '#E8B94A',
   slateLight: '#4A5468',

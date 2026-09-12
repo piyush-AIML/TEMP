@@ -82,8 +82,15 @@ describe('brand chrome', () => {
     expect(worst(brand.tealTextLight, LIGHT_CANVASES)).toBeGreaterThanOrEqual(AA_TEXT);
   });
 
-  it('indigo has a dark-mode partner that clears AA on dark', () => {
-    expect(worst(brand.indigoDark, DARK_CANVASES)).toBeGreaterThanOrEqual(AA_TEXT);
+  it('the primary CTA pairing clears AA: gold fill against indigo-deep text', () => {
+    // Button.tsx's `primary` variant is `bg-ec-gold text-ec-indigo-dark
+    // hover:bg-ec-gold-dark`. Measuring tokens only against canvases cannot
+    // see a broken token-against-token pair — and this one silently regressed
+    // to 2.64:1 (hover 1.86:1) when `--ec-gold` was darkened as if it were a
+    // text token. Assert the hover state too, not just the resting one.
+    expect(contrastRatio(brand.goldFillLight, brand.indigoDeep)).toBeGreaterThanOrEqual(AA_TEXT);
+    expect(contrastRatio(brand.goldHoverLight, brand.indigoDeep)).toBeGreaterThanOrEqual(AA_TEXT);
+    expect(contrastRatio(brand.goldFillDark, brand.indigoDeep)).toBeGreaterThanOrEqual(AA_TEXT);
   });
 
   it('slate clears AA in both themes', () => {
