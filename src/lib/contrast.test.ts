@@ -30,6 +30,14 @@ describe('relativeLuminance', () => {
     expect(relativeLuminance('#fff')).toBeCloseTo(relativeLuminance('#ffffff'), 9);
     expect(relativeLuminance('#000')).toBeCloseTo(relativeLuminance('#000000'), 9);
   });
+
+  it('throws on a non-hex input rather than returning NaN', () => {
+    // `relativeLuminance` is part of the module's public interface and Task 2+
+    // callers can reach it directly, so it must guard its own input rather
+    // than relying on contrastRatio's guard.
+    expect(() => relativeLuminance('rebeccapurple')).toThrow(/hex/i);
+    expect(() => relativeLuminance(undefined as unknown as string)).toThrow(/hex/i);
+  });
 });
 
 describe('contrastRatio', () => {

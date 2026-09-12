@@ -28,19 +28,30 @@ function linearise(channel: number): number {
   return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
 }
 
-/** WCAG relative luminance, 0 (black) to 1 (white). */
-export function relativeLuminance(hex: string): number {
-  const [r, g, b] = toRgb(hex);
-  return 0.2126 * linearise(r) + 0.7152 * linearise(g) + 0.0722 * linearise(b);
-}
-
 /** Guards against a silently `undefined` token producing a NaN ratio. */
 function isHex(value: unknown): value is string {
   return typeof value === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value);
 }
 
+/**
+ * WCAG relative luminance, 0 (black) to 1 (white).
+ *
+ * Guards its own input: this is exported and later tasks call it directly, so
+ * an unguarded `parseInt` here would hand back a silent `NaN` — the exact
+ * failure the guard exists to prevent.
+ */
+export function relativeLuminance(hex: string): number {
+  if (!isHex(hex)) {
+    throw new Error(`relativeLuminance expects a hex colour, received ${String(hex)}`);
+  }
+  const [r, g, b] = toRgb(hex);
+  return 0.2126 * linearise(r) + 0.7152 * linearise(g) + 0.0722 * linearise(b);
+}
+
 /** WCAG contrast ratio, 1:1 to 21:1. Order-independent. */
 export function contrastRatio(a: string, b: string): number {
+  // Names both operands, which is more useful than relativeLuminance's
+  // single-value message when a palette token is missing.
   if (!isHex(a) || !isHex(b)) {
     throw new Error(`contrastRatio expects hex colours, received ${String(a)} and ${String(b)}`);
   }
