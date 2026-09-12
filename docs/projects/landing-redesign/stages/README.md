@@ -74,13 +74,14 @@ planning the strand.**
 > because each anchor is expressed in its own act's box. It now checks the
 > shape of a seam.
 
-**Open — decide while planning:**
+**Decided while planning (2026-09-13)** — the list that used to sit here is closed:
 
-- **Act composition.** One client shell for the whole page, or one per act? §3.3 mandates that static copy stays server-rendered, but the boundary between client shells is unspecified.
-- **`assertContinuity`'s call site.** It is tested but never called by a real act chain. Stage 2 should wire it.
-- **Act copy.** The acts reuse existing section copy where it survives (§5), but the new act *headings* and the hero's CTA relabelling (§4) are prose decisions, not established text.
-- **`?calibrate=1` overlay.** §10.3 specifies it; the implementation is unscoped.
-- **`CursorProvider`.** §13 item 1 records the ruling to retire it. Whether that happens here or in Stage 4 is open.
+- **Act composition** — one client shell per act, receiving server-rendered copy (Task 5's `ActSection`).
+- **`assertContinuity`'s call site** — `page.tsx`, at render (Task 11); the plan forbids a second call site in an act.
+- **Act copy** — drafted in the plan's copy table and **approved by the owner**; almost all of it is existing copy verbatim, and the two new strings are the rail's `sr-only` label and Act 3's visible seed-content line.
+- **`?calibrate=1`** — Task 12, dev-only, reporting branch · progress · station · drawn fraction.
+- **`CursorProvider`** — retired here, in Task 11, along with `useScrollProgress` and `useParallax`.
+- **The fork's geometry** — a downward leave: the strand descends to a fork point above the fold and five branches fan out to seeds at `y = 1`.
 
 **Prerequisite: met.** Stage 1 is complete — all seven tasks landed, and the six interfaces above
 exist and are tested. The join was the one thing Stage 1 did *not* hand you; the note above records
