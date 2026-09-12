@@ -701,7 +701,7 @@ Ten measured AA failures in the shipped palette, all light-mode text or dark-mod
 
 v2 gives each pillar three measured tiers (`text` / `graphic` / `soft`), verified against **all four light and all three dark canvases**. All text tiers ≥5.00:1 light, ≥6.99:1 dark. Brand chrome gains a real dark partner (`#8E9AE0` — today's `#1E2A78` on dark is **1.51:1**), and **teal splits into text and graphic tiers** (one vivid teal cannot serve both). `excel` (NEET & JEE) moves off brand indigo to **rose `#C2185B`**, resolving the old collision where two of the five "identities" were the brand's own colours.
 
-Two properties make it a system: **equi-luminant** (the five text tiers' luminance spans 0.030, so no pillar shouts louder) and **hue-spread 39°·184°·222°·260°·336°**. Two honest caveats: equi-luminance means cyan `learn` and rose `excel` can converge for red-green colour-blind readers — mitigated by the hard rule that **a pillar accent is never the only signal** — and the dark washes are lifted into the 1.15–1.25 band.
+Two properties make it a system: **equi-luminant** (the five text tiers' luminance spans 0.030, so no pillar shouts louder) and **hue-spread 39°·184°·222°·260°·336°**. Two honest caveats: equi-luminance means cyan `learn` and rose `excel` can converge for red-green colour-blind readers — mitigated by the hard rule that **a pillar accent is never the only signal** — and the dark washes are governed by a **≥1.15 floor against `#0b0f1e` and ≥1.02 against `#141b38`** (no upper bound — see the plan's §6.3; the original 1.15–1.25-on-both-canvases band was mathematically impossible, caught during implementation).
 
 ### 26.5 Extensibility — the answer to "how does a new pillar or course arrive"
 

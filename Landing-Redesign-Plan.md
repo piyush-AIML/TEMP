@@ -298,7 +298,20 @@ Every text tier clears **AA (4.5:1)** on every canvas in both themes. Every grap
 
 ### 6.3 Soft washes — the dark-mode fix
 
-Measured against `--ec-canvas-deep` `#141b38`: `thrive` **1.00**, `excel` **1.02**, `include` **1.04** — three of five are indistinguishable from the canvas. All five dark washes are lifted to land in the **1.15–1.25** band on both dark canvases so they read as tints without becoming fills.
+Measured against `--ec-canvas-deep` `#141b38`: `thrive` **1.00**, `excel` **1.02**, `include` **1.04** — three of five were indistinguishable from the canvas.
+
+**An earlier draft of this section asked for every wash to land in a 1.15–1.25 band on *both* dark canvases. That is mathematically impossible**, and an implementer caught it. Because `#0b0f1e` is darker than `#141b38`, any given wash scores *strictly higher* against it — the ratio between the two scores is a constant **1.1292**. So a single hex cannot simultaneously satisfy `≤1.25` on the darker canvas (which needs luminance `L ≤ 0.0188`) and `≥1.15` on the lighter one (which needs `L ≥ 0.0215`).
+
+**The correct, achievable requirement**, now enforced by test:
+
+| Floor | Canvas | Why this value |
+|---|---|---|
+| **≥ 1.15** | `#0b0f1e` (darkest) | the band's meaningful lower bound — below this a wash reads as canvas |
+| **≥ 1.02** | `#141b38` (lighter) | the derived equivalent: `1.15 ÷ 1.1292 ≈ 1.017`, rounded up |
+
+There is deliberately **no upper bound**: on the lighter canvas a wash that clears 1.15 on the darker one necessarily scores higher than 1.25, and that is correct behaviour, not a defect — it is a tint against a lighter surface.
+
+Two values had to be corrected to meet these floors. `thrive` `#1E1836` scored **1.0036** on the lighter canvas — as invisible as the wash it replaced — and `excel` `#331423` scored 1.0173; both were lifted along their own hue to **`#221B3C`** (1.1714 / 1.0373) and **`#391627`** (1.1968 / 1.0598). All five washes now clear both floors.
 
 ### 6.4 Two properties that make it a system
 

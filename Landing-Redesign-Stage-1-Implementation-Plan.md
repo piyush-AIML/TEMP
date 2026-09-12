@@ -379,7 +379,9 @@ This is the **RED phase**. Rewrite `src/design/colors.ts` to the exact structure
 | `softLight` | `soft` |
 | `textDark` | `darkMain` |
 | `graphicDark` | `darkMain` |
-| `softDark` | `soft` |
+| `softDark` | **the shipped dark wash from `globals.css`'s `.dark` block** — see below |
+
+`softDark` is the one field that does **not** come from `colors.ts`: that file only holds the *light* `soft` value, and the shipped dark washes live in `globals.css`. Copy them from there verbatim — `#122a34`, `#16233d`, `#1d1934`, `#2b2312`, `#161c3a` for learn/include/thrive/achieve/excel. If you map `soft` → `softDark` instead, you are putting a near-white wash on a dark canvas, the wash assertions pass trivially, and the RED phase loses exactly the evidence this task exists to capture.
 
 Also add the `PillarAccent` type and the new `brand` / `canvas` / `borderColor` / `semantic` objects, populated with the **shipped** values.
 
@@ -455,10 +457,17 @@ describe('pillar accents', () => {
       expect(contrastRatio(accent.graphicDark, '#0b0f1e')).toBeGreaterThanOrEqual(AA_NON_TEXT);
     });
 
-    it(`${id}: dark soft wash is visible against both dark canvases`, () => {
-      // Spec §6.3 — the shipped washes measured 1.00-1.06 and were invisible.
-      // The floor is 1.10; the band to aim for is 1.15-1.25.
-      expect(contrastRatio(accent.softDark, '#0b0f1e')).toBeGreaterThanOrEqual(1.1);
+    it(`${id}: dark soft wash reads as a tint on both dark canvases`, () => {
+      // Spec §6.3. Floors: >=1.15 against the darkest canvas, >=1.02 against
+      // the lighter one. The second floor is the derived equivalent of the
+      // first — a wash always scores 1.1292x higher against #0b0f1e than
+      // against #141b38, because #0b0f1e is darker.
+      //
+      // There is deliberately NO upper bound. A wash that clears 1.15 on the
+      // darker canvas necessarily exceeds 1.25 on the lighter one, and that is
+      // correct: it is a tint against a lighter surface. An earlier draft of
+      // the spec demanded 1.15-1.25 on *both*, which is unsatisfiable.
+      expect(contrastRatio(accent.softDark, '#0b0f1e')).toBeGreaterThanOrEqual(1.15);
       expect(contrastRatio(accent.softDark, '#141b38')).toBeGreaterThanOrEqual(1.02);
     });
   }
@@ -490,7 +499,14 @@ describe('brand chrome', () => {
 - [ ] **Step 3: Run the test to verify it fails**
 
 Run: `npm run test src/design/colors.test.ts`
-Expected: **FAIL**, and the failure output must quote **real ratios** — e.g. `learn: light text tier clears AA on every light canvas` failing with a received value near `2.58` (`#00b3b8`, the brand teal currently sitting in `learn.graphicLight`/`textLight`), and the three dark-wash tests failing around `1.0`. This output is the **encoded evidence for spec §1.4** — copy the failing ratios into the commit message.
+Expected: **FAIL**, with the output quoting **real ratios** — not `undefined`, not `NaN`. The characteristic failures to look for:
+
+- the **brand** teal assertion near **2.58** (`#00b3b8`, the shipped `--ec-teal`, used as text)
+- `achieve` near **2.87** (`#c58f1b`)
+- `learn` near **4.23** and `include` near **4.11** (`#00898d`, `#3b7dd8` — both just under the 4.5 floor)
+- the **dark-wash** assertions near **1.0** (`thrive` `#1d1934` at ≈1.00, `excel` `#161c3a` at ≈1.02)
+
+Expect roughly a quarter of the 34 assertions to fail; the exact count depends on which tiers happen to clear their floor. This output is the **encoded evidence for spec §1.4 and §6.3** — copy the failing ratios into the commit message. A run in which the wash assertions all pass means Step 1's `softDark` mapping is wrong (see Step 1's note).
 
 If the output instead reports `contrastRatio expects hex colours, received undefined`, the Step 1 restructure is incomplete — every one of the six tiers must be a populated hex string.
 
@@ -557,7 +573,7 @@ export const programmeColors = {
     graphicLight: '#8B62D9',
     graphicDark: '#9E7FE4',
     softLight: '#EDE6FB',
-    softDark: '#1E1836',
+    softDark: '#221B3C',
   },
   achieve: {
     textLight: '#8A5A00',
@@ -573,7 +589,7 @@ export const programmeColors = {
     graphicLight: '#E0437C',
     graphicDark: '#EC6A99',
     softLight: '#FCE4EC',
-    softDark: '#331423',
+    softDark: '#391627',
   },
 } as const satisfies Record<string, PillarAccent>;
 
@@ -877,7 +893,19 @@ back-compat field. The OG image now uses the role-correct tier for each,
 which it previously did not.
 
 Slots 6-7 ship measured in colors.ts but emit no CSS until a pillar
-claims one."
+claims one.
+
+Two dark washes were corrected during implementation: thrive #1E1836 scored
+1.0036 against the lighter dark canvas — as invisible as the wash it
+replaced — and excel #331423 scored 1.0173. Both lifted along their own hue
+to #221B3C (1.1714/1.0373) and #391627 (1.1968/1.0598).
+
+The spec originally asked for all five washes in a 1.15-1.25 band on BOTH
+dark canvases, which is unsatisfiable: a wash always scores 1.1292x higher
+against #0b0f1e than against #141b38, so <=1.25 on the darker canvas
+(L <= 0.0188) cannot coexist with >=1.15 on the lighter one (L >= 0.0215).
+The enforced floors are now >=1.15 on #0b0f1e and >=1.02 on #141b38, with
+no upper bound. Spec 6.3 corrected to match."
 ```
 
 ---
