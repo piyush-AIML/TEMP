@@ -42,6 +42,12 @@ export type FivePillarsProps = {
 export default function FivePillars({ stations, pillarCount, stages }: FivePillarsProps) {
   const root = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
+  /**
+   * The element that actually scrolls on mobile: the snap container. The track
+   * inside it is transformed on desktop and has no overflow of its own, so
+   * `scrollTo` on the track silently does nothing.
+   */
+  const scrollerRef = useRef<HTMLDivElement>(null);
   /** The pin's start in page pixels, published by the ScrollTrigger itself. */
   const pinStartRef = useRef(0);
   const frame = walkFrame(pillarCount);
@@ -155,7 +161,10 @@ export default function FivePillars({ stations, pillarCount, stages }: FivePilla
       return;
     }
     if (branch === 'mobile') {
-      track.current?.scrollTo({ left: index * window.innerWidth, behavior: 'smooth' });
+      // The snap container, not the track: `track` is the transformed inner
+      // div, which has no overflow, so `scrollTo` on it does nothing at all —
+      // silently, on every rail button, on every phone.
+      scrollerRef.current?.scrollTo({ left: index * window.innerWidth, behavior: 'smooth' });
       return;
     }
     window.scrollTo({
@@ -175,30 +184,54 @@ export default function FivePillars({ stations, pillarCount, stages }: FivePilla
           One structure, three CSS branches — identical DOM order in all of
           them, which is what §9 requires under reduced motion. */}
       <div
-        className='snap-x snap-mandatory overflow-x-auto sm:snap-none sm:overflow-x-visible lg:overflow-hidden'
+        className='relative snap-x snap-mandatory overflow-x-auto sm:snap-none sm:overflow-x-visible lg:overflow-hidden'
         data-walk-track
+        ref={scrollerRef}
       >
         <div
           ref={track}
           className='relative flex w-[var(--track-w)] flex-row sm:w-full sm:flex-col lg:w-[var(--track-w)] lg:flex-row'
           style={{ '--track-w': `${frame.widthVw}vw` } as CSSProperties}
         >
-          <LineStage
-            paths={frame.railSegments}
-            viewBox={frame.viewBox}
-            draw={false}
-            className='pointer-events-none absolute inset-0'
-          />
+          <div className='contents' data-walk-rail>
+            <LineStage
+              paths={frame.railSegments}
+              viewBox={frame.viewBox}
+              draw={false}
+              className='pointer-events-none absolute inset-0'
+            />
+          </div>
+          {/* The pillar's node, on the strand and in the pillar's own graphic
+              tier (§4). `(i + 0.5) / N` of the track is the centre of slot `i` —
+              the convention `walkFrame` uses and the point `drawAt` begins
+              drawing from — and `top-1/2` is the baseline the rail is drawn on. */}
+          {stations.map((station, index) => (
+            <span
+              key={station.pillarId}
+              aria-hidden='true'
+              data-walk-node
+              className='pointer-events-none absolute top-1/2 hidden h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full lg:block'
+              style={{
+                left: `${((index + 0.5) / pillarCount) * 100}%`,
+                backgroundColor: pillarAccent[station.pillarId].graphicVar,
+              }}
+            />
+          ))}
           <ol className='contents'>
             {stations.map((station) => (
               <li
                 key={station.pillarId}
                 id={`station-${station.pillarId}`}
                 data-walk-station
-                className='relative w-screen shrink-0 snap-center sm:w-full lg:h-screen'
+                // `lg:w-screen` is load-bearing and was missing: `sm:w-full` is
+                // emitted after `w-screen` in the built CSS, so at ≥640px each
+                // station was 100% of its *flex container* — 500vw at five
+                // pillars — and stations 1–4 sat past the end of the 500vw the
+                // tween travels. The walk showed almost no station content.
+                className='relative w-screen shrink-0 snap-center sm:w-full lg:h-screen lg:w-screen'
               >
                 {/* the pillar's soft tier as a full-bleed band, not a box (§4) */}
-                <div className={`absolute inset-y-0 left-0 w-1 ${pillarAccent[station.pillarId].border}`} aria-hidden='true' />
+                <div className={`absolute inset-y-0 left-0 w-1 ${pillarAccent[station.pillarId].softBg}`} aria-hidden='true' />
                 <div className='mx-auto flex h-full max-w-xl flex-col justify-center gap-6 px-6'>
                   <Eyebrow className={pillarAccent[station.pillarId].text}>{station.pillarName}</Eyebrow>
                   <p className='type-display-m text-ec-ink dark:text-white'>{station.programmeName}</p>
@@ -220,8 +253,12 @@ export default function FivePillars({ stations, pillarCount, stages }: FivePilla
         </div>
       </div>
 
-      {/* §9: real buttons, not decorative dots. */}
-      <ol className='mt-8 flex justify-center gap-3'>
+      {/* §9: real buttons, not decorative dots — and inside the pinned viewport,
+          which is where they were not. The pin holds the whole `<section>` at
+          `top: 0`, whose first child is a one-viewport track, so an in-flow rail
+          sat 32px below the fold for all 400vh of the walk and reappeared only
+          as a footer, by which point it is too late to be a control. */}
+      <ol className='mt-8 flex justify-center gap-3 lg:absolute lg:inset-x-0 lg:bottom-6 lg:z-10 lg:mt-0'>
         {stations.map((station, index) => (
           <li key={station.pillarId}>
             <button

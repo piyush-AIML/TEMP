@@ -124,6 +124,36 @@ describe('Act 1 — the walk', () => {
     expect(ribbon).not.toContain('max-w-5xl');
   });
 
+  it('gives each station one viewport of the track, at every breakpoint', () => {
+    // `sm:w-full` is emitted after `w-screen` in the built CSS (byte 65607 vs
+    // 24451), so without an `lg` override each station was 100% of its flex
+    // container — 500vw at five pillars — and stations 1–4 sat past the end of
+    // the 500vw the tween travels. Measured on the built stylesheet.
+    expect(render()).toContain('lg:w-screen');
+  });
+
+  it('keeps the rail inside the pinned viewport', () => {
+    // The pin holds the whole `<section>`; an in-flow rail sat 32px below the
+    // fold for all 400vh of the walk.
+    expect(render()).toContain('lg:absolute lg:inset-x-0 lg:bottom-6');
+  });
+
+  it('paints the pillar band instead of a border colour with no width', () => {
+    // `pillarAccent[...].border` is `border-ec-learn` — a colour; with no border
+    // width, Tailwind's preflight left the 4px strip transparent.
+    expect(render()).toMatch(/w-1 bg-ec-learn-soft/);
+  });
+
+  it('puts one node on the strand per pillar, at the slot centres', () => {
+    // `(i + 0.5) / N` is the centre of slot `i` — the point `drawAt` begins
+    // drawing segment `i` from, and the point the particle sits on. The fixture
+    // is two pillars of a two-slot track, so the centres are 25% and 75%.
+    const markup = render();
+    expect((markup.match(/data-walk-node/g) ?? []).length).toBe(2);
+    expect(markup).toContain('left:25%');
+    expect(markup).toContain('left:75%');
+  });
+
   it('exposes each stage’s title to assistive tech, not only its number', () => {
     // As shipped, the number was real DOM text and the title was `aria-hidden`,
     // so assistive tech heard "Stage 01 … Stage 06" and none of the six titles.
