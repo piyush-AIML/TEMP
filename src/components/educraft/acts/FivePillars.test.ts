@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { ribbonFrame } from '@/components/educraft/line/frames';
 import FivePillars, { type Station } from './FivePillars';
 
 const STATIONS: Station[] = [
@@ -146,6 +147,35 @@ describe('Act 1 — the journey ribbon', () => {
 
   it('labels each stage with its number and title as real text', () => {
     for (const stage of STAGES) expect(markup).toContain(`Stage ${stage.stage}`);
+  });
+
+  it('renders the ribbon copy verbatim', () => {
+    // Both strings are approved in `_copy.md` and were unpinned: rewriting
+    // either left the suite green.
+    expect(markup).toContain('The student journey');
+    expect(markup).toContain('Six stages, one direction: forward.');
+  });
+
+  it('places each label on its node, as a fraction of the frame', () => {
+    // The join, for the ribbon: the label's position and the node it names are
+    // the same number, both from `ribbonFrame`. Measured — dropping the
+    // `/ frame.width` left the suite green, so nothing pinned it.
+    const frame = ribbonFrame(STAGES.length, 2);
+    for (const node of frame.nodes) {
+      expect(markup).toContain(`left:${(node.x / frame.width) * 100}%`);
+    }
+  });
+
+  it('takes the convergence arity from pillarCount, not the station list', () => {
+    // Three pillars rendered against two stations: the ribbon follows
+    // `pillarCount`, which is the same contract the walk's geometry states and
+    // that nothing enforces (a mutant taking the walk's own axis from
+    // `stations.length` survives Task 6's suite). Hardcoding the arity to the
+    // fixture's two pillars also survived before this test existed.
+    const three = renderToStaticMarkup(
+      createElement(FivePillars, { stations: STATIONS, pillarCount: 3, stages: STAGES })
+    );
+    expect((three.match(/M 0 0\.\d+ C/g) ?? []).length).toBe(3);
   });
 
   it('keeps the strand decorative', () => {

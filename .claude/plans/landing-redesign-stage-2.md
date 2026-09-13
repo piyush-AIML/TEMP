@@ -2511,6 +2511,34 @@ describe('Act 1 — the journey ribbon', () => {
     for (const stage of STAGES) expect(markup).toContain(`Stage ${stage.stage}`);
   });
 
+  it('renders the ribbon copy verbatim', () => {
+    // Both strings are approved in `_copy.md` and were unpinned: rewriting
+    // either left the suite green.
+    expect(markup).toContain('The student journey');
+    expect(markup).toContain('Six stages, one direction: forward.');
+  });
+
+  it('places each label on its node, as a fraction of the frame', () => {
+    // The join, for the ribbon: the label's position and the node it names are
+    // the same number, both from `ribbonFrame`. Measured — dropping the
+    // `/ frame.width` left the suite green, so nothing pinned it.
+    const frame = ribbonFrame(STAGES.length, 2);
+    for (const node of frame.nodes) {
+      expect(markup).toContain(`left:${(node.x / frame.width) * 100}%`);
+    }
+  });
+
+  it('takes the convergence arity from pillarCount, not the station list', () => {
+    // Three pillars rendered against two stations: the ribbon follows
+    // `pillarCount`, which is the same contract the walk's geometry states and
+    // that nothing enforces. Hardcoding the arity to the fixture's two pillars
+    // survived before this test existed.
+    const three = renderToStaticMarkup(
+      createElement(FivePillars, { stations: STATIONS, pillarCount: 3, stages: STAGES })
+    );
+    expect((three.match(/M 0 0\.\d+ C/g) ?? []).length).toBe(3);
+  });
+
   it('keeps the strand decorative', () => {
     expect(markup).toContain('aria-hidden="true"');
   });
@@ -2608,6 +2636,14 @@ export function RibbonStage({ stages, pillarCount }: { stages: readonly RibbonSt
 ```
 
 Wire it into `FivePillars`'s return, after the rail. **Do not add a call site for `assertRibbonSeam` here.** Task 11 makes `page.tsx` the single runtime call site for all three seam assertions; a second one in a `'use client'` module body would also run in the browser on every mount, for no benefit, and `assertForkSeam` is not this act's to call — it checks the fork's geometry, which belongs to `Origin`.
+
+*(Corrected 2026-09-13, on Task 7's implementation and its verification pass — five corrections, all measured:)*
+
+1. **The snippet used `EASE` and `motionTokens` without importing either.** `EASE` was caught by reading the imports before writing; **`motionTokens` was caught only by `tsc`** — no test can see it, because the effect never runs under `renderToStaticMarkup`. Both imports are added.
+2. **A required `stages` prop threw in all eight of Task 6's tests**, whose `render` helper passed only `stations` and `pillarCount`: `Cannot read properties of undefined (reading 'length')` at `ribbonFrame(stages.length, …)`. The brief says "append" and never mentions it. The helper now passes `STAGES`, so the walk's tests render the ribbon too — that is the honest fixture for a component that always renders it.
+3. **Consequently the walk's `data-line-path` count assertion became five, not two**, because the ribbon renders a second `LineStage`. That test now matches the walk's segments *by shape* (`/M \d+ 0\.5 L \d+ 0\.5/g`), which is what its title claims and is immune to the ribbon.
+4. **The ribbon's "keeps the strand decorative" passed on the walk's strand alone** — measured green at the red phase, before any ribbon existed. It now counts the two `aria-hidden` SVGs.
+5. **Three properties were unpinned and are now asserted**, each converting a surviving mutant into a caught one: the stage labels' positions (derived from `ribbonFrame`, the ribbon's half of the join), the convergence's arity (three pillars against two stations — the `pillarCount`-not-`stations` contract the walk states and nothing enforced), and the two approved copy strings from `_copy.md`.
 
 - [ ] **Step 4: Run the tests and the gate**
 
