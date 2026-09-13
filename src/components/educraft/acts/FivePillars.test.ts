@@ -98,10 +98,40 @@ describe('Act 1 — the walk', () => {
   it('states the act on one screen at a time for mobile, stacked for tablet', () => {
     // The three branches are Tailwind variants over ONE structure — so the DOM
     // order is identical in every branch, which is what §9 requires under
-    // reduced motion. Both the track width and the column direction are here.
+    // reduced motion.
+    //
+    // Measured: the class lists that *implement* those branches were pinned by
+    // nothing. Replacing the snap container's list with `''`, and the track's
+    // with `'relative flex'`, each left the file's 17 tests green — killing the
+    // mobile swipe, the tablet stack and the track's width together. The
+    // comment promised "both the track width and the column direction"; now the
+    // assertions do.
     const markup = render();
     expect(markup).toContain('data-walk-track');
     expect(markup).toContain('data-walk-station');
+    expect(markup).toContain('snap-x snap-mandatory');
+    expect(markup).toContain('sm:flex-col');
+    expect(markup).toContain('w-[var(--track-w)]');
+  });
+
+  it('puts the ribbon’s exit on the act’s bottom edge, at the act’s spine', () => {
+    // Measured before this: the strip was 976px × 160px inside
+    // `max-w-5xl px-6 py-24`, so its exit rendered at x ≈ 964px and 96px above
+    // the act's bottom — while `way.enter` is at 0.75 × viewport on the next
+    // section's top edge. A 116px sideways jog and a gap, at every desktop width.
+    const ribbon = render().slice(render().indexOf('The student journey'));
+    expect(ribbon).toContain('viewBox="0 0 8 1"');
+    expect(ribbon).not.toContain('max-w-5xl');
+  });
+
+  it('exposes each stage’s title to assistive tech, not only its number', () => {
+    // As shipped, the number was real DOM text and the title was `aria-hidden`,
+    // so assistive tech heard "Stage 01 … Stage 06" and none of the six titles.
+    // §9: every word is real DOM text, in logical order.
+    const markup = render();
+    expect(markup).not.toMatch(/aria-hidden="true"[^>]*>Curious/);
+    expect(markup).toContain('>Curious<');
+    expect(markup).toContain('Stage 01');
   });
 });
 

@@ -284,11 +284,18 @@ export function RibbonStage({ stages, pillarCount }: { stages: readonly RibbonSt
   );
 
   return (
-    <div ref={root} className='relative mx-auto max-w-5xl px-6 py-24'>
-      <Eyebrow className='text-ec-teal'>The student journey</Eyebrow>
-      <h3 className='type-heading-m mt-4 text-ec-ink dark:text-white'>
-        Six stages, one direction: forward.
-      </h3>
+    <div ref={root} className='w-full pt-24'>
+      <div className='mx-auto max-w-3xl px-6 lg:pr-[max(0px,calc(24rem-25vw))]'>
+        <Eyebrow className='text-ec-teal'>The student journey</Eyebrow>
+        <h3 className='type-heading-m mt-4 text-ec-ink dark:text-white'>
+          Six stages, one direction: forward.
+        </h3>
+      </div>
+      {/* The strip is the act's own width and its last element, so its bottom
+          edge *is* the section's bottom edge and its 75% *is* the act's spine —
+          which is the whole of the seam into Act 2. Inside `max-w-5xl px-6 py-24`
+          it rendered at x ≈ 964 and 96px above the act's bottom, so the line
+          stopped short and resumed 116px to the right. */}
       <LineStage
         paths={[...frame.convergence, frame.strand]}
         viewBox={frame.viewBox}
@@ -302,10 +309,15 @@ export function RibbonStage({ stages, pillarCount }: { stages: readonly RibbonSt
               className='absolute -translate-x-1/2 text-center'
               style={{ left: `${(frame.nodes[index].x / frame.width) * 100}%` }}
             >
-              <span className='sr-only'>Stage {stage.stage}</span>
-              <span aria-hidden='true' className='type-body-s block text-ec-slate'>
-                {stage.title}
+              {/* The number is the decoration; the title is the content, and it
+                  was the `aria-hidden` half — assistive tech heard "Stage 01 …
+                  Stage 06" and none of the six titles (§9: every word is real
+                  DOM text). The retired section rendered both, the title as an
+                  `<h3>`. */}
+              <span aria-hidden='true' className='type-caption block text-ec-slate'>
+                Stage {stage.stage}
               </span>
+              <span className='type-body-s block text-ec-slate'>{stage.title}</span>
             </li>
           ))}
         </ol>
