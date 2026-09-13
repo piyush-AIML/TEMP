@@ -1,26 +1,27 @@
-How the Educraft homepage (`/`, served by `src/app/(site)/page.tsx`) is built: its 12-section narrative arc and each section's signature interaction.
+How the Educraft homepage (`/`, served by `src/app/(site)/page.tsx`) is built: its **five acts**, the one strand that threads them, and where each piece of the system lives.
 
-> **⚠️ SUPERSEDED 2026-09-12 by §26 (Landing Redesign).** The 12-section arc below is the **current shipped** state and remains accurate as a description of what is live — but it is no longer the design of record. §26 replaces it with **5 acts** and retires sections 01, 02, 03, 05, 06 and 11. Read §26 before changing anything here. The table is retained because it is the accurate "before" state and the source of the §26 diagnosis.
+**Where the code lives:** the acts are in `src/components/educraft/acts/` — `Origin` (Act 0) · `FivePillars` (Act 1) · `Way` (Act 2) · `Proof` (Act 3) · `Doors` (Act 4), with `ActSection` as their shared frame and `FinalCTA` as the closer Act 4 renders. The geometry they share is in `src/components/educraft/line/`: `anchors.ts` (the entry/exit contract), `frames.ts` (the viewBox policy and the walk/ribbon frames), `pathBuilders.ts` (`pathFor`, `polylinePath`, `assertContinuity`), `station.ts` (the walk's calibration) and `LineStage.tsx` (the renderer).
 
-**Where the code lives:** the twelve components are in `src/components/educraft/landing/` — `Hero` · `Ecosystem` · `ProgrammeExplorer` · `WhyDifferent` · `StudentJourney` · `ProgrammeDeepDive` · `Impact` · `AudienceEntryPoints` · `Methodology` · `Testimonials` · `InsightsTeaser` · `FinalCTA`.
+**The design of record** is `docs/projects/landing-redesign/spec.md` §4 (the five acts) — this page describes the implementation, not the design.
 
-**Narrative arc:** **Understand → Explore → Trust → Imagine → Choose → Act.**
+| Act | Component | What it is |
+|---|---|---|
+| 0 | `Origin` | The hero, copy verbatim, with the strand entering top-right. A **fork**: one strand becomes N, pinned 70vh on desktop, and the seed nodes land on the fold. Below `sm` the fan gives way to §8's single vertical fall. |
+| 1 | `FivePillars` | The walk — N stations, pinned and scrubbed horizontally on desktop (one viewport of travel per station), native snap on mobile, stacked on tablet. Ends with the **ribbon**: the N strands converge into one, and the six journey stages sit on it. |
+| 2 | `Way` | `WhyDifferent`'s ruled rows and `Methodology`'s five steps as one argument, with both as nodes on a single vertical strand. |
+| 3 | `Proof` | The strand becomes a horizontal **evidence axis** with a tick per chain station; the stat row, one pull quote and two marginalia follow. Below `lg` the axis gives way to the plain vertical spine §8 asks for. |
+| 4 | `Doors` | Three audience columns separated by hairline rules, then `FinalCTA`'s dark band, into which the strand terminates. |
 
-| # | Section | Signature interaction | Notes |
-|---|---|---|---|
-| 01 | `Hero` | Staged entrance (0→1700ms via `--hero-delay`); scroll-linked content rise + camera pull-back + node drift (`useScrollProgress` `'full'` mode) | Headline "Five paths. One learning ecosystem." WebGL hidden on mobile → SVG `Constellation` fallback. Bottom fade + scroll cue. |
-| 02 | `Ecosystem` | Interactive SVG map: 5 nodes around a core, spokes draw on enter, hover/focus lights the connection + updates an `aria-live` right panel, click → programme page | Mobile: stacked cards. Default active = Learn. `data-cursor-label="Explore"`. |
-| 03 | `ProgrammeExplorer` | 550vh pinned scroll story (5 × 110vh): keyed crossfade panel, `ProgrammeGraphic` visual, progress rail + top bar | Mobile: horizontal snap cards. Uses `'full'` mode. |
-| 04 | `WhyDifferent` | Sticky left statement, numbered differentiators (01–05) | |
-| 05 | `StudentJourney` | 552vh pinned (6 × 92vh): path self-draws (`strokeDashoffset = 1-progress`), milestones light with icons | Mobile: vertical timeline. **Must never gain `overflow-hidden` on the section — breaks sticky pinning.** |
-| 06 | `ProgrammeDeepDive` | Tabbed spotlight: curriculum modules, 5-step method, outcomes, proof line, CTAs | Client tab state, data-driven. |
-| 07 | `Impact` | Outcome chain Confidence→Engagement→Skill→Readiness (numbered cards + arrows), structural facts, "how we build evidence" (5 pillars) | Qualitative by design. |
-| 08 | `AudienceEntryPoints` | Three doors — schools=indigo, parents=teal, students=gold → audience pages | |
-| 09 | `Methodology` | Path-draw, calibrated pacing: `'visible'` mode, `draw = clamp01(progress * 1.1)`, node *i* lights at `((i+0.08)/5.5)*1.1` — completes ~84% through visible scroll | User-calibrated: the 1.1× tuning fixed the draw lagging behind scroll. |
-| 10 | `Testimonials` | Editorial: 1 large primary quote (parallax drift) + 2 supporting. No carousel, no autoplay | Content is SEED — a launch blocker, see `docs/platform/blockers.md`. |
-| 11 | `InsightsTeaser` | 3 latest articles (category, reading time, date) | |
-| 12 | `FinalCTA` | Indigo close, SVG atmosphere on the existing single canvas (no second WebGL context), magnetic gold CTA | |
+## The rules that make it work
 
-**The `overflow-hidden` rule in section 05 is a general engineering constraint, not a per-section note:** an ancestor's `overflow-hidden` becomes the sticky element's scroll box, so pinned sections (`StudentJourney`, `ProgrammeExplorer`) must keep section-level overflow visible and handle overflow only on the sticky inner element. This is the source of the fixed-bug ledger entry "Student Journey blank zone after stage 2" in `docs/platform/history.md`.
+**The act's `<section>` is the strand's box.** Every vertical act's strand is positioned against its own section — `ActSection` takes a `line` prop and renders it as the section's first child, so an act cannot re-parent it into an inner container. This is not styling: `ACT_ANCHORS` is act-local, so `y = 0` must be the act's own top edge for a seam to be continuous on screen, and `assertContinuity` compares *fractions of each act's own box* — it cannot see a box. An act that renders its strand against a narrower container satisfies every assertion while the line stops short at the boundary. Three of the five acts shipped that way and it was the single largest defect of Stage 2.
 
-**What the redesign retires here** (per §26): sections 01, 02, 03, 05, 06 and 11 — the WebGL orbit hero, the SVG orbital `Ecosystem` map and the 550vh `ProgrammeExplorer` were the three that said the same thing in three visual languages. §26 carries the measured diagnosis and the 5-act replacement.
+**The seams run at module evaluation.** `page.tsx` calls `assertContinuity(VERTICAL_CHAIN)`, `assertForkSeam` and `assertRibbonSeam` at module scope, so a broken seam fails the *build* with the message naming both anchors.
+
+**One writer per path.** The walk and the ribbon both animate `strokeDashoffset` on their own paths and on nothing else — the walk's `onUpdate` queries `[data-walk-rail]` and verifies it found exactly its own segment count. Two GSAP owners on one property is the failure mode `LineStage`'s docstring forbids, and it shipped once.
+
+**The `overflow-hidden` rule is a general engineering constraint, not a per-act note:** an ancestor's `overflow-hidden` becomes the sticky element's scroll box, so a pinned section must keep section-level overflow visible and handle overflow only on the sticky inner element. `FivePillars` is the pinned act; its clip is on a *descendant* of the pinned section, which is what the rule prescribes.
+
+**What is still open** (both are owner rulings, both recorded in `docs/projects/landing-redesign/state.md`): the ribbon's strand doubles back above five stages (R17), and Act 4's strand ends at the band's mid-band while the terminal node rides at the CTA — which is centred, so the two differ in **both** axes (R20).
+
+**What was retired here:** the twelve sections in `src/components/educraft/landing/` — including the WebGL orbit hero and the whole `three/` tree, the SVG orbital `Ecosystem` map, and the 550vh `ProgrammeExplorer` — left in Stage 2 Task 11. The `/impact` stat block's `4 Audiences … Partners` defect is fixed in `Proof`; the `/impact` *page* still carried it as of that task, and it is Stage 3's.

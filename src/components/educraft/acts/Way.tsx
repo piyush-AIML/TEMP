@@ -23,7 +23,11 @@ const SPINE_X = ACT_ANCHORS.way.enter.x;
 /** Room kept to the right of the spine, past a node, for the node to sit in. */
 const NODE_GUTTER = '2.75rem';
 
-/** The copy the nodes hang off. Moved verbatim from `WhyDifferent.tsx` (§4). */
+/**
+ * The copy the nodes hang off. Moved verbatim from `landing/WhyDifferent.tsx`
+ * (§4) — the file retired with the other eleven sections in Task 11, so the
+ * source is named here as provenance rather than as something to go and read.
+ */
 const DIFFERENTIATORS = [
   {
     title: 'One ecosystem, not five silos',

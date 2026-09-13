@@ -164,9 +164,9 @@ describe('drawAt', () => {
   });
 
   it('scales with pillar count instead of a hardcoded divisor', () => {
-    // The shipped Methodology section hardcodes `/ 5.5` (Methodology.tsx:29),
-    // which cannot scale; `drawAt` is the scale-by-n replacement. Nothing
-    // imports it yet, so the shipped draw is unchanged until Stage 2 wires it.
+    // The retired Methodology section hardcoded a `/ 5.5` divisor, which could
+    // not scale; `drawAt` is the scale-by-n replacement, and Stage 2 wired the
+    // caller in — the walk's `onUpdate` is where it draws now.
     expect(drawAt(1, 3, 7)).toBe(1);
     expect(drawAt(1, 6, 7)).toBe(1);
     // Off-centre, mid-slice, at n = 7: station 2 owns [2/7, 3/7].

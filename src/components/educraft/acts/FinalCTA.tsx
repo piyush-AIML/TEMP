@@ -22,11 +22,12 @@ export type FinalCTAProps = {
  * SVG atmosphere (no second WebGL context; one scene serves the page,
  * plan §35) and a magnetic primary CTA.
  *
- * Carried over from `landing/FinalCTA.tsx` for Act 4 (§5: "kept, strand
- * terminates in it"), with two changes and no others: the `children` slot
- * above, and the `relative` wrapper around the CTA row that gives it a
- * positioning context. The dark full-bleed band and its `py-24 md:py-36` are
- * deliberately kept — §4 calls it "the only card-free closer, and it works".
+ * Carried over from the retired `landing/FinalCTA.tsx` for Act 4 (§5: "kept,
+ * strand terminates in it") — that file left with the other eleven sections in
+ * Task 11 — with two changes and no others: the `children` slot above, and the
+ * `relative` wrapper around the CTA row that gives it a positioning context.
+ * The dark full-bleed band and its `py-24 md:py-36` are deliberately kept —
+ * §4 calls it "the only card-free closer, and it works".
  *
  * **Not redesigned here.** §11.3's `MagneticButton` rework — Motion springs
  * replacing the hand-rolled physics — is Stage 3's; this stage only terminates

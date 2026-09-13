@@ -146,19 +146,22 @@ export default function FivePillars({ stations, pillarCount, stages }: FivePilla
   );
 
   const onRailClick = (index: number) => {
-    // §9's buttons must actually move the walk. The behaviour is branch-aware
-    // and that is `branchFor`'s consumer: on desktop the track is transformed
-    // rather than scrolled, so the page moves; on tablet the stations are
-    // stacked, so the element scrolls into view; on mobile the track is a
-    // native snap container, so the container scrolls horizontally.
+    // §9's buttons must actually move the walk. The behaviour is branch-aware:
+    // on desktop the track is transformed rather than scrolled, so the page
+    // moves; on tablet the stations are stacked, so the element scrolls into
+    // view; on mobile the track is a native snap container, so the container
+    // scrolls horizontally.
     // Branch on the same media queries the CSS layout uses, not on
     // `window.innerWidth`: a media query measures CSS pixels while `innerWidth`
     // includes the scrollbar, so within ~15px of a breakpoint the two disagree
     // and a rail click would scroll the page under a stacked layout. The queries
     // come from `src/design/scroll.ts`, so the layout and the button cannot drift.
-    // (`branchFor` keeps no runtime consumer after this; it remains the
-    // spec-pinned statement of §8's three branches, and the boundaries the two
-    // queries are asserted against.)
+    //
+    // `branchFor` is not called here and that is deliberate: it returns a branch
+    // from a *width*, which is the one input this must not use, so the chain
+    // above is the same three branches expressed over the queries instead. The
+    // function keeps no runtime consumer — it remains §8's pinned statement of
+    // the three branches, and the boundaries these queries are asserted against.
     const branch = window.matchMedia(DESKTOP_QUERY).matches
       ? 'desktop'
       : window.matchMedia(MOBILE_QUERY).matches

@@ -17,11 +17,11 @@ import type { Anchor } from './anchors';
  * `pathFor` (Task 6) is frame-agnostic — it takes two points in a single frame
  * and neither knows nor needs to know which one that is.
  *
- * `drawAt` *provides* the scale-by-pillar-count replacement for the shipped
- * Methodology section's hardcoded `/ 5.5` divisor, which cannot scale. That old
- * formula is still live at `Methodology.tsx:29` and nothing imports `drawAt`
- * yet, so the draw does **not** scale with pillar count today — this module is
- * the replacement, not the replacement applied. Stage 2 wires it in.
+ * `drawAt` *provides* the scale-by-pillar-count replacement for the landing
+ * page's hardcoded `/ 5.5` divisor, which cannot scale. Both halves of that
+ * sentence are history now: `landing/Methodology.tsx` retired with the other
+ * eleven sections, and Stage 2 wired the caller in — the walk's `onUpdate`
+ * draws segment `i` with `drawAt(progress, i, pillarCount)`.
  */
 
 /** Baseline y for the horizontal walk, in viewport heights. */

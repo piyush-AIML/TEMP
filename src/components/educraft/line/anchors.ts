@@ -9,9 +9,11 @@
  * boxes — given full-width, gapless acts at one offset — in different numbers.
  * The seam rule is that shape — an exit on the bottom edge, an enter
  * on the top edge, one shared horizontal fraction. `assertContinuity`
- * (`pathBuilders.ts`) checks it, but it is called from the test suite and from
- * nothing else — no runtime module calls it, so nothing checks this file at
- * load time. `anchors.test.ts` is what pins the values, and it has to: the
+ * (`pathBuilders.ts`) checks it. Stage 1 could say only that it was called from
+ * the test suite and from nothing else — no runtime module called it, so nothing
+ * checked this file at load time; Stage 2 wired that call site in `page.tsx`, at
+ * module evaluation, where a broken seam now fails the build.
+ * `anchors.test.ts` is what pins the values, and it has to: the
  * check is relative, so a coordinated edit that moves both sides of a seam
  * together passes it, and it is defined over a chain's *interior* only — the
  * first key's `enter` and the last key's `exit` have no seam against them. Nor

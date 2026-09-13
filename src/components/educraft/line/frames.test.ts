@@ -18,10 +18,10 @@ import {
  * These are the assertions that decide whether a strand is drawn at all. Stage 1
  * shipped three correct modules and a correct renderer with nothing joining
  * them; wiring them naively gives a rail at 0.33% of the viewBox and an arc of
- * 0.26px × 0.96px — arithmetic over the strings these modules return, since
- * nothing here renders and nothing imports `frames.ts` yet. Every value below is
- * therefore pinned to a literal, and the join invariant is asserted directly
- * rather than inferred from the numbers.
+ * 0.26px × 0.96px — arithmetic over the strings these modules return, since no
+ * test here renders. (The module itself has six importers now, `page.tsx` among
+ * them.) Every value below is therefore pinned to a literal, and the join
+ * invariant is asserted directly rather than inferred from the numbers.
  */
 
 describe('ACT_VIEW_BOX', () => {

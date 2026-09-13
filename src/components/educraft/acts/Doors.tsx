@@ -55,14 +55,21 @@ const keptBenefits = (door: AudienceEntry) => KEPT_BENEFITS[door.slug].map((i) =
  * `ACT_VIEW_BOX` over the section gives, and why the grid below reserves the
  * spine's gutter instead of the strand being moved aside.
  *
- * One residual, stated rather than implied: the strand is drawn to
- * `doors.exit`, which the contract fixes at **mid-band** (`y = 0.5`), while the
- * terminal node rides in `FinalCTA` at the primary CTA's edge. The two coincide
- * only if the button sits at the act's mid-band, which the current composition
- * does not place it at — the closer's own header and lede sit between the band's
- * top and its buttons. So the act ships as the contract says and the *alignment*
- * of line-end with node is the owner's visual QA (the plan's checklist item 10),
- * not something this file can decide by reading the anchors.
+ * **The residual, in both axes, stated rather than implied.** §4 asks for the
+ * strand to "converge to a single point, and that point is the CTA". The strand
+ * is drawn to `doors.exit`, which the seam contract fixes at **mid-band**
+ * (`y = 0.5`), while the terminal node rides in `FinalCTA` at the primary CTA's
+ * edge — and the CTA row is centred in a `max-w-3xl` box, so the buttons sit
+ * near the middle of the band while the node sits on the spine at 75%.
+ *
+ * Vertically the two cannot coincide: the closer's own eyebrow, heading and lede
+ * sit between the band's top and its buttons, so the line's end is above the
+ * button in every layout, by construction rather than by measurement.
+ * Horizontally they do not meet either, and that one is a design decision rather
+ * than a constraint: either the node moves to the button's centre (and the line
+ * stops ending on the spine, which breaks the seam contract's x), or the CTA row
+ * moves to the spine. Both are one-line changes; both are the owner's, and the
+ * plan's checklist item 10 is where the call is recorded.
  */
 export default function Doors({ className }: DoorsProps = {}) {
   const strand = pathFor(ACT_ANCHORS.doors.enter, ACT_ANCHORS.doors.exit, 'arc');

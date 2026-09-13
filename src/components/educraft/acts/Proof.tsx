@@ -36,7 +36,10 @@ const STATION_Y = 0.46;
 const TICK_BOTTOM_Y = 0.44;
 const TICK_XS = [0.15, 0.38, 0.62, 0.85] as const;
 
-/** Moved verbatim from `Impact.tsx` (§4). */
+/**
+ * Moved verbatim from `landing/Impact.tsx` (§4) — retired with the other eleven
+ * sections in Task 11, so this is provenance rather than a live reference.
+ */
 const CHAIN = [
   {
     title: 'Confidence',

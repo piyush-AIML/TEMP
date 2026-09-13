@@ -16,24 +16,26 @@ src/
 │
 ├── components/
 │   ├── educraft/
-│   │   ├── landing/            Hero · Ecosystem · ProgrammeExplorer · WhyDifferent ·
-│   │   │                       StudentJourney · ProgrammeDeepDive · Impact ·
-│   │   │                       AudienceEntryPoints · Methodology · Testimonials ·
-│   │   │                       InsightsTeaser · FinalCTA   (homepage sections)
+│   │   ├── acts/               The homepage's five acts — Origin · FivePillars ·
+│   │   │                       Way · Proof · Doors — with ActSection (the shared
+│   │   │                       frame, and the owner of the strand slot) and
+│   │   │                       FinalCTA. The retired landing/ sections left in
+│   │   │                       Stage 2 Task 11, with the three/ tree below.
+│   │   ├── line/               The strand: anchors.ts (the entry/exit contract) ·
+│   │   │                       frames.ts (viewBox policy, walk + ribbon frames,
+│   │   │                       the two arity seam assertions) · pathBuilders.ts ·
+│   │   │                       station.ts · LineStage.tsx
 │   │   ├── programme/          ProgrammePage.tsx — server component (children are
 │   │   │                       client components)
 │   │   ├── insights/           InsightsList.tsx
 │   │   ├── enquiry/            EnquiryForm.tsx · EnquiryModal.tsx
 │   │   ├── layout/             Navbar · Footer · PageHero · SkipLink
 │   │   ├── pages/              AudiencePage.tsx (shared by the 3 audience doors)
-│   │   ├── graphics/           ProgrammeGraphic · EcosystemGraphic ·
+│   │   ├── graphics/           ProgrammeGraphic ·
 │   │   │                       DecorativeSystems (dotted-constellation, topographic,
 │   │   │                       path-lines — the reusable backgrounds of the design
 │   │   │                       system)
-│   │   ├── motion/             Reveal · MagneticButton · CursorProvider
-│   │   ├── three/              ⚠️ BEING RETIRED — removed by the landing redesign
-│   │   │                       (core/ · primitives/ · scenes/ · hooks/; reachable
-│   │   │                       only from landing/Hero.tsx)
+│   │   ├── motion/             Reveal · MagneticButton · MaskLine
 │   │   └── ui/                 Button · Card · EnquireButton · Eyebrow ·
 │   │                           FaqAccordion · FloatingEnquiryButton ·
 │   │                           SectionHeading · Stat
@@ -48,22 +50,22 @@ src/
 │                               enquiries.jsonl*  (*runtime lead log; gitignored, contains
 │                               personal data — never commit)
 ├── design/                     tokens.ts · motion.ts · colors.ts · typography.ts
-├── hooks/                      useReveal · useReducedMotion · useScrollProgress ·
-│                               useParallax · useScrollLock · useSectionProgress
+├── hooks/                      useReveal · useReducedMotion · useScrollLock ·
+│                               useSectionProgress  (useScrollProgress and
+│                               useParallax left with the landing redesign)
 ├── lib/                        validation.ts · rate-limit.ts · utils.ts · pillarStyles.ts
 └── types/                      index.ts
 ```
 
-**Note on placement (differs from the original plan's sketch):** `EnquireButton` and
-`FloatingEnquiryButton` live in `ui/` (not `enquiry/`), and `useSceneActive` lives under
-`three/hooks/` (not `src/hooks/`). Enquiry state lives in `src/context/`, not inside `components/`.
+**Note on placement:** `EnquireButton` and `FloatingEnquiryButton` live in `ui/` (not `enquiry/`).
+Enquiry state lives in `src/context/`, not inside `components/`.
 
 **Confirmed deviations from the original V2 plan:** `scenes/ProgrammeScene.tsx` and
-`scenes/CTAAtmosphere.tsx` were proposed but never built as WebGL — the shipped `FinalCTA` uses SVG
-atmosphere on the existing single canvas, and programme pages shipped with no 3D at all. The whole
-`three/` tree that shipped instead is itself being retired by the landing redesign, which removes
-`three`, `@react-three/fiber`, `@react-three/drei`, `@types/three`, `useSceneActive` and the React
-`~19.2.8` pin.
+`scenes/CTAAtmosphere.tsx` were proposed but never built as WebGL — `FinalCTA` uses SVG atmosphere on
+the existing single canvas, and programme pages shipped with no 3D at all. The `three/` tree that
+shipped instead **left in Stage 2 Task 11**, with `landing/Hero.tsx`; `useSceneActive` lived under
+`three/hooks/` and went with it. The packages (`@react-three/fiber`, `@react-three/drei`,
+`@types/three`) and the React `~19.2.8` pin are Stage 4's.
 
 ## Generated and runtime directories (not in the tree above)
 
