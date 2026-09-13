@@ -79,63 +79,72 @@ export default function Way({ className }: WayProps = {}) {
   return (
     <ActSection
       id='way'
+      line={
+        <LineStage
+          paths={[strand]}
+          viewBox={ACT_VIEW_BOX}
+          className='pointer-events-none absolute inset-0'
+        />
+      }
       eyebrow='Why Educraft'
       heading='A different kind of education company.'
       lede='Most education offerings are collections of courses. Educraft is a connected system — five specialist verticals sharing one philosophy, one standard of evidence, and one view of the learner.'
       className={className}
     >
-      {/* The padding is outside this box on purpose: the strand is absolutely
-          positioned against it, and the rows must be measured against the same
-          width or a node sits beside the line instead of on it. */}
-      <div className='mx-auto max-w-5xl px-6 pb-24'>
-        <div className='relative'>
-          <LineStage
-            paths={[strand]}
-            viewBox={ACT_VIEW_BOX}
-            className='pointer-events-none absolute inset-0'
-          />
-
-          <ol className='relative'>
-            {DIFFERENTIATORS.map((item, index) => (
-              <li key={item.title} className='relative py-7' style={copyStyle}>
-                <span
-                  aria-hidden='true'
-                  // The numeral masks the strand behind it, so the line reads as
-                  // threaded through the nodes rather than struck through them.
-                  className='absolute top-7 -translate-x-1/2 bg-background px-1 type-caption font-bold text-ec-teal'
-                  style={nodeStyle}
-                >
-                  {numeral(index)}
-                </span>
+      {/* No `mx-auto max-w-5xl` here, and that is the point: the rows must span
+          the act, because the node's `SPINE_X` and the copy's gutter are both
+          read from the row's own width. At 75% of an inner 976px box every node
+          sat 104px off the line at 1440, while this file's comment claimed it
+          landed on it. The copy keeps its measure with `max-w-2xl` instead. */}
+      <div className='w-full pb-24'>
+        <ol>
+          {DIFFERENTIATORS.map((item, index) => (
+            <li key={item.title} className='relative py-7' style={copyStyle}>
+              <span
+                aria-hidden='true'
+                // The numeral masks the strand behind it, so the line reads as
+                // threaded through the nodes rather than struck through them.
+                className='absolute top-7 -translate-x-1/2 bg-background px-1 type-caption font-bold text-ec-teal'
+                style={nodeStyle}
+              >
+                {numeral(index)}
+              </span>
+              <div className='max-w-2xl pl-6'>
                 <h3 className='type-heading-s text-ec-ink dark:text-white'>{item.title}</h3>
                 <p className='type-body-s mt-2 text-ec-slate'>{item.description}</p>
-              </li>
-            ))}
-          </ol>
+              </div>
+            </li>
+          ))}
+        </ol>
 
-          <div className='relative mt-16' style={copyStyle}>
+        <div className='mt-16' style={copyStyle}>
+          <div className='max-w-2xl pl-6'>
             <Eyebrow className='text-ec-teal'>How it works</Eyebrow>
             <h3 className='type-heading-m mt-4 text-ec-ink dark:text-white'>
               Five steps, one method
             </h3>
             <p className='type-body-s mt-3 text-ec-slate'>{METHOD_LEDE}</p>
           </div>
+        </div>
 
-          <ol className='relative mt-8'>
-            {methodologySteps.map((step) => (
-              <li key={step.title} className='relative py-6' style={copyStyle}>
-                <span
-                  aria-hidden='true'
-                  className='absolute top-8 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ec-teal-graphic'
-                  style={nodeStyle}
-                />
+        <ol className='mt-8'>
+          {methodologySteps.map((step) => (
+            <li key={step.title} className='relative py-6' style={copyStyle}>
+              <span
+                aria-hidden='true'
+                className='absolute top-8 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ec-teal-graphic'
+                style={nodeStyle}
+              />
+              <div className='max-w-2xl pl-6'>
                 <h4 className='type-heading-s text-ec-ink dark:text-white'>{step.title}</h4>
                 <p className='type-body-s mt-2 text-ec-slate'>{step.description}</p>
-              </li>
-            ))}
-          </ol>
+              </div>
+            </li>
+          ))}
+        </ol>
 
-          <div className='relative mt-14' style={copyStyle}>
+        <div className='mt-14' style={copyStyle}>
+          <div className='max-w-2xl pl-6'>
             <Link
               href='/methodology'
               className='group inline-flex items-center gap-2 font-[family-name:var(--font-manrope)] font-semibold text-ec-indigo transition-opacity hover:opacity-80 dark:text-white'

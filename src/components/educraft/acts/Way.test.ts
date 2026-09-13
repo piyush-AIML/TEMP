@@ -12,6 +12,24 @@ describe('Act 2 — The Way', () => {
     expect(markup).toContain('Five steps, one method');
   });
 
+  it('positions the strand against the act, not an inner box', () => {
+    // The seam contract is act-local: `y = 0` must be the act's own top edge and
+    // `y = 1` its bottom, or the line stops short at every boundary. Measured:
+    // the strand's containing block was `div.mx-auto.max-w-5xl.px-6.pb-24`, so
+    // it began ~300px into the act and ended 96px above its bottom — a ~400px
+    // hole in the line the redesign is named after. Structural, not a class
+    // string: the strand's wrapper is the section's first child.
+    expect(markup).toMatch(/<section id="way"[^>]*><div class="[^"]*pointer-events-none absolute inset-0/);
+  });
+
+  it('measures the rows against the act, not a narrower box', () => {
+    // The node x and the copy gutter are both read from this row's own width, so
+    // the row must span the act: 75% of an inner 976px box put every node 104px
+    // off the line at 1440, while `Way.tsx`'s comment claimed they landed on it.
+    expect(markup).not.toContain('max-w-5xl');
+    expect(markup).toContain('padding-right:calc(25% + 2.75rem)');
+  });
+
   it('de-duplicates "Portfolios, dashboards" to a single statement', () => {
     // §4: it appeared 4 times across the landing page; the spec counted 4, the
     // tree holds 3 live strings, and exactly one survives here — inside
