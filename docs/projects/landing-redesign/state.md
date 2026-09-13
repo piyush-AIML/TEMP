@@ -33,14 +33,15 @@ structure** — the homepage still renders its 12 sections, with new colours.
 
 ## 2. Immediate next action
 
-**Stage 2 is in progress — 10 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
+**Stage 2 is in progress — 11 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
 `04b1702`; Task 2 (the join, `frames.ts`) → `048af65`; Task 3 (the two facts §8 leaves to JS) →
 `f9e0919`; Task 4 (`LineStage`'s render-only mode and the frame override) → `10291cd`, fix `8baddad`,
 corrections `620e35d` `6dd46c3`; Task 5 (Act 0 — Origin, `ActSection`, `MaskLine`) → `efab08b`, brief
 fixes `e2bf9f9`, fix round `862593b`; Task 6 (Act 1 — the walk, `drawAt`'s first call site) →
 `b32c33c`, fix round `7b59edd`; Task 7 (Act 1's ribbon) → `56fef24`, fix round `9368ef0`; Task 8
 (Act 2 — The Way) → `1ef625c`, fix round `91dd5f0`; Task 9 (Act 3 — Proof) → `c23aa8f`, fix round
-`b6f3acc`; Task 10 (Act 4 — the doors, and the strand's end) → `bba6671`, fix round `0fcdc39`. The
+`b6f3acc`; Task 10 (Act 4 — the doors, and the strand's end) → `bba6671`, fix round `0fcdc39`;
+Task 11 (the page, and the retirements) → `d4293b8`, fix round `1670425`. The
 live plan is `.claude/plans/landing-redesign-stage-2.md`; it moves into `stages/` when the stage
 closes.
 
@@ -52,11 +53,12 @@ verbatim at [`platform/archive/`](../../platform/archive/) and are one `cp` from
 Tasks 1–2 ran under the three-lens regime and Task 3 under the tiered one, so all three regimes are
 directly comparable on cost: **949k · 929k · 516k** per task.
 
-Next action: **Task 11** — the page, and the retirements — per `platform/execution.md`. One commit
-that changes what renders: `page.tsx` goes from 12 sections to 5 acts, `assertContinuity` gets its
-only runtime call site, and ~20 files are deleted, including `landing/FinalCTA.tsx` and the
-`landing/` directory. It is the only task whose review can see the whole composition, and it needs
-`rm -rf .next`. **Awaiting the owner: they sequence the work.**
+Next action: **Task 12** — `?calibrate=1`, and the stage's cross-cutting verification — per
+`platform/execution.md`. The last task: `src/lib/calibrate.ts` (pure, tested), `acts/Calibrate.tsx`
+(dev-only overlay) mounted in `page.tsx`, and the two source-scan checks in `gsap.test.ts` (every
+act pairs its GSAP with the reduced-motion query; no act renders `card-surface`). Then the stage-end
+pass: bulk mutation, the three lenses, the whole-branch review, ADRs, and the plan moving into
+`stages/`. **Awaiting the owner: they sequence the work.**
 
 
 ## 3. Blocked
@@ -75,7 +77,7 @@ against its own foreground — the hex this stage exists to retire, with no cons
 - **`assertContinuity` was re-specified, not wired as shipped (Task 1).** It demanded `exit == enter` as raw values, which no correct vertical chain can satisfy, because each anchor lives in its own act's box. It now checks the *shape* of a seam — exit on the act's bottom edge, entry on the next act's top edge, one shared horizontal fraction — and it **throws** on a chain with fewer than two acts, so a vacuous default cannot pass. Task 11 calls it at render from `page.tsx`, the only runtime call site.
 - **The walk's axis is decided (R1); Task 6 implements it.** The track travels **N viewports, not N−1**, so station `i` centres at `i/N` — exactly where `drawAt` begins drawing its segment — and each dwell moves one viewport. The spec's `(N−1)` formula is superseded and Task 6 corrects `spec.md` in the same commit. `drawAt` itself is unchanged: `clamp01(pillarCount * progress − index)` is *forced*, and do not "correct" it back toward the old tween.
 - **`LineStage`'s two gaps were Task 4's and are closed (`10291cd`).** `draw?: boolean` and `viewBox?: string` are additive with the default path byte-identical, and R7's three readerless constants now have six call sites across Tasks 5–10. **One residual, measured:** the `draw` default's *value* is unobservable to the suite — inverting it, or deleting it outright, leaves `15 passed (15)`, because markup never depends on `draw` and no test runs an effect. It is pinned by one literal and the comment beside it; it is the path Tasks 8–10 take, while `?calibrate=1` numbers only the two scrubbed acts (R16 — the owner's call if they want a number on it).
-- **A verbatim quotation in the plan was not in the document it cited (Task 4).** "The Stage 1 rulings name this gap twice" is false as written — `rulings.md` has no `render-only`, no `Act 1`, no `compose`; the homes are `state.md` §4 and `rulings.md:218` (R36, the `pin ∧ scrub` half). Corrected in the plan, and `10291cd`'s message repeats the attribution — unamended (R4), corrected in `8baddad`. **Check a citation resolves before inheriting it**; this is the second time this stage has paid for that.
+- **A verbatim quotation in the plan was not in the document it cited (Task 4).** "The Stage 1 rulings name this gap twice" is false as written — `rulings.md` has no `render-only`, no `Act 1`, no `compose`; the homes are `state.md` §4 and `rulings.md:218` (R36, the `pin ∧ scrub` half). Corrected in the plan, and `10291cd`'s message repeats the attribution — unamended (R4), corrected in `8baddad`. **Check a citation resolves before inheriting it**; this is the **third** time this stage has paid for that — Task 11's brief quoted a Stage 1 sentence that exists in no file (`anchors.ts` carries a different one), and the quote was copied into `page.tsx` as the requirement before the claims pass caught it. Three occurrences of one class is no longer a series of slips: **a recorded lesson is not an enforced one**, and the check has to run when a citation is *inherited*, not when the diff is reviewed.
 - **Any test that renders a component containing `EnquireButton` must wrap it in `EnquiryModalProvider`.** `useEnquiryModal` is called at render time and throws outside its provider, which lives in `app/(site)/layout.tsx`. Task 5's seven Origin cases died on this before the harness was fixed (`efab08b`), and every act carries a CTA, so Tasks 6–11's tests meet it again. Same family: `PROPS … as const` narrows a literal prop (`pillarCount: 5`), so test overrides are typed by the component's props — `Partial<OriginProps>` — not by `Partial<typeof PROPS>`.
 - **Act 0's H1 ships `type-display-xl`**, not the brief snippet's `type-display-l`. The brief's own prose said to keep whatever `Hero.tsx` used, and the two differ by a measured step — `clamp(3rem, 6.5vw + 0.75rem, 5.25rem)` against `clamp(2.5rem, 5vw + 1rem, 4.25rem)`. **One class to revert** if the smaller H1 was the intent; the plan carries the conflict.
 - **`ActSection` has no tests, and `MaskLine` is single-use.** Measured consumers: `Origin` → Task 11 alone; `ActSection` → Tasks 8, 9, 10; `MaskLine` → Task 5 only, though the plan's Interfaces line promised "Tasks 6–11" for all three. Spec §3.4's `Stagger.tsx` is created by no task. Routing later Motion reveals (station enter/exit, panel crossfade) through `MaskLine` is an open owner decision.
@@ -106,4 +108,7 @@ against its own foreground — the hex this stage exists to retire, with no cons
 - **A substring assertion can be satisfied by a sibling class.** Act 4's `toContain('divide-x')` passed with the base `divide-x` deleted, because `max-lg:divide-x-0` carries the same substring — so three unseparated columns shipped green. Assert the class *pair* the prose names. This is Task 6's "a check that cannot fail is not a check" in its cheapest form, and it will recur in any Tailwind assertion.
 - **The strand's box is the act's band, and that is a seam fact, not styling.** `inset-0` over the `<section>` makes act-local `y = 0` the act's top edge, where the previous act's exit lands. Way's box is the *content div*, so its strand starts below its header — a seam gap at Act 2's top edge, observed at Task 10 and **not fixed there** (Task 12's composition lens owns it).
 - **Token-against-token contrast must be measured, not assumed covered.** The node and the strand paint `ec-teal-graphic` on the closer's `bg-ec-indigo`; `colors.test.ts` measures tokens against *canvases* only. Measured at Task 10 with the repo's formula (cross-checked against two ratios the spec fixes, both reproduced): **light 4.01:1 · dark 3.50:1**, clearing 3:1. §6.6's lesson, one surface further out.
-- **Until Task 11 deletes it, two live copies of `FinalCTA` exist** — `landing/FinalCTA.tsx` (the page's today) and `acts/FinalCTA.tsx` (Act 4's). The second is a `diff`-verified superset; the differences are the `children` slot and the `relative` wrapper on the CTA row, and nothing imports both.
+- **Task 11's numbers, for the record:** 29 files changed, 65 insertions, 2419 deletions; the route table is identical before and after (49 route lines plus the middleware entry, which is the "50" §5 and Stage 1 counted differently). The retired set resolves to 11 `three/` files, matching the plan's correction of §5's 13.
+- **The homepage is enforced by exactly one check, and only when an anchor is wrong (R21).** No test file imports `page.tsx` or `layout.tsx` — so **deleting the `assertContinuity` call** passes the whole gate, and so does **`programmeName: programme.name` → `pillar.name`**, which renders the pillar's name where the programme's belongs: `Station` carries both fields, so the type system accepts it, and the probe measured 334 green with build exit 0. What *is* enforced is the wiring: breaking `doors.enter.x` by 0.01 fails the build with `Strand seam broken at proof.exit → doors.enter`, thrown at module evaluation of `page.tsx:61` — the first time this stage has proved an assertion fires rather than that it exists. Task 12's cross-cutting Step 5 scans the *acts*, not the page; a `page.test.ts` rendering `Home` under `EnquiryModalProvider` and asserting the five act ids in order would close it.
+- **The homepage's client weight is measured, and the baseline is gone.** First load for `/` is **15 chunks, 1214 KB raw / 353 KB gzip**; `/about`, `/programmes` and `/impact` — the same shell without the acts — are ~955 KB and 14 chunks, so the acts carry ~260 KB raw more. The 12-section baseline cannot be recovered: Task 11's own `rm -rf .next` removed it before the after-build ran. This discharges R18's owed measurement.
+- **Two comments now name files that Task 11 deleted** — `line/station.ts:32` (`useScrollProgress`) and `acts/FinalCTA.tsx:25` (`landing/FinalCTA.tsx`). Both historical rather than false, both cross-task references, both deliberately left for Task 12's Composition lens ("every cross-task reference resolves"). `src/hooks/useSectionProgress.ts` is also dead code — pre-existing, not orphaned there, and not on §5's list.
