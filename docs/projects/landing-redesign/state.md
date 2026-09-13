@@ -33,14 +33,15 @@ structure** — the homepage still renders its 12 sections, with new colours.
 
 ## 2. Immediate next action
 
-**Stage 2 is in progress — 8 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
+**Stage 2 is in progress — 9 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
 `04b1702`; Task 2 (the join, `frames.ts`) → `048af65`; Task 3 (the two facts §8 leaves to JS) →
 `f9e0919`; Task 4 (`LineStage`'s render-only mode and the frame override) → `10291cd`, fix `8baddad`,
 corrections `620e35d` `6dd46c3`; Task 5 (Act 0 — Origin, `ActSection`, `MaskLine`) → `efab08b`, brief
 fixes `e2bf9f9`, fix round `862593b`; Task 6 (Act 1 — the walk, `drawAt`'s first call site) →
 `b32c33c`, fix round `7b59edd`; Task 7 (Act 1's ribbon) → `56fef24`, fix round `9368ef0`; Task 8
-(Act 2 — The Way) → `1ef625c`, fix round `91dd5f0`. The live plan is
-`.claude/plans/landing-redesign-stage-2.md`; it moves into `stages/` when the stage closes.
+(Act 2 — The Way) → `1ef625c`, fix round `91dd5f0`; Task 9 (Act 3 — Proof) → `c23aa8f`, fix round
+`b6f3acc`. The live plan is `.claude/plans/landing-redesign-stage-2.md`; it moves into `stages/` when
+the stage closes.
 
 **Execution is a no-agent procedure as of 2026-09-13, on the owner's instruction.** No subagents run
 and no skill drives the loop: the assistant implements, verifies in three phases (contract → claims →
@@ -50,8 +51,9 @@ verbatim at [`platform/archive/`](../../platform/archive/) and are one `cp` from
 Tasks 1–2 ran under the three-lens regime and Task 3 under the tiered one, so all three regimes are
 directly comparable on cost: **949k · 929k · 516k** per task.
 
-Next action: **Task 9** — Act 3, Proof, and the second `ActSection` consumer — per
-`platform/execution.md`. **Awaiting the owner: they sequence the work.**
+Next action: **Task 10** — Act 4, the doors, and the strand's end — per `platform/execution.md`. It
+creates a **new** `acts/FinalCTA.tsx` and renders it from `Doors`; Task 11 then deletes
+`landing/FinalCTA.tsx`. **Awaiting the owner: they sequence the work.**
 
 
 ## 3. Blocked
@@ -81,7 +83,9 @@ against its own foreground — the hex this stage exists to retire, with no cons
 - **Re-extract the briefs after every plan edit, not just before a task.** Task 6's plan edits were not followed by `python3 .stage/sdd/extract-briefs.py`, so brief 7's recorded line range was stale by six lines (its content was current). Verify a brief by comparing its **section**, not only its range.
 - **Two observations from Task 7's contract pass, both recorded not acted on.** `RibbonStage` is exported and nothing imports it — `FivePillars` renders it internally, so the plan's stated reason for the export is false. And Act 1's only heading is an `<h3>` with no `<h2>` in the act, so the page reads h1 → h3 → h2 (`ActSection`); `_copy.md` marks the string `[VERBATIM]` from `StudentJourney`, so it is deliberate, but the a11y pass should rule.
 - **A server component is only server while a server parent renders it (Task 8's R18, open owner decision).** `ActSection` has no `'use client'`, but Tasks 8–10 import it from client act modules and `page.tsx` renders each act bare — so the frame and the act's copy travel in that route's client bundle. Its docstring now says so. **The alternative is Task 11's page wrapping each act in `<ActSection …>`**, which keeps the copy server-rendered; the bundle measurement is owed at Task 11, the first build with an act mounted. Do not "fix" this by adding `'use client'` — that would make the client cost explicit while losing the server-rendered option entirely.
-- **Pin the *bodies*, not the titles.** Task 8's first mutation run left 8 of 12 mutants alive because the brief's test pinned titles (of copy, of nodes) and not their content or positions — including the copy that exists so Task 11's deletion is verifiable. **The pattern has now appeared in Tasks 5, 6, 7 and 8**; the cheap rule is to ask, for every assertion, what would still pass if the thing it names were wrong.
+- **Pin the *bodies*, not the titles.** Task 8's first mutation run left 8 of 12 mutants alive because the brief's test pinned titles (of copy, of nodes) and not their content or positions — including the copy that exists so Task 11's deletion is verifiable. **The pattern has now appeared in Tasks 5, 6, 7, 8 and 9**; the cheap rule is to ask, for every assertion, what would still pass if the thing it names were wrong.
+- **When a brief's prose and its test disagree, follow the test and report it; when the prose promises a pin the test does not write, write the pin (R19).** Task 9 produced both cases in one document: Step 3 called each marginale a `<blockquote>` while the test asserted exactly one (followed the test — if three were intended, the assertion should be `toBe(3)`), and Step 3 said the tick positions should be pinned while the test pinned neither the ticks nor the axis (wrote the pin; three mutants had survived). **The prose and the test are written as one artefact and checked as two.**
+- **The seed testimonials are now load-bearing and visibly labelled.** Act 3 leans on them harder and says so in reader-facing text, per §4 — the launch blocker is unchanged and more visible, not less ([`platform/blockers.md`](../../platform/blockers.md)).
 - **Palette hexes are measured — copy them verbatim, never re-derive or "improve" them.** `src/design/colors.test.ts` enforces AA, and its token-against-token pair assertions (not only token-vs-canvas) are what caught a 2.64:1 button. **`colors.ts` and `globals.css` must carry identical hex values, and the suite now asserts that mirror** — an edit to either file alone fails.
 - **Tailwind 4 needs literal class names** — `bg-ec-${x}` emits no CSS; every pillar→class mapping is written out. `stroke-ec-teal-graphic` is verified emitted, by hand.
 - **`@theme inline` alias coverage is still unasserted.** A token declared in `:root`/`.dark` but missing from the `@theme inline` block emits **no Tailwind class** and passes the whole suite — the palette mirror test reads `:root`/`.dark` only. Adding a token means three places, and nothing checks the third.
