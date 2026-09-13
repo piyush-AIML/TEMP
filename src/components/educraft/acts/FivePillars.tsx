@@ -4,7 +4,7 @@ import { useRef, type CSSProperties } from 'react';
 import Link from 'next/link';
 import Eyebrow from '@/components/educraft/ui/Eyebrow';
 import { LineStage } from '@/components/educraft/line/LineStage';
-import { walkFrame } from '@/components/educraft/line/frames';
+import { ribbonFrame, walkFrame } from '@/components/educraft/line/frames';
 import { drawAt } from '@/components/educraft/line/station';
 import { pillarAccent } from '@/lib/pillarStyles';
 import {
@@ -14,7 +14,8 @@ import {
   stationScrollTarget,
   walkPinRangePx,
 } from '@/design/scroll';
-import { REDUCED_MOTION_QUERY, gsap, registerGsap, useGSAP } from '@/lib/gsap';
+import { motion as motionTokens } from '@/design/motion';
+import { EASE, REDUCED_MOTION_QUERY, gsap, registerGsap, useGSAP } from '@/lib/gsap';
 import type { PillarId } from '@/data/pillars';
 import type { Highlight } from '@/types';
 
@@ -28,13 +29,17 @@ export type Station = {
   href: string;
 };
 
+export type RibbonStage = { stage: string; title: string };
+
 export type FivePillarsProps = {
   stations: readonly Station[];
   /** `pillars.length` — the geometry is a function of it, never of `stations`. */
   pillarCount: number;
+  /** `studentJourneyStages` — six entries, from `data/pillars.ts`. */
+  stages: readonly RibbonStage[];
 };
 
-export default function FivePillars({ stations, pillarCount }: FivePillarsProps) {
+export default function FivePillars({ stations, pillarCount, stages }: FivePillarsProps) {
   const root = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   /** The pin's start in page pixels, published by the ScrollTrigger itself. */
@@ -233,6 +238,78 @@ export default function FivePillars({ stations, pillarCount }: FivePillarsProps)
           </li>
         ))}
       </ol>
+
+      <RibbonStage stages={stages} pillarCount={pillarCount} />
     </section>
+  );
+}
+
+/**
+ * The ribbon: the walk's N strands converge into one, and the six journey
+ * stages sit on that single strand, drawn left to right (spec §4 Act 1).
+ *
+ * A second `LineStage` with its own frame, because the ribbon is a different
+ * coordinate space from the walk — a horizontal document rather than a track of
+ * viewport-width slots. Its exit is read from `ACT_ANCHORS.pillars.exit` through
+ * `ribbonFrame`, so the seam into Act 2 is one number in one place.
+ */
+export function RibbonStage({ stages, pillarCount }: { stages: readonly RibbonStage[]; pillarCount: number }) {
+  const root = useRef<HTMLDivElement>(null);
+  const frame = ribbonFrame(stages.length, pillarCount);
+
+  useGSAP(
+    () => {
+      registerGsap();
+      const mm = gsap.matchMedia();
+      mm.add(`not all and ${REDUCED_MOTION_QUERY}`, () => {
+        const scope = root.current;
+        if (!scope) return;
+        const strand = gsap.utils.toArray<SVGPathElement>('[data-line-path]', scope).at(-1);
+        if (!strand) return;
+        // 700ms, the `reveal` token §10.2 binds to the ribbon draw.
+        gsap.fromTo(
+          strand,
+          { strokeDashoffset: 1 },
+          {
+            strokeDashoffset: 0,
+            ease: EASE.out,
+            duration: motionTokens.duration.reveal,
+            scrollTrigger: { trigger: scope, start: 'top 80%', once: true },
+          }
+        );
+      });
+      return () => mm.revert();
+    },
+    { scope: root, dependencies: [stages.length, pillarCount] }
+  );
+
+  return (
+    <div ref={root} className='relative mx-auto max-w-5xl px-6 py-24'>
+      <Eyebrow className='text-ec-teal'>The student journey</Eyebrow>
+      <h3 className='type-heading-m mt-4 text-ec-ink dark:text-white'>
+        Six stages, one direction: forward.
+      </h3>
+      <LineStage
+        paths={[...frame.convergence, frame.strand]}
+        viewBox={frame.viewBox}
+        draw={false}
+        className='relative mt-12 h-40 w-full'
+      >
+        <ol className='absolute inset-x-0 top-1/2 -translate-y-1/2'>
+          {stages.map((stage, index) => (
+            <li
+              key={stage.stage}
+              className='absolute -translate-x-1/2 text-center'
+              style={{ left: `${(frame.nodes[index].x / frame.width) * 100}%` }}
+            >
+              <span className='sr-only'>Stage {stage.stage}</span>
+              <span aria-hidden='true' className='type-body-s block text-ec-slate'>
+                {stage.title}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </LineStage>
+    </div>
   );
 }

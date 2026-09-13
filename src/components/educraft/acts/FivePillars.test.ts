@@ -28,8 +28,12 @@ const STATIONS: Station[] = [
   },
 ];
 
+// `stages` is required by the component (Task 7), so every render passes it —
+// including the walk's own tests, which therefore render the ribbon too. `STAGES`
+// is declared with the ribbon's suite below; the call is inside a test body, so
+// it is initialised by then.
 const render = (stations: Station[] = STATIONS, pillarCount = stations.length) =>
-  renderToStaticMarkup(createElement(FivePillars, { stations, pillarCount }));
+  renderToStaticMarkup(createElement(FivePillars, { stations, pillarCount, stages: STAGES }));
 
 describe('Act 1 — the walk', () => {
   it('renders every station as real DOM, in order', () => {
@@ -75,7 +79,11 @@ describe('Act 1 — the walk', () => {
 
   it('segments the rail one per station, for the per-station draw', () => {
     const markup = render();
-    expect((markup.match(/data-line-path/g) ?? []).length).toBe(2);
+    // The walk's segments, matched by shape rather than by `data-line-path`
+    // count: the ribbon renders a second `LineStage` in this component, so the
+    // bare count is five now, and what this test is about is that the *walk's*
+    // rail is one segment per station.
+    expect((markup.match(/M \d+ 0\.5 L \d+ 0\.5/g) ?? []).length).toBe(2);
     expect(markup).toContain('M 0 0.5 L 1 0.5');
     expect(markup).toContain('M 1 0.5 L 2 0.5');
   });
@@ -93,5 +101,57 @@ describe('Act 1 — the walk', () => {
     const markup = render();
     expect(markup).toContain('data-walk-track');
     expect(markup).toContain('data-walk-station');
+  });
+});
+
+const STAGES = [
+  { stage: '01', title: 'Curious' },
+  { stage: '02', title: 'Supported' },
+  { stage: '03', title: 'Practising' },
+  { stage: '04', title: 'Confident' },
+  { stage: '05', title: 'Capable' },
+  { stage: '06', title: 'Ready' },
+] as const;
+
+describe('Act 1 — the journey ribbon', () => {
+  const markup = renderToStaticMarkup(
+    createElement(FivePillars, { stations: STATIONS, pillarCount: 2, stages: STAGES })
+  );
+
+  it('puts all six stages on one continuing strand, left to right', () => {
+    let cursor = -1;
+    for (const stage of STAGES) {
+      const at = markup.indexOf(stage.title);
+      expect(at, `${stage.title} is rendered`).toBeGreaterThan(-1);
+      expect(at, `${stage.title} comes after the previous stage`).toBeGreaterThan(cursor);
+      cursor = at;
+    }
+  });
+
+  it('renders the ribbon in its own frame, not the walk frame', () => {
+    // Six stages plus a convergence slot and a trailing exit slot.
+    expect(markup).toContain('viewBox="0 0 8 1"');
+  });
+
+  it('converges one strand per pillar', () => {
+    const convergences = markup.match(/M 0 0\.\d+ C/g) ?? [];
+    expect(convergences.length).toBe(2);
+  });
+
+  it('exits on the page spine, as a fraction of its own frame', () => {
+    // pixels.exit.x === 0.75 * 8 — the value ACT_ANCHORS.pillars.exit holds, so
+    // the ribbon and the vertical acts cannot disagree about where the seam is.
+    expect(markup).toContain('L 6 1');
+  });
+
+  it('labels each stage with its number and title as real text', () => {
+    for (const stage of STAGES) expect(markup).toContain(`Stage ${stage.stage}`);
+  });
+
+  it('keeps the strand decorative', () => {
+    // Two strands now — the walk's and the ribbon's — and both must be hidden
+    // from assistive tech. A bare `toContain` passes on the walk's strand alone:
+    // measured, this test was green at the red phase, before any ribbon existed.
+    expect((markup.match(/<svg[^>]*aria-hidden="true"/g) ?? []).length).toBe(2);
   });
 });
