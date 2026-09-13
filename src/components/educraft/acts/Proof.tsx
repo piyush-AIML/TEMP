@@ -32,7 +32,8 @@ const NODE_GUTTER = '2.75rem';
  * `AXIS_Y` and `STATION_Y` now share with the strand.
  */
 const AXIS_Y = 0.4;
-const STATION_Y = 0.46;
+/** The station's top edge is the tick's end, which is what "on the axis" means. */
+const STATION_Y = 0.44;
 const TICK_BOTTOM_Y = 0.44;
 const TICK_XS = [0.15, 0.38, 0.62, 0.85] as const;
 
@@ -146,7 +147,15 @@ export default function Proof({ className }: ProofProps = {}) {
           How we build evidence
         </h3>
 
-        <div className='relative lg:h-[34rem]'>
+        {/* **Unpositioned on purpose.** A `relative` here would become the
+            stations' containing block, and their `left`/`top` would then be
+            fractions of this spacer while the strand's `AXIS_Y` is a fraction of
+            the act — two boxes, one supposed alignment, and nothing to catch the
+            drift. It shipped that way for one round: `lg:h-[34rem]` → `lg:h-[30rem]`
+            slid every station up the act, away from its tick, with 355 tests
+            green. As an unpositioned spacer it reserves the room; the numbers
+            both read the act. */}
+        <div className='lg:h-[44rem]'>
           <ul className='grid gap-8 sm:grid-cols-2 lg:block'>
             {CHAIN.map((station, index) => (
               <li

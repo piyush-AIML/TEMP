@@ -47,6 +47,14 @@ describe('Act 0 — Origin', () => {
     expect(markup).toContain('data-origin-fall');
     expect(markup).toContain('d="M 0.5 0.85 L 0.5 1"'); // the fall
     expect(markup).toContain('sm:hidden');
+    // The fall stage carries the arc as well as the fall. Measured: with the arc
+    // in the fork stage alone, the phone's hero rendered a 15vh stub with no line
+    // entering it and no seed marker — a regression against the previous commit,
+    // invisible to this file's other assertions.
+    const arc = pathFor(ACT_ANCHORS.origin.enter, ACT_ANCHORS.origin.exit, 'arc');
+    const fall = markup.slice(markup.indexOf('data-origin-fall'));
+    expect(fall).toContain(arc);
+    expect((fall.match(/data-line-path/g) ?? []).length).toBe(2);
   });
 
   it('renders the approved scroll cue', () => {
@@ -83,7 +91,7 @@ describe('Act 0 — Origin', () => {
     // is a second stage and a second path, and exactly one of the two displays.
     const fork = markup.slice(markup.indexOf('data-origin-fork'), markup.indexOf('data-origin-fall'));
     expect((fork.match(/data-line-path/g) ?? []).length).toBe(1 + 5);
-    expect((markup.match(/data-line-path/g) ?? []).length).toBe(1 + 5 + 1);
+    expect((markup.match(/data-line-path/g) ?? []).length).toBe(1 + 5 + 2);
   });
 
   it('uses the unit frame, so the act-local anchors need no arithmetic', () => {
@@ -112,8 +120,9 @@ describe('Act 0 — Origin', () => {
 
   it('scales to a sixth pillar with no rewrite', () => {
     const markup = render({ pillarCount: 6 });
-    // Six branches plus the arc in the fork stage, plus the phone's one fall.
-    expect((markup.match(/data-line-path/g) ?? []).length).toBe(1 + 6 + 1);
+    // Six branches plus the arc in the fork stage, plus the fall stage's arc
+    // and its fall.
+    expect((markup.match(/data-line-path/g) ?? []).length).toBe(1 + 6 + 2);
     // The branches and the nodes come from the same array, so a sixth branch
     // that no node marks is the join half-applied. Measured on Task 5's
     // mutation pass: without this, `seedAnchors(5)` left in place kept the

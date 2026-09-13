@@ -156,9 +156,20 @@ describe('Act 1 — the walk', () => {
   });
 
   it('keeps the rail inside the pinned viewport', () => {
-    // The pin holds the whole `<section>`; an in-flow rail sat 32px below the
-    // fold for all 400vh of the walk.
+    // Two rounds of getting this wrong, and the first check could not tell them
+    // apart: in flow, the rail sat 32px below the fold for all 400vh of the
+    // walk; given `lg:absolute` against the `<section>` — which is the walk
+    // *plus* the ribbon — it sat ~400px below instead. The class string alone
+    // cannot distinguish the correct nesting from either, so this reads the
+    // file: the rail must come after the pinned wrapper and before the ribbon.
     expect(render()).toContain('lg:absolute lg:inset-x-0 lg:bottom-6');
+    const source = readFileSync('src/components/educraft/acts/FivePillars.tsx', 'utf8');
+    const pin = source.indexOf('data-walk-pin');
+    const rail = source.indexOf('lg:inset-x-0 lg:bottom-6');
+    const ribbon = source.indexOf('<RibbonStage');
+    expect(pin).toBeGreaterThan(-1);
+    expect(rail, 'the rail is declared before the pinned wrapper').toBeGreaterThan(pin);
+    expect(rail, 'the rail is declared after the ribbon, so it is outside the wrapper').toBeLessThan(ribbon);
   });
 
   it('paints the pillar band instead of a border colour with no width', () => {

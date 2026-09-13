@@ -45,12 +45,18 @@ export default function ActSection({ id, line, eyebrow, heading, lede, className
     <section id={id} className={cn('relative', className)}>
       {line}
       {(eyebrow || heading || lede) && (
-        // The right gutter keeps the header's words clear of the spine when the
-        // spine's 75% falls inside the header's box: the box is `max-w-3xl`
-        // centred, so its right edge is at `(100vw + 48rem) / 2` and the
-        // padding is exactly the difference, floored at zero. Nothing to
-        // reserve above 1536px, where the spine clears the box on its own.
-        <header className='mx-auto max-w-3xl px-6 pt-24 md:pt-32 lg:pr-[max(0px,calc(24rem-25vw))]'>
+        // The right gutter keeps the header's words clear of the spine, which
+        // sits at 75% of the act and at every width below 1536px falls inside
+        // the header's own box. The reservation differs by regime because the
+        // box does: under `md` it is the full width minus `px-6`, so the gap is
+        // `25vw + 1.25rem` (the rows' `2.75rem` gutter, less the `1.5rem` of
+        // padding already there); from `md` up it is a centred `max-w-3xl`, so
+        // the gap is its right edge `(100vw + 48rem) / 2` minus `75vw`, plus the
+        // same gutter — `25.25rem - 25vw`. Above 1536px the spine clears the box
+        // unaided and the max floors it at zero. It was `lg:`-only for one
+        // round, which left the strand drawn across the heading at every width
+        // below 1024.
+        <header className='mx-auto max-w-3xl px-6 pt-24 pr-[calc(25vw+1.25rem)] md:pt-32 md:pr-[max(0px,calc(25.25rem-25vw))]'>
           {eyebrow && <Eyebrow className='eyebrow-rule text-ec-teal'>{eyebrow}</Eyebrow>}
           {heading && (
             <h2 className='type-heading-l mt-4 text-balance text-ec-ink dark:text-white'>{heading}</h2>

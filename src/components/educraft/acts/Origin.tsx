@@ -77,17 +77,18 @@ export default function Origin({
         const fallStage = scope.querySelector('[data-origin-fall]');
         const strands = forkStage ? gsap.utils.toArray<SVGPathElement>('[data-line-path]', forkStage) : [];
         const [arcPath, ...branches] = strands;
-        const fallPath = fallStage
-          ? gsap.utils.toArray<SVGPathElement>('[data-line-path]', fallStage)[0]
-          : undefined;
+        // The fall stage carries its own copy of the arc plus the fall, so the
+        // entrance draws at every width; exactly one stage is displayed.
+        const fallPaths = fallStage
+          ? gsap.utils.toArray<SVGPathElement>('[data-line-path]', fallStage)
+          : [];
         if (!arcPath) return;
 
         // The line continues the type: it draws as the headline's last line
-        // lands, on arrival rather than on scroll. The arc and the phone's fall
-        // are the same moment at two widths — exactly one of them is displayed,
-        // and each has exactly one tween.
+        // lands, on arrival rather than on scroll. Each path has exactly one
+        // tween: the arc at `sm` and up, the arc and the fall below it.
         gsap.fromTo(
-          [arcPath, fallPath].filter(Boolean),
+          [arcPath, ...fallPaths].filter(Boolean),
           { strokeDashoffset: 1 },
           { strokeDashoffset: 0, ease: EASE.out, duration: motionTokens.duration.hero }
         );
@@ -141,9 +142,13 @@ export default function Origin({
   return (
     <section id='origin' className='relative'>
       <div ref={root} className='relative flex h-screen items-center px-6'>
-        {/* One stage visible at a time, so the arc reaches the seeds on a phone
-            and forks into five everywhere else. The fork comes first in the DOM
-            because it is the composition; the fall is its phone substitute. */}
+        {/* Exactly one stage is displayed: the fork carries the arc, the five
+            branches and the seed nodes at `sm` and up; the fall carries the arc,
+            the single fall and one marker below it. The fork comes first in the
+            DOM because it is the composition; the fall is its phone substitute.
+            **The arc is in both on purpose** — it is the strand's entrance, and
+            putting it in the fork stage alone left the phone with a stub that
+            nothing entered. */}
         <div className='contents' data-origin-fork>
           <LineStage
             paths={[arc, ...forkPaths(pillarCount)]}
@@ -167,11 +172,24 @@ export default function Origin({
 
         <div className='contents' data-origin-fall>
           <LineStage
-            paths={[fall]}
+            // The arc as well as the fall: the arc is the strand's entrance, and
+            // it was in the fork stage alone — so below `sm` the hero rendered a
+            // 15vh stub with no line entering it, while its own comment claimed
+            // the opposite. The fall continues from the fork point the arc ends
+            // at, so the two compose the same journey at a narrower width.
+            paths={[arc, fall]}
             viewBox={ACT_VIEW_BOX}
             draw={false}
             className='pointer-events-none absolute inset-0 sm:hidden'
-          />
+          >
+            {/* One seed, at the fold — §8's fall is one strand, so it gets one
+                marker rather than the fan's five. */}
+            <span
+              aria-hidden='true'
+              style={{ left: '50%', top: '100%' }}
+              className='absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ec-teal-graphic'
+            />
+          </LineStage>
         </div>
 
         <div ref={copy} className='relative mx-auto w-full max-w-3xl md:mx-0 md:max-w-2xl'>

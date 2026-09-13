@@ -193,12 +193,20 @@ export default function FivePillars({ stations, pillarCount, stages }: FivePilla
     <section id='pillars' ref={root} className='relative'>
       {/* Desktop: pin + translate. Tablet: stack. Mobile: native snap.
           One structure, three CSS branches — identical DOM order in all of
-          them, which is what §9 requires under reduced motion. */}
-      <div
-        className='relative snap-x snap-mandatory overflow-x-auto sm:snap-none sm:overflow-x-visible lg:overflow-hidden'
-        data-walk-track
-        ref={scrollerRef}
-      >
+          them, which is what §9 requires under reduced motion.
+
+          This wrapper is the *pinned viewport* at `lg` — one screen tall — and
+          it exists so the rail has something to be pinned inside. Without it the
+          rail's `lg:bottom-6` resolved against the `<section>`, which is the
+          walk plus the whole ribbon: the control sat ~400px below the fold for
+          the entire 400vh pin, having previously sat 32px below it. Moving it
+          inside the scroller instead would have made it scroll away on mobile. */}
+      <div className='relative lg:h-screen' data-walk-pin>
+        <div
+          className='relative snap-x snap-mandatory overflow-x-auto sm:snap-none sm:overflow-x-visible lg:overflow-hidden'
+          data-walk-track
+          ref={scrollerRef}
+        >
         <div
           ref={track}
           className='relative flex w-[var(--track-w)] flex-row sm:w-full sm:flex-col lg:w-[var(--track-w)] lg:flex-row'
@@ -262,13 +270,14 @@ export default function FivePillars({ stations, pillarCount, stages }: FivePilla
             ))}
           </ol>
         </div>
-      </div>
+        </div>
 
       {/* §9: real buttons, not decorative dots — and inside the pinned viewport,
-          which is where they were not. The pin holds the whole `<section>` at
-          `top: 0`, whose first child is a one-viewport track, so an in-flow rail
-          sat 32px below the fold for all 400vh of the walk and reappeared only
-          as a footer, by which point it is too late to be a control. */}
+          which is where they were not. Two rounds of this: in flow they sat 32px
+          below the fold for all 400vh of the walk; given `lg:absolute` against
+          the `<section>` they sat ~400px below it, since the section is the walk
+          *plus* the ribbon. They position against the pinned wrapper now, and
+          stay in flow below `lg` so they never scroll away with the track. */}
       <ol className='mt-8 flex justify-center gap-3 lg:absolute lg:inset-x-0 lg:bottom-6 lg:z-10 lg:mt-0'>
         {stations.map((station, index) => (
           <li key={station.pillarId}>
@@ -286,6 +295,7 @@ export default function FivePillars({ stations, pillarCount, stages }: FivePilla
           </li>
         ))}
       </ol>
+      </div>
 
       <RibbonStage stages={stages} pillarCount={pillarCount} />
     </section>

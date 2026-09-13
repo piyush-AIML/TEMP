@@ -44,9 +44,16 @@ describe('Act 3 — Proof', () => {
     expect(markup).toMatch(
       /<section id="proof"[^>]*><div class="[^"]*pointer-events-none absolute inset-0 lg:hidden/
     );
-    // The stations read the same fractions the strand does.
+    // The stations read the same fractions the strand does — which is only true
+    // while nothing between the section and the `li` is positioned. Measured:
+    // with a `relative` spacer there, `lg:h-[34rem]` → `lg:h-[30rem]` slid every
+    // station 4rem up the act, away from its tick, with 355 tests green.
+    expect(markup).not.toMatch(/<div class="relative lg:h-/);
     expect(markup).toContain('left:15%');
-    expect(markup).toContain('top:46%');
+    // The station's top edge *is* the tick's end: the two numbers are one fact
+    // in two places, so pinning both is what stops them drifting apart.
+    expect(markup).toContain('top:44%');
+    expect(markup).toContain('M 0.15 0.4 L 0.15 0.44');
   });
 
   it('carries the seam with a plain spine below lg', () => {

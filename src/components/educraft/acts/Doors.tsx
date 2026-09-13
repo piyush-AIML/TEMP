@@ -73,9 +73,12 @@ const keptBenefits = (door: AudienceEntry) => KEPT_BENEFITS[door.slug].map((i) =
  */
 export default function Doors({ className }: DoorsProps = {}) {
   const strand = pathFor(ACT_ANCHORS.doors.enter, ACT_ANCHORS.doors.exit, 'arc');
-  // The copy sits left of the spine, so the grid reserves the same gutter the
-  // other vertical acts keep: the strand runs down the reserved strip, never
-  // across a door's words.
+  // The copy sits left of the spine, so the grid reserves a strip for the
+  // strand rather than letting it cross a door's words. Note the frame: this
+  // `25%` is of the grid's own `max-w-5xl` box, where `Way`'s and `Proof`'s are
+  // of the act. Same value, wider reservation — their copy stops 44px short of
+  // the spine and this one ~160px at 1440 — which is safe either way, but it is
+  // the one act whose copy column is not measured against the act it sits in.
   const copyStyle = { paddingRight: `calc(${(1 - SPINE_X) * 100}% + ${NODE_GUTTER})` };
 
   return (

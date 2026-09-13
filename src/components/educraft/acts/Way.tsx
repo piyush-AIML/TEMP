@@ -97,9 +97,11 @@ export default function Way({ className }: WayProps = {}) {
     >
       {/* No `mx-auto max-w-5xl` here, and that is the point: the rows must span
           the act, because the node's `SPINE_X` and the copy's gutter are both
-          read from the row's own width. At 75% of an inner 976px box every node
-          sat 104px off the line at 1440, while this file's comment claimed it
-          landed on it. The copy keeps its measure with `max-w-2xl` instead. */}
+          read from the row's own width. At 75% of an inner 976px box, centred in
+          1440, every node sat at 964px while the strand — drawn against the act —
+          was at 1080: **116px off the line**, and the strand's own box began
+          ~300px into the act besides. The copy keeps its measure with
+          `max-w-2xl` instead of the container width. */}
       <div className='w-full pb-24'>
         <ol>
           {DIFFERENTIATORS.map((item, index) => (
