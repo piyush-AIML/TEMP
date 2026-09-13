@@ -33,13 +33,13 @@ structure** — the homepage still renders its 12 sections, with new colours.
 
 ## 2. Immediate next action
 
-**Stage 2 is in progress — 6 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
+**Stage 2 is in progress — 7 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
 `04b1702`; Task 2 (the join, `frames.ts`) → `048af65`; Task 3 (the two facts §8 leaves to JS) →
 `f9e0919`; Task 4 (`LineStage`'s render-only mode and the frame override) → `10291cd`, fix `8baddad`,
 corrections `620e35d` `6dd46c3`; Task 5 (Act 0 — Origin, `ActSection`, `MaskLine`) → `efab08b`, brief
 fixes `e2bf9f9`, fix round `862593b`; Task 6 (Act 1 — the walk, `drawAt`'s first call site) →
-`b32c33c`, fix round `7b59edd`. The live plan is `.claude/plans/landing-redesign-stage-2.md`; it moves
-into `stages/` when the stage closes.
+`b32c33c`, fix round `7b59edd`; Task 7 (Act 1's ribbon) → `56fef24`, fix round `9368ef0`. The live plan
+is `.claude/plans/landing-redesign-stage-2.md`; it moves into `stages/` when the stage closes.
 
 **Execution is a no-agent procedure as of 2026-09-13, on the owner's instruction.** No subagents run
 and no skill drives the loop: the assistant implements, verifies in three phases (contract → claims →
@@ -49,11 +49,8 @@ verbatim at [`platform/archive/`](../../platform/archive/) and are one `cp` from
 Tasks 1–2 ran under the three-lens regime and Task 3 under the tiered one, so all three regimes are
 directly comparable on cost: **949k · 929k · 516k** per task.
 
-Next action: **Task 7** — Act 1's tail, the journey ribbon — per `platform/execution.md`. It edits
-`FivePillars.tsx` (created by Task 6, and it must not re-create it), appends to
-`FivePillars.test.ts` on the same `STATIONS` fixture, and adds `FivePillarsProps.stages` — which
-**Task 11's page already passes**, so this edit is not optional for Task 11 to build. **Awaiting the
-owner: they sequence the work.**
+Next action: **Task 8** — Act 2, The Way, and `ActSection`'s first consumer — per
+`platform/execution.md`. **Awaiting the owner: they sequence the work.**
 
 
 ## 3. Blocked
@@ -78,7 +75,10 @@ against its own foreground — the hex this stage exists to retire, with no cons
 - **`ActSection` has no tests, and `MaskLine` is single-use.** Measured consumers: `Origin` → Task 11 alone; `ActSection` → Tasks 8, 9, 10; `MaskLine` → Task 5 only, though the plan's Interfaces line promised "Tasks 6–11" for all three. Spec §3.4's `Stagger.tsx` is created by no task. Routing later Motion reveals (station enter/exit, panel crossfade) through `MaskLine` is an open owner decision.
 - **A CSS-containment test must slice the media block, not search the file.** `gsap.test.ts` has a `blockSpan` helper for exactly this, and Task 6's P12 measures why: hoisting `[data-walk-station]` out of the reduced-motion block to the end of the file leaves every string present, so a whole-file `toContain` passes while shipping an unconditional override. **A check that cannot fail is not a check** — the brief's Step 5 snippet also referenced a `reducedMotionBlock` that does not exist.
 - **The walk's rail click is untested and `?calibrate=1` will not reach it** (it reports state, not interaction). Three branches, one of which moves the page; Task 6's largest untested surface, and the owner's in QA.
-- **`pillarCount` vs `stations.length` is unenforced.** Task 6's comment says the geometry is a function of `pillarCount` "never of `stations`", and a mutant taking the `drawAt` axis from `stations.length` survives — as does dropping `draw={false}`, which would put `LineStage`'s in-view tween and the act's scrub on the same property, the one thing the engine split forbids.
+- **`pillarCount` vs `stations.length` is unenforced.** Task 6's comment says the geometry is a function of `pillarCount` "never of `stations`", and a mutant taking the `drawAt` axis from `stations.length` survives — as does dropping `draw={false}`, which would put `LineStage`'s in-view tween and the act's scrub on the same property, the one thing the engine split forbids. The ribbon's own arity is now pinned (Task 7); the walk's is not.
+- **The ribbon's strand doubles back (Task 7's R17, owner's call).** Measured: `ribbonFrame(6, 2)` gives nodes `1.5 … 6.5` and `exit {x: 6, y: 1}`, so the strand runs right to the last node and then travels **0.5 units left** to the exit — `… L 6.5 0.5 L 6 1`. Three individually-correct decisions combine (unit spacing from 1.5 in, width `stageCount + 2`, exit pinned to the spine at `0.75 × width`) and above three stages the exit must precede the last node. The seam is unaffected; the visual is a backward hook on the line the eye is following into Act 2. Task 2's verification could not have caught it — it compared mutants for equivalence, not geometry for intent. **Do not "fix" it in a later task without the owner's ruling**; the options are to move the nodes, widen the frame, or accept it.
+- **Re-extract the briefs after every plan edit, not just before a task.** Task 6's plan edits were not followed by `python3 .stage/sdd/extract-briefs.py`, so brief 7's recorded line range was stale by six lines (its content was current). Verify a brief by comparing its **section**, not only its range.
+- **Two observations from Task 7's contract pass, both recorded not acted on.** `RibbonStage` is exported and nothing imports it — `FivePillars` renders it internally, so the plan's stated reason for the export is false. And Act 1's only heading is an `<h3>` with no `<h2>` in the act, so the page reads h1 → h3 → h2 (`ActSection`); `_copy.md` marks the string `[VERBATIM]` from `StudentJourney`, so it is deliberate, but the a11y pass should rule.
 - **Palette hexes are measured — copy them verbatim, never re-derive or "improve" them.** `src/design/colors.test.ts` enforces AA, and its token-against-token pair assertions (not only token-vs-canvas) are what caught a 2.64:1 button. **`colors.ts` and `globals.css` must carry identical hex values, and the suite now asserts that mirror** — an edit to either file alone fails.
 - **Tailwind 4 needs literal class names** — `bg-ec-${x}` emits no CSS; every pillar→class mapping is written out. `stroke-ec-teal-graphic` is verified emitted, by hand.
 - **`@theme inline` alias coverage is still unasserted.** A token declared in `:root`/`.dark` but missing from the `@theme inline` block emits **no Tailwind class** and passes the whole suite — the palette mirror test reads `:root`/`.dark` only. Adding a token means three places, and nothing checks the third.
