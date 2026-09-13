@@ -36,6 +36,26 @@ describe('Act 3 — Proof', () => {
     expect(markup).toContain('viewBox="0 0 1 1"');
   });
 
+  it('pins the axis geometry, ticks included', () => {
+    // The plan's own words: these are internal geometry the seam contract does
+    // not cover, "and pinning them in the test is what makes a change visible".
+    // Measured — dropping the ticks, moving them along the axis, and moving the
+    // axis itself down the act all left the suite green.
+    expect(markup).toContain('M 0.15 0.4 L 0.85 0.4'); // the run between the arcs
+    for (const x of [0.15, 0.38, 0.62, 0.85]) {
+      expect(markup, `tick at ${x}`).toContain(`M ${x} 0.4 L ${x} 0.44`);
+    }
+  });
+
+  it('leads with the first testimonial, not whichever comes last', () => {
+    // `_copy.md`: the pull quote is `testimonials[0]` and the marginalia are
+    // [1] and [2]. Measured — reversing the list left the suite green, because
+    // every quote still appears somewhere. Read from inside the blockquote,
+    // which is what makes the *position* the assertion.
+    const blockquote = /<blockquote[^>]*>([\s\S]*?)<\/blockquote>/.exec(markup)?.[1] ?? '';
+    expect(blockquote).toContain('For the first time, we could actually see');
+  });
+
   it('leads with one quote and two marginalia, not three cards', () => {
     expect((markup.match(/<blockquote/g) ?? []).length).toBe(1);
     // The entities compile to the character itself, so the assertion is on

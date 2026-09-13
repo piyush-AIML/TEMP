@@ -2900,6 +2900,26 @@ describe('Act 3 — Proof', () => {
     expect(markup).toContain('viewBox="0 0 1 1"');
   });
 
+  it('pins the axis geometry, ticks included', () => {
+    // The plan's own words: these are internal geometry the seam contract does
+    // not cover, "and pinning them in the test is what makes a change visible".
+    // Measured — dropping the ticks, moving them along the axis, and moving the
+    // axis itself down the act all left the suite green.
+    expect(markup).toContain('M 0.15 0.4 L 0.85 0.4'); // the run between the arcs
+    for (const x of [0.15, 0.38, 0.62, 0.85]) {
+      expect(markup, `tick at ${x}`).toContain(`M ${x} 0.4 L ${x} 0.44`);
+    }
+  });
+
+  it('leads with the first testimonial, not whichever comes last', () => {
+    // `_copy.md`: the pull quote is `testimonials[0]` and the marginalia are
+    // [1] and [2]. Measured — reversing the list left the suite green, because
+    // every quote still appears somewhere. Read from inside the blockquote,
+    // which is what makes the *position* the assertion.
+    const blockquote = /<blockquote[^>]*>([\s\S]*?)<\/blockquote>/.exec(markup)?.[1] ?? '';
+    expect(blockquote).toContain('For the first time, we could actually see');
+  });
+
   it('leads with one quote and two marginalia, not three cards', () => {
     expect((markup.match(/<blockquote/g) ?? []).length).toBe(1);
     // The entities compile to the character itself, so the assertion is on
@@ -2935,6 +2955,15 @@ The act composes one strand in the unit frame — `viewBox={ACT_VIEW_BOX}`, so t
 - the pull quote is `testimonials[0]`, large, in open space, wrapped in `&ldquo;`/`&rdquo;` exactly as the retired section wrapped it, with `{name}` and `{role} · {context}` beneath; the two remaining testimonials are marginalia under `border-t border-ec-border`, each a `<blockquote>` with its own attribution.
 
 The axis's tick positions are **literals in the act**, not derived from the anchor contract: they are internal geometry the seam assertions do not cover, and pinning them in the test is what makes a change visible.
+
+*(Corrected 2026-09-13, on Task 9's implementation and verification pass — four items, all measured:)*
+
+1. **This paragraph and the test above disagreed, and the test was right.** The prose says each marginale is "a `<blockquote>` with its own attribution"; the test asserts **exactly one** `<blockquote>` in the act. The test is the executable contract and its title states the intent — "leads with one quote and two marginalia" — so the marginalia are figures whose quote is wrapped in curly quotes, and all three carry them (the `“` count is 3, as the test says). **If semantic blockquotes for all three were intended, the assertion is `toBe(1)` and should be `toBe(3)`.**
+2. **"Pinning them in the test is what makes a change visible" was not done by the test.** Dropping the ticks, moving them along the axis, and moving the axis itself all left the suite green. Now pinned — the run between the arcs and all four tick paths — which is the paragraph's own standard applied.
+3. **The pull quote's identity was unpinned.** Reversing the testimonial list kept every quote in the markup and every assertion passing, so the act could have led with the wrong quote. The new test reads from *inside* the blockquote, which is what makes the position the assertion.
+4. **The brief does not say what happens below `lg`.** Four labels cannot sit on a scale on a phone, so the act stacks the stations and hides the strand there; §9 already wants a plain vertical document under reduced motion, and the DOM order is identical in both branches. Recorded because it is a design decision the plan left open rather than a reading of it.
+
+**The `/impact` half was confirmed where the obligations table placed it** — `app/(site)/impact/page.tsx:61` still reads `4 Audiences served — … · Partners`, and this task does not touch it. Stage 3's obligation stands.
 
 - [ ] **Step 4: Run the tests and the gate**
 
