@@ -100,8 +100,13 @@ describe('Act 0 — Origin', () => {
   });
 
   it('keeps the strand decorative', () => {
+    // Measured: `toContain('aria-hidden="true"')` was satisfied by the seed-node
+    // wrapper, so removing `aria-hidden` from the strand's own `<svg>` left this
+    // file's 7 cases green while `LineStage.test.ts` caught it. The assertion
+    // has to name the strand, not any element that happens to be hidden.
     const markup = render();
-    expect(markup).toContain('aria-hidden="true"');
+    expect((markup.match(/<svg[^>]*aria-hidden="true"/g) ?? []).length).toBe(2);
+    expect(markup).toMatch(/<svg viewBox="0 0 1 1"[^>]*aria-hidden="true"/);
     expect(markup).not.toContain('role="img"');
   });
 

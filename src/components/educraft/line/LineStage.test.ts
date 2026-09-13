@@ -153,4 +153,18 @@ describe('LineStage render-only mode', () => {
       'viewBox="0 0 5 1"'
     );
   });
+
+  it('stretches the frame, and keeps the stroke a constant width', () => {
+    // All three attributes are load-bearing and none of them was pinned.
+    // Measured: deleting `preserveAspectRatio` left 334 passed. Without it the
+    // walk's `0 0 N 1` frame letterboxes — the SVG scales by `min(w/N, h)`, so a
+    // 500vw track draws its rail into the first viewport-width of itself and
+    // stops tracking the stations — and every vertical act's `0 0 1 1` strand
+    // shrinks into the middle of its box. `non-scaling-stroke` is what keeps the
+    // stroke 2px when the frame is stretched non-uniformly.
+    const markup = render({ paths: ['M 0 0 L 1 1'], viewBox: '0 0 1 1' });
+    expect(markup).toContain('preserveAspectRatio="none"');
+    expect(markup).toContain('vector-effect="non-scaling-stroke"');
+    expect(markup).toContain('stroke-width="2"');
+  });
 });

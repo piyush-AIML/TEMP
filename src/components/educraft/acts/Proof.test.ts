@@ -57,6 +57,36 @@ describe('Act 3 — Proof', () => {
     expect(markup).toContain('hidden lg:block');
   });
 
+  it('keeps the four stations in order, each on its own tick', () => {
+    // Measured before this: the check compared first against last, so swapping
+    // two interior stations — titles, bodies and tick positions together — left
+    // the file green. The evidence chain could run in the wrong order with the
+    // axis unchanged.
+    const titles = [...markup.matchAll(/<h4[^>]*>([^<]+)<\/h4>/g)].map((m) => m[1]);
+    expect(titles).toEqual(['Confidence', 'Engagement', 'Skill', 'Readiness']);
+    for (const x of ['15%', '38%', '62%', '85%']) {
+      expect(markup, `no station at ${x}`).toContain(`left:${x}`);
+    }
+  });
+
+  it('renders Act 3’s copy verbatim', () => {
+    // Measured: truncating a station body, and replacing the eyebrow and the
+    // heading together, each left all 8 cases green. Act 3's copy — the act
+    // header, the axis label, the four bodies, the seed warning — was pinned by
+    // nothing, which is the "pins titles but not bodies" class restated.
+    // Escaped the way React writes them: `&` and `"` are entities in the output.
+    for (const line of [
+      'Outcomes &amp; evidence',
+      'What &quot;better learning&quot; looks like here',
+      'We do not claim transformation with adjectives.',
+      'How we build evidence',
+      'Students who can see their own progress',
+      'These are placeholder quotes pending consented testimonials.',
+    ]) {
+      expect(markup, line).toContain(line);
+    }
+  });
+
   it('pins the axis geometry, ticks included', () => {
     // The plan's own words: these are internal geometry the seam contract does
     // not cover, "and pinning them in the test is what makes a change visible".

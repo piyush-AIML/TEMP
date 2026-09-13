@@ -124,6 +124,22 @@ describe('Act 4 — the doors', () => {
     }
   });
 
+  it('keeps each door’s benefits in the data’s order', () => {
+    // Measured: swapping `benefits[0]` and `benefits[1]` for `schools` in
+    // `data/navigation.ts` — a literal reorder — left 13 passed, because only
+    // set membership is asserted. `Doors.tsx`'s docstring promised that "a
+    // reorder in the data is a failing test", and Task 10's record certified it
+    // "true, measured": presence is not order, and the claim was one step
+    // ahead of the check.
+    const first = 'One partner across five specialist verticals';
+    const second = 'Consistent reporting and progress visibility';
+    expect(markup.indexOf(first)).toBeGreaterThan(-1);
+    expect(markup.indexOf(second)).toBeGreaterThan(-1);
+    expect(markup.indexOf(first), 'the door’s kept benefits are out of order').toBeLessThan(
+      markup.indexOf(second)
+    );
+  });
+
   it('wires each door to its own ctaHref, not the audience landing page', () => {
     // §4: `ctaLabel` is "rendered for the first time", and it goes to
     // `ctaHref`. The retired component pointed every door at
