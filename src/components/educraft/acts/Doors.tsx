@@ -25,8 +25,10 @@ const SPINE_X = ACT_ANCHORS.doors.enter.x;
 const NODE_GUTTER = '2.75rem';
 
 /**
- * §4 trims each door's four benefits to two — "the two that name something
- * concrete", against the two that could appear on any education site.
+ * §4 trims each door's four benefits to two ("Benefits trimmed 4 → 2"); the cut
+ * table in `_copy.md` names the two kept as "the two that name something
+ * concrete" and the two dropped as the ones that could appear on any education
+ * site.
  *
  * **Positions, not strings.** The copy lives in `data/navigation.ts`; repeating
  * it here would be a second source that can drift from the first. `Doors.test.ts`

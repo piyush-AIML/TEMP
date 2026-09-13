@@ -57,6 +57,29 @@ describe('Act 4 — the doors', () => {
     expect(markup).toContain('divide-x');
   });
 
+  it('keeps the rules the brief names, not just any class containing “divide-x”', () => {
+    // Measured: dropping the base `divide-x` altogether left the suite green,
+    // because `max-lg:divide-x-0` — which stays either way — contains the same
+    // substring. The brief names the pair and the collapse, so they are what is
+    // asserted. **A check that cannot fail is not a check** (Task 6's P12).
+    expect(markup).toContain('divide-x divide-ec-border');
+    expect(markup).toContain('max-lg:divide-x-0 max-lg:divide-y');
+  });
+
+  it('keeps the strand’s box, the act’s anchor and the closer’s band', () => {
+    // Four class strings the prose states as requirements and no assertion
+    // covered — each left the suite green when mutated, and the first is the
+    // seam's whole meaning: `inset-0` makes the box the act's band, so
+    // act-local `y = 0` is the act's top edge, where Act 3's exit lands.
+    expect(markup).toContain('pointer-events-none absolute inset-0 z-10');
+    expect(markup).toContain('id="doors"'); // ActSection's id, from `ACT_ORDER`
+    expect(markup).toContain('items-center relative'); // the node's positioning context
+    expect(markup).toContain('py-24 md:py-36'); // §4: the closer's band is "kept"
+    // The reserved strip: `1 - SPINE_X` plus the gutter, so the strand runs
+    // down the space the grid gives up rather than across a door's copy.
+    expect(markup).toContain('padding-right:calc(25% + 2.75rem)');
+  });
+
   it('ends the strand on the CTA node', () => {
     // doors.exit is { x: 0.75, y: 0.5 } — mid-band, because the strand stops
     // here rather than leaving the page.
@@ -73,7 +96,8 @@ describe('Act 4 — the doors', () => {
   // ---- Pins the brief's prose promises but its test did not write (R19) ----
 
   it('renders Act 4’s own header, verbatim', () => {
-    // `_copy.md` Act 4 rows 1–3, all `[VERBATIM]` from `AudienceEntryPoints.tsx`.
+    // The first three Act 4 rows of `_copy.md`, all `[VERBATIM]` from
+    // `AudienceEntryPoints.tsx` (measured: each string present in that file).
     // The brief's Step 1 pinned the doors and the closer and left the frame's
     // own copy unasserted, so a blank or reworded eyebrow/heading/lede — the
     // three strings that tell the reader what this act *is* — passed.
@@ -85,9 +109,11 @@ describe('Act 4 — the doors', () => {
   });
 
   it('keeps all six surviving benefits, not just the two named in the brief', () => {
-    // The brief named one kept benefit per door in its `kept` loop and left the
-    // other three unpinned; `_copy.md`'s cut table keeps six. Measured target:
-    // dropping any single kept benefit left the suite green.
+    // The brief's `kept` loop names two of the six strings `_copy.md`'s cut
+    // table keeps — `One partner across five specialist verticals` and `Mentors
+    // who actually know your name` — and leaves the other four unasserted:
+    // nothing in its Step 1 mentions `Consistent reporting`, `Regular,
+    // plain-language`, `Visible learning plans`, or `Portfolio projects`.
     for (const kept of [
       'Consistent reporting and progress visibility',
       'Regular, plain-language progress updates',
