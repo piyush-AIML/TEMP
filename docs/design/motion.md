@@ -41,6 +41,7 @@ The redesign retires the orbit scene entirely. The removed packages are `three`,
 ### Motion components (`components/educraft/motion/`)
 
 - `Reveal` — polymorphic via `createElement`; direction / delay / distance / duration.
+- `MaskLine` — the H1's line-mask reveal: a line translating inside an `overflow-hidden` box, eased by `bezierControlPoints(motion.easing.out)` so the mask and the strand share a curve. **The repo's first `motion/react` consumer** (Stage 2 Task 5); Motion owns the inner span's `transform` and GSAP never touches it.
 - `MagneticButton` — fine-pointer only, strength clamped.
 - `CursorProvider` — fine-pointer + non-reduced-motion only; the ring scales over interactive elements; contextual label via `data-cursor-label`, currently used on ecosystem nodes.
 
@@ -61,4 +62,4 @@ The redesign retires the orbit scene entirely. The removed packages are `three`,
 
 ### Where scroll calibration is verified
 
-Because the assistant never launches a browser, calibration is **encoded as pure functions with Vitest tests** — `stationPositions(N)`, `perStationVh(N)`, `pathFor`, `drawAt`, and `assertContinuity` (each act's exit anchor must equal the next act's entry anchor). A dev-only `?calibrate=1` overlay prints scrub progress, active station, draw fraction and breakpoint branch so visual QA produces reportable numbers rather than impressions.
+Because the assistant never launches a browser, calibration is **encoded as pure functions with Vitest tests** — `stationPositions(N)`, `perStationVh(N)`, `pathFor`, `drawAt`, and `assertContinuity`. **The seam rule is a shape, not an equality:** each act's exit sits on its own bottom edge, the next act's entry on its top edge, and the two share one horizontal fraction. An earlier version of this line — and of `spec.md` §10.1, corrected in Stage 2 Task 1 — said the two anchors must be equal as values, which no correct vertical chain can satisfy, since each anchor lives in its own act's box. A chain of fewer than two acts **throws** rather than passing vacuously. A dev-only `?calibrate=1` overlay prints scrub progress, active station, draw fraction and breakpoint branch so visual QA produces reportable numbers rather than impressions.
