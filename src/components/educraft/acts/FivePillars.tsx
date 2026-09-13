@@ -67,8 +67,16 @@ export default function FivePillars({ stations, pillarCount, stages }: FivePilla
         if (!scope || !trackEl || isReduced) return;
         if (!isDesktop) return; // tablet and mobile own their behaviour in CSS
 
-        const segments = gsap.utils.toArray<SVGPathElement>('[data-line-path]', scope);
-        if (segments.length === 0) return;
+        // The walk's own paths, and only them. `scope` is the whole `<section>`,
+        // which contains the ribbon: writing `drawAt(progress, i, pillarCount)`
+        // to everything it found set the ribbon's seven paths to
+        // `strokeDashoffset: 1` on every scroll tick, because `drawAt` is 0 for
+        // every `i ≥ pillarCount`. Two owners on one property — and the ribbon's
+        // own draw is `once: true`, so scrolling back into the pin and out again
+        // left the convergence and the strand undrawn for good.
+        const rail = scope.querySelector('[data-walk-rail]');
+        const segments = rail ? gsap.utils.toArray<SVGPathElement>('[data-line-path]', rail) : [];
+        if (segments.length !== frame.railSegments.length) return;
 
         const trigger = {
           trigger: scope,
@@ -301,19 +309,27 @@ export function RibbonStage({ stages, pillarCount }: { stages: readonly RibbonSt
       mm.add(`not all and ${REDUCED_MOTION_QUERY}`, () => {
         const scope = root.current;
         if (!scope) return;
-        const strand = gsap.utils.toArray<SVGPathElement>('[data-line-path]', scope).at(-1);
-        if (!strand) return;
-        // 700ms, the `reveal` token §10.2 binds to the ribbon draw.
-        gsap.fromTo(
-          strand,
-          { strokeDashoffset: 1 },
-          {
-            strokeDashoffset: 0,
-            ease: EASE.out,
-            duration: motionTokens.duration.reveal,
-            scrollTrigger: { trigger: scope, start: 'top 80%', once: true },
-          }
-        );
+        // Every path this stage renders — the five convergence strands *and* the
+        // single strand they converge into. Targeting `.at(-1)` drew the strand
+        // alone, leaving the convergence undrawn outside reduced motion, though
+        // §4 Act 1's "five strands converge into one" is the thing being drawn.
+        const paths = gsap.utils.toArray<SVGPathElement>('[data-line-path]', scope);
+        if (paths.length === 0) return;
+        // 700ms, the `reveal` token §10.2 binds to the ribbon draw — staggered
+        // along the convergence so the strands arrive one after another.
+        paths.forEach((path, index) => {
+          gsap.fromTo(
+            path,
+            { strokeDashoffset: 1 },
+            {
+              strokeDashoffset: 0,
+              ease: EASE.out,
+              duration: motionTokens.duration.reveal,
+              delay: index * (motionTokens.duration.reveal / paths.length),
+              scrollTrigger: { trigger: scope, start: 'top 80%', once: true },
+            }
+          );
+        });
       });
       return () => mm.revert();
     },

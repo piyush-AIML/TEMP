@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
@@ -122,6 +123,28 @@ describe('Act 1 — the walk', () => {
     const ribbon = render().slice(render().indexOf('The student journey'));
     expect(ribbon).toContain('viewBox="0 0 8 1"');
     expect(ribbon).not.toContain('max-w-5xl');
+  });
+
+  it('gives every path exactly one writer', () => {
+    // A source scan, because the effects are unreachable from the node test
+    // environment (ADR 0007) and this is the strongest check available — the
+    // same instrument Task 12 uses for the reduced-motion pairing.
+    //
+    // Measured before this fix: the walk's `onUpdate` scoped to the `<section>`
+    // and wrote to all eleven paths; `drawAt(progress, i, 5)` is 0 for every
+    // i ≥ 5, so each scroll tick forced the ribbon's seven paths to undrawn.
+    const source = readFileSync('src/components/educraft/acts/FivePillars.tsx', 'utf8');
+    expect(source).toContain("scope.querySelector('[data-walk-rail]')");
+    expect(source).toContain('segments.length !== frame.railSegments.length');
+    // The ribbon draws every path it renders, not only the last one. Read the
+    // code, not the prose: the comment above explains the defect it replaced,
+    // and a whole-file `toContain` would match that explanation.
+    const code = source
+      .split('\n')
+      .filter((line) => !line.trim().startsWith('//') && !line.trim().startsWith('*'))
+      .join('\n');
+    expect(code).toContain('paths.forEach((path, index)');
+    expect(code).not.toContain('.at(-1)');
   });
 
   it('gives each station one viewport of the track, at every breakpoint', () => {
