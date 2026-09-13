@@ -36,6 +36,25 @@ const render = (overrides: Partial<OriginProps> = {}) =>
   );
 
 describe('Act 0 — Origin', () => {
+  it('draws the fork at every width, and one strand on a phone', () => {
+    // The branch tween sat below `if (!isDesktop || !copy.current) return`, so
+    // on tablet and phone the reader saw five seed dots with no lines reaching
+    // them — and §8's tablet row says "fork still happens". Below `sm` the five
+    // branches give way to §8's "simplified vertical fall", which is what keeps
+    // the arc's endpoint reachable on a 390px screen.
+    const markup = render();
+    expect(markup).toContain('data-origin-fork');
+    expect(markup).toContain('data-origin-fall');
+    expect(markup).toContain('d="M 0.5 0.85 L 0.5 1"'); // the fall
+    expect(markup).toContain('sm:hidden');
+  });
+
+  it('renders the approved scroll cue', () => {
+    // `_copy.md` approves an Act 0 `sr-only scroll cue · Scroll`, sourced to the
+    // retired hero. Nothing rendered it.
+    expect(render()).toContain('<span class="sr-only">Scroll</span>');
+  });
+
   it('renders the hero copy verbatim', () => {
     const markup = render();
     for (const line of PROPS.h1Lines) expect(markup).toContain(line);
@@ -60,7 +79,11 @@ describe('Act 0 — Origin', () => {
     const markup = render();
     const expected = [pathFor(ACT_ANCHORS.origin.enter, ACT_ANCHORS.origin.exit, 'arc'), ...forkPaths(5)];
     for (const d of expected) expect(markup).toContain(d);
-    expect((markup.match(/data-line-path/g) ?? []).length).toBe(1 + 5);
+    // The fork stage carries the arc and one branch per pillar; the phone's fall
+    // is a second stage and a second path, and exactly one of the two displays.
+    const fork = markup.slice(markup.indexOf('data-origin-fork'), markup.indexOf('data-origin-fall'));
+    expect((fork.match(/data-line-path/g) ?? []).length).toBe(1 + 5);
+    expect((markup.match(/data-line-path/g) ?? []).length).toBe(1 + 5 + 1);
   });
 
   it('uses the unit frame, so the act-local anchors need no arithmetic', () => {
@@ -84,7 +107,8 @@ describe('Act 0 — Origin', () => {
 
   it('scales to a sixth pillar with no rewrite', () => {
     const markup = render({ pillarCount: 6 });
-    expect((markup.match(/data-line-path/g) ?? []).length).toBe(1 + 6);
+    // Six branches plus the arc in the fork stage, plus the phone's one fall.
+    expect((markup.match(/data-line-path/g) ?? []).length).toBe(1 + 6 + 1);
     // The branches and the nodes come from the same array, so a sixth branch
     // that no node marks is the join half-applied. Measured on Task 5's
     // mutation pass: without this, `seedAnchors(5)` left in place kept the
