@@ -36,6 +36,27 @@ describe('Act 3 — Proof', () => {
     expect(markup).toContain('viewBox="0 0 1 1"');
   });
 
+  it('positions the strand against the act, and the axis in the act’s frame', () => {
+    // Measured before this: the strand's box was a `lg:h-[24rem]` container
+    // sitting in the middle of the act, so its `y = 0` was not the act's top
+    // edge and `proof.exit` rendered ~800px above the act's bottom — the seam
+    // the contract checks was not on any edge on screen.
+    expect(markup).toMatch(
+      /<section id="proof"[^>]*><div class="[^"]*pointer-events-none absolute inset-0 lg:hidden/
+    );
+    // The stations read the same fractions the strand does.
+    expect(markup).toContain('left:15%');
+    expect(markup).toContain('top:46%');
+  });
+
+  it('carries the seam with a plain spine below lg', () => {
+    // §8: below lg the thread runs parallel to the scroll, and four labels
+    // cannot sit on a scale on a phone. Both strands start at `proof.enter` and
+    // end at `proof.exit`, so the handoff is the same two anchors at any width.
+    expect(markup).toContain('d="M 0.75 0 C 0.75 0 0.75 0.85 0.75 1"');
+    expect(markup).toContain('hidden lg:block');
+  });
+
   it('pins the axis geometry, ticks included', () => {
     // The plan's own words: these are internal geometry the seam contract does
     // not cover, "and pinning them in the test is what makes a change visible".
