@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { ACT_ANCHORS } from '@/components/educraft/line/anchors';
 import Way from './Way';
 
 const markup = renderToStaticMarkup(createElement(Way));
@@ -46,6 +47,58 @@ describe('Act 2 — The Way', () => {
   it('numbers the nodes rather than using list markers', () => {
     expect(markup).toContain('01');
     expect(markup).toContain('05');
+  });
+
+  it('places every node on the strand, not near it', () => {
+    // The act's own join: the strand and the nodes read the same anchor, so a
+    // node's `left` and the line's x are one number. Measured — moving the spine
+    // off the anchor (SPINE_X = 0.5, nodes at 50% while the line stays at 75%)
+    // left the suite green. Ten nodes: five differentiators, five steps.
+    const spine = ACT_ANCHORS.way.enter.x;
+    expect((markup.match(new RegExp(`left:${spine * 100}%`, 'g')) ?? []).length).toBe(10);
+  });
+
+  it('renders the differentiator copy verbatim', () => {
+    // §4 moves all five **unedited** out of the file Task 11 deletes, and the
+    // plan's reason for the temporary duplication is that these tests pin them —
+    // which only holds if the descriptions are pinned too. Measured: truncating
+    // one left the suite green while the title test above still passed.
+    const copy = [
+      [
+        'One ecosystem, not five silos',
+        'Programmes are designed to work together. A student building language confidence can also access wellbeing support; an exam aspirant can pause for counselling without leaving the system. Learners move between paths without starting over.',
+      ],
+      [
+        'Specialists in every room',
+        'Each vertical is led by people trained for it — language specialists, certified special educators, licensed counsellors, technologists, and exam mentors. Nobody is improvising outside their field.',
+      ],
+      [
+        'Families are partners, not spectators',
+        'Goals are agreed with families, not announced to them. Structured check-ins, plain-language reports, and home strategies keep parents genuinely part of the journey.',
+      ],
+      [
+        'Progress you can actually see',
+        'Portfolios, dashboards, and benchmarked checkpoints replace vague reassurance. Every programme answers the same question with evidence: what can the student do now that they could not do before?',
+      ],
+      [
+        'Wellbeing woven in, not bolted on',
+        'Steadiness is designed into every programme — realistic targets, study-rest cycles, and access to counselling. We treat sustainable learning as a performance advantage, not a soft option.',
+      ],
+    ];
+    for (const [title, description] of copy) {
+      expect(markup, title).toContain(description);
+    }
+  });
+
+  it('renders the section and method copy verbatim', () => {
+    expect(markup).toContain('Why Educraft');
+    expect(markup).toContain(
+      'Most education offerings are collections of courses. Educraft is a connected system — five specialist verticals sharing one philosophy, one standard of evidence, and one view of the learner.'
+    );
+    expect(markup).toContain('How it works');
+    expect(markup).toContain(
+      'Every programme — whatever the vertical — runs on the same five-step method. It is why the ecosystem stays coherent as it grows.'
+    );
   });
 
   it('carries no cards', () => {

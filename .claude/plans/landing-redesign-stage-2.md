@@ -2730,6 +2730,58 @@ describe('Act 2 — The Way', () => {
     expect(markup).toContain('05');
   });
 
+  it('places every node on the strand, not near it', () => {
+    // The act's own join: the strand and the nodes read the same anchor, so a
+    // node's `left` and the line's x are one number. Measured — moving the spine
+    // off the anchor (SPINE_X = 0.5, nodes at 50% while the line stays at 75%)
+    // left the suite green. Ten nodes: five differentiators, five steps.
+    const spine = ACT_ANCHORS.way.enter.x;
+    expect((markup.match(new RegExp(`left:${spine * 100}%`, 'g')) ?? []).length).toBe(10);
+  });
+
+  it('renders the differentiator copy verbatim', () => {
+    // §4 moves all five **unedited** out of the file Task 11 deletes, and the
+    // plan's reason for the temporary duplication is that these tests pin them —
+    // which only holds if the descriptions are pinned too. Measured: truncating
+    // one left the suite green while the title test above still passed.
+    const copy = [
+      [
+        'One ecosystem, not five silos',
+        'Programmes are designed to work together. A student building language confidence can also access wellbeing support; an exam aspirant can pause for counselling without leaving the system. Learners move between paths without starting over.',
+      ],
+      [
+        'Specialists in every room',
+        'Each vertical is led by people trained for it — language specialists, certified special educators, licensed counsellors, technologists, and exam mentors. Nobody is improvising outside their field.',
+      ],
+      [
+        'Families are partners, not spectators',
+        'Goals are agreed with families, not announced to them. Structured check-ins, plain-language reports, and home strategies keep parents genuinely part of the journey.',
+      ],
+      [
+        'Progress you can actually see',
+        'Portfolios, dashboards, and benchmarked checkpoints replace vague reassurance. Every programme answers the same question with evidence: what can the student do now that they could not do before?',
+      ],
+      [
+        'Wellbeing woven in, not bolted on',
+        'Steadiness is designed into every programme — realistic targets, study-rest cycles, and access to counselling. We treat sustainable learning as a performance advantage, not a soft option.',
+      ],
+    ];
+    for (const [title, description] of copy) {
+      expect(markup, title).toContain(description);
+    }
+  });
+
+  it('renders the section and method copy verbatim', () => {
+    expect(markup).toContain('Why Educraft');
+    expect(markup).toContain(
+      'Most education offerings are collections of courses. Educraft is a connected system — five specialist verticals sharing one philosophy, one standard of evidence, and one view of the learner.'
+    );
+    expect(markup).toContain('How it works');
+    expect(markup).toContain(
+      'Every programme — whatever the vertical — runs on the same five-step method. It is why the ecosystem stays coherent as it grows.'
+    );
+  });
+
   it('carries no cards', () => {
     expect(markup).not.toContain('card-surface');
   });
@@ -2767,6 +2819,13 @@ Two constraints:
 
 - **The strand is one path with two movements**, not two strands: the differentiators and the steps are nodes on a single run from `ACT_ANCHORS.way.enter` to `ACT_ANCHORS.way.exit`. If the implementer finds the copy needs more room than the strand provides, adjust the *act's height* — not the anchors, which the seam assertions check.
 - **Under reduced motion the strand is fully drawn and the nodes are a plain list**, which is what `LineStage`'s reduced-motion branch already does; the act adds no second path.
+
+*(Corrected 2026-09-13, on Task 8's implementation and verification pass — four items, all measured:)*
+
+1. **The tests above pin the titles but not the descriptions, and the plan's own reason for the temporary duplication needs both.** "the act's tests pin them, so Task 11's deletion is verified by those tests still passing rather than by inspection" — truncating a differentiator's body, its eyebrow, its lede or the method lede all left the suite green. Three tests were added (the five full descriptions as title/description pairs, the section and method copy, and the nodes' positions), and each one closes a mutant that survived the first run.
+2. **The node geometry was unpinned, and it is this act's half of the join.** Moving the spine off the anchor — nodes at 50% while the strand stays at 75% — left the suite green. Now asserted: ten nodes at `left:${ACT_ANCHORS.way.enter.x * 100}%`. The rule for the implementation is in the code: the strand is absolutely positioned against a box, and the rows must be measured against **the same width**, which is why the horizontal padding sits outside that box rather than on it.
+3. **`ActSection` does not stay server-side under this composition.** Tasks 8–10 are client components and import it, so the frame and the copy passed to it travel in the client bundle for that route; keeping them out needs `page.tsx` to wrap each act in `<ActSection …>`, and the plan renders each act bare. Its "This file ships no JS" docstring was corrected rather than left standing, and the bundle is measurable at Task 11 — the first build in which an act is mounted. **A server component is only server while a server parent renders it.**
+4. **`'arc'` and `'line'` are value-equivalent for a vertical strand** — with `dx = 0` the arc's control points are collinear at `x = 0.75`, so it degenerates to the same straight segment. A mutant swapping them survives, and that is correct; recorded so a later pass does not "fix" it.
 
 - [ ] **Step 4: Run the tests and the gate**
 

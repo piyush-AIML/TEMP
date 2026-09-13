@@ -62,8 +62,9 @@ const numeral = (index: number) => String(index + 1).padStart(2, '0');
  * Act 2 — The Way: `WhyDifferent`'s ruled rows and `Methodology`'s five steps
  * as **one argument** (spec §4). The differentiators are the *why*, the method
  * steps are the *how*, and both are nodes on a single vertical strand running
- * the length of the act — one path with two movements, not two strands, which
- * is what the seam contract checks.
+ * the length of the act — one path with two movements, not two strands: the
+ * strand spans `way.enter` to `way.exit`, the two anchors the seam contract
+ * checks.
  *
  * The strand is drawn by `LineStage`'s own in-view draw: this act is the first
  * to use that default, since it owns no tween of its own. Under reduced motion

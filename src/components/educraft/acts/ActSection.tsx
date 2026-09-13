@@ -15,10 +15,15 @@ export type ActSectionProps = {
 /**
  * The common frame for an act: the section element, the header, and the copy.
  *
- * **Server component, deliberately** (spec §3.3). The acts animate, so they are
- * client components — but their *copy* is static, and passing it in as props
- * from here keeps it server-rendered and out of the client bundle. This file
- * ships no JS.
+ * **Written as a server component** (spec §3.3), and that is conditional in
+ * practice. Tasks 8–10 are client components and *import* this frame, so once an
+ * act is mounted this file — and the copy passed to it — travel in that route's
+ * client bundle. Keeping them out needs a server parent to render the frame:
+ * `page.tsx` wrapping each act in `<ActSection …>`. The stage's composition does
+ * the opposite — the page renders each act bare, and the act renders this frame
+ * itself — so the bundle cost is accepted here rather than quietly assumed away.
+ * **Measurable at Task 11**, the first build in which an act is mounted; until
+ * then this file is in no bundle at all, because nothing imports it.
  *
  * Not used by Act 0: the hero's H1 mask-reveals line by line and its layout has
  * no header, so it composes its own markup and uses `MaskLine` directly.
