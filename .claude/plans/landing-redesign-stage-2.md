@@ -2996,7 +2996,7 @@ seed-content warning visible rather than buried in a comment."
 - Create: `src/components/educraft/acts/FinalCTA.tsx` (new copy of the kept component; Task 11 deletes `landing/FinalCTA.tsx`)
 
 **Interfaces:**
-- Consumes: `ACT_VIEW_BOX` (Task 2), `ACT_ANCHORS.doors` (Task 1), `ActSection` (Task 5), `LineStage`, `pathFor`, `audienceEntries`/`audiencePageHrefs` (`data/navigation.ts`).
+- Consumes: `ACT_VIEW_BOX` (Task 2), `ACT_ANCHORS.doors` (Task 1), `ActSection` (Task 5), `LineStage`, `pathFor`, `audienceEntries` (`data/navigation.ts`). **Not `audiencePageHrefs`**, as this line said until Task 10's contract pass: each door reaches its own `ctaHref`, and the landing-page map keeps three other consumers (`Navbar` ×2, `AudiencePage`, `footerAudiences`), so the retirement orphans nothing.
 - Produces: `Doors` and `FinalCTA` (default exports, client). The page renders `Doors`, which renders `FinalCTA` — one act, one section.
 
 - [ ] **Step 1: Write the failing test**
