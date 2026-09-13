@@ -11,12 +11,14 @@ import Doors from '@/components/educraft/acts/Doors';
 
 // The seam contract, checked where the acts are actually composed.
 //
-// Stage 1 shipped `assertContinuity` with the note that "no runtime module calls
-// it, so it does not run at module load; Stage 2 is where the real call site is
-// wired." This is that call site, and the three checks are the whole seam story:
-// a vertical run between the acts whose strand leaves and enters at an edge, and
-// the two arity changes either side of the walk — one strand becoming N, and N
-// converging back into one. They throw on a broken seam, at build time.
+// `anchors.ts` carries the Stage 1 state of affairs: `assertContinuity` "is
+// called from the test suite and from nothing else — no runtime module calls
+// it". This page is that call site, and the three checks below are the whole
+// seam story: a vertical run between the acts whose strand leaves and enters at
+// an edge, and the two arity changes either side of the walk — one strand
+// becoming N, and N converging back into one. They run at module evaluation, so
+// a broken seam stops the build: measured, a 0.01 break in `doors.enter.x` fails
+// it with `Strand seam broken at proof.exit → doors.enter`.
 assertContinuity(VERTICAL_CHAIN);
 assertForkSeam(pillars.length);
 assertRibbonSeam(ribbonFrame(studentJourneyStages.length, pillars.length));
