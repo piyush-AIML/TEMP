@@ -81,17 +81,18 @@ export default function Doors({ className }: DoorsProps = {}) {
   return (
     <ActSection
       id='doors'
+      line={
+        <LineStage
+          paths={[strand]}
+          viewBox={ACT_VIEW_BOX}
+          className='pointer-events-none absolute inset-0 z-10'
+        />
+      }
       eyebrow='Who are you?'
       heading='Every journey starts from somewhere different'
       lede='Three doors into the same ecosystem — pick the one that describes you, and the conversation starts on your terms.'
       className={className}
     >
-      <LineStage
-        paths={[strand]}
-        viewBox={ACT_VIEW_BOX}
-        className='pointer-events-none absolute inset-0 z-10'
-      />
-
       <div className='mx-auto max-w-5xl px-6 pb-24'>
         <div
           className='grid grid-cols-3 divide-x divide-ec-border max-lg:grid-cols-1 max-lg:divide-x-0 max-lg:divide-y'

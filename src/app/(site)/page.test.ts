@@ -60,6 +60,21 @@ describe('the homepage composes five acts', () => {
     expect(markup).toContain(`/programmes/${programmes[0].slug}`);
   });
 
+  it('positions every act’s strand against the act, not an inner box', () => {
+    // The rule the whole repair exists to enforce, asserted where the acts are
+    // composed rather than one file at a time. An act-local frame is only
+    // screen-continuous if the element the strand is measured against is the
+    // act's own `<section>`; three of the five shipped against an inner
+    // container, with every assertion in the suite green. The three `ActSection`
+    // acts are checked here, structurally; `Origin` and `FivePillars` compose
+    // their own sections and pin theirs in their own test files.
+    for (const act of ['way', 'proof', 'doors']) {
+      expect(markup, `Act ${act} positions its strand against an inner box`).toMatch(
+        new RegExp(`<section id="${act}"[^>]*><div class="[^"]*pointer-events-none absolute inset-0`)
+      );
+    }
+  });
+
   it('renders the five acts’ own section copy', () => {
     // One string per act, so a page that renders five sections of nothing fails
     // here rather than looking correct to the order check above.
