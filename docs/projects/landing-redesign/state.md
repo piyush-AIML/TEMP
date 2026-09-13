@@ -33,12 +33,13 @@ structure** — the homepage still renders its 12 sections, with new colours.
 
 ## 2. Immediate next action
 
-**Stage 2 is in progress — 5 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
+**Stage 2 is in progress — 6 of 12 tasks closed.** Task 1 (the anchor contract and the seam rule) →
 `04b1702`; Task 2 (the join, `frames.ts`) → `048af65`; Task 3 (the two facts §8 leaves to JS) →
 `f9e0919`; Task 4 (`LineStage`'s render-only mode and the frame override) → `10291cd`, fix `8baddad`,
 corrections `620e35d` `6dd46c3`; Task 5 (Act 0 — Origin, `ActSection`, `MaskLine`) → `efab08b`, brief
-fixes `e2bf9f9`, fix round `862593b`. The live plan is `.claude/plans/landing-redesign-stage-2.md`; it
-moves into `stages/` when the stage closes.
+fixes `e2bf9f9`, fix round `862593b`; Task 6 (Act 1 — the walk, `drawAt`'s first call site) →
+`b32c33c`, fix round `7b59edd`. The live plan is `.claude/plans/landing-redesign-stage-2.md`; it moves
+into `stages/` when the stage closes.
 
 **Execution is a no-agent procedure as of 2026-09-13, on the owner's instruction.** No subagents run
 and no skill drives the loop: the assistant implements, verifies in three phases (contract → claims →
@@ -48,8 +49,11 @@ verbatim at [`platform/archive/`](../../platform/archive/) and are one `cp` from
 Tasks 1–2 ran under the three-lens regime and Task 3 under the tiered one, so all three regimes are
 directly comparable on cost: **949k · 929k · 516k** per task.
 
-Next action: **Task 6** — Act 1, the walk, and `drawAt`'s first call site — per
-`platform/execution.md`. **Awaiting the owner: they sequence the work.**
+Next action: **Task 7** — Act 1's tail, the journey ribbon — per `platform/execution.md`. It edits
+`FivePillars.tsx` (created by Task 6, and it must not re-create it), appends to
+`FivePillars.test.ts` on the same `STATIONS` fixture, and adds `FivePillarsProps.stages` — which
+**Task 11's page already passes**, so this edit is not optional for Task 11 to build. **Awaiting the
+owner: they sequence the work.**
 
 
 ## 3. Blocked
@@ -72,6 +76,9 @@ against its own foreground — the hex this stage exists to retire, with no cons
 - **Any test that renders a component containing `EnquireButton` must wrap it in `EnquiryModalProvider`.** `useEnquiryModal` is called at render time and throws outside its provider, which lives in `app/(site)/layout.tsx`. Task 5's seven Origin cases died on this before the harness was fixed (`efab08b`), and every act carries a CTA, so Tasks 6–11's tests meet it again. Same family: `PROPS … as const` narrows a literal prop (`pillarCount: 5`), so test overrides are typed by the component's props — `Partial<OriginProps>` — not by `Partial<typeof PROPS>`.
 - **Act 0's H1 ships `type-display-xl`**, not the brief snippet's `type-display-l`. The brief's own prose said to keep whatever `Hero.tsx` used, and the two differ by a measured step — `clamp(3rem, 6.5vw + 0.75rem, 5.25rem)` against `clamp(2.5rem, 5vw + 1rem, 4.25rem)`. **One class to revert** if the smaller H1 was the intent; the plan carries the conflict.
 - **`ActSection` has no tests, and `MaskLine` is single-use.** Measured consumers: `Origin` → Task 11 alone; `ActSection` → Tasks 8, 9, 10; `MaskLine` → Task 5 only, though the plan's Interfaces line promised "Tasks 6–11" for all three. Spec §3.4's `Stagger.tsx` is created by no task. Routing later Motion reveals (station enter/exit, panel crossfade) through `MaskLine` is an open owner decision.
+- **A CSS-containment test must slice the media block, not search the file.** `gsap.test.ts` has a `blockSpan` helper for exactly this, and Task 6's P12 measures why: hoisting `[data-walk-station]` out of the reduced-motion block to the end of the file leaves every string present, so a whole-file `toContain` passes while shipping an unconditional override. **A check that cannot fail is not a check** — the brief's Step 5 snippet also referenced a `reducedMotionBlock` that does not exist.
+- **The walk's rail click is untested and `?calibrate=1` will not reach it** (it reports state, not interaction). Three branches, one of which moves the page; Task 6's largest untested surface, and the owner's in QA.
+- **`pillarCount` vs `stations.length` is unenforced.** Task 6's comment says the geometry is a function of `pillarCount` "never of `stations`", and a mutant taking the `drawAt` axis from `stations.length` survives — as does dropping `draw={false}`, which would put `LineStage`'s in-view tween and the act's scrub on the same property, the one thing the engine split forbids.
 - **Palette hexes are measured — copy them verbatim, never re-derive or "improve" them.** `src/design/colors.test.ts` enforces AA, and its token-against-token pair assertions (not only token-vs-canvas) are what caught a 2.64:1 button. **`colors.ts` and `globals.css` must carry identical hex values, and the suite now asserts that mirror** — an edit to either file alone fails.
 - **Tailwind 4 needs literal class names** — `bg-ec-${x}` emits no CSS; every pillar→class mapping is written out. `stroke-ec-teal-graphic` is verified emitted, by hand.
 - **`@theme inline` alias coverage is still unasserted.** A token declared in `:root`/`.dark` but missing from the `@theme inline` block emits **no Tailwind class** and passes the whole suite — the palette mirror test reads `:root`/`.dark` only. Adding a token means three places, and nothing checks the third.
