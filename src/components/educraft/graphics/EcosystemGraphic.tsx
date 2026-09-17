@@ -14,34 +14,40 @@ interface EcosystemGraphicProps {
   activePillarId: PillarId;
   onSelect: (id: PillarId) => void;
   className?: string;
-  /** 'full' — the desktop orbital map; 'compact' — the mobile composition. */
+  /** 'full' — the desktop constellation; 'compact' — the mobile composition. */
   variant?: 'full' | 'compact';
 }
 
 /**
- * Node placement as polar coordinates from the core: the arrangement is
- * computed, so a pillar is one row here rather than hand-placed geometry.
- * Angles and radii vary deliberately — an even star would read as a diagram,
- * not as an ecosystem.
+ * Node placement as polar coordinates from the core, in the full composition's
+ * coordinate space: the arrangement is computed, so a pillar is one row here
+ * rather than hand-placed geometry. Angles and radii vary on purpose — the
+ * radii spread 182→300 so the constellation reads as organic rather than as a
+ * mathematical radial chart. Both variants project this same data.
  */
 const NODE_LAYOUT: Record<PillarId, { angle: number; radius: number }> = {
-  learn: { angle: -95, radius: 218 },
-  include: { angle: -160, radius: 232 },
-  thrive: { angle: 152, radius: 226 },
-  achieve: { angle: -22, radius: 248 },
-  excel: { angle: 58, radius: 240 },
+  learn: { angle: -86.2, radius: 182 },
+  include: { angle: -178.1, radius: 300 },
+  thrive: { angle: 142.2, radius: 225 },
+  achieve: { angle: -8.6, radius: 295 },
+  excel: { angle: 41.6, radius: 235 },
 };
 
+/**
+ * 'full' is deliberately WIDE AND SHALLOW (900×510, ratio 1.76): the artwork
+ * must not dictate the height of the section's grid row, so the section gives
+ * it a bounded stage and the SVG scales to fit inside it.
+ */
 const VARIANTS = {
   full: {
-    w: 800, h: 620, coreR: 26, nodeR: 24, nodeActiveR: 30, haloR: 42,
-    labelSize: 14, labelActiveSize: 15.5, labelDy: 56, bow: 30,
-    atmosphere: true, particles: true,
+    w: 900, h: 510, coreR: 26, nodeR: 24, nodeActiveR: 30, haloR: 42,
+    labelSize: 16, labelActiveSize: 17.5, labelDy: 44, bow: 24,
+    coreLabelSize: 13, atmosphere: true, particles: true,
   },
   compact: {
-    w: 480, h: 420, coreR: 21, nodeR: 21, nodeActiveR: 26, haloR: 34,
-    labelSize: 19, labelActiveSize: 20.5, labelDy: 44, bow: 18,
-    atmosphere: false, particles: false,
+    w: 480, h: 420, coreR: 21, nodeR: 20, nodeActiveR: 25, haloR: 32,
+    labelSize: 18, labelActiveSize: 19.5, labelDy: 40, bow: 18,
+    coreLabelSize: 15, atmosphere: false, particles: false,
   },
 } as const;
 
@@ -61,7 +67,7 @@ function buildGeometry(variant: 'full' | 'compact') {
     const y = core.y + radius * sy * Math.sin(rad);
 
     // One consistent swirl: every spoke bows along the same rotational
-    // direction, so the five connections read as one orbiting system.
+    // direction, so the five short connections read as one orbiting system.
     const dx = x - core.x;
     const dy = y - core.y;
     const len = Math.hypot(dx, dy) || 1;
@@ -85,13 +91,17 @@ const ENTER = { atmosphere: 0, core: 120, connections: 300, nodes: 540, labels: 
 const STAGGER = 90;
 
 /**
- * "One ecosystem" (plan §13) — the five pillars as a living orbital system.
+ * "One ecosystem" (plan §13) — the five pillars as one constellation.
  *
- * Shared body, two projections: 'full' for desktop, 'compact' for mobile
- * (larger relative nodes and type, no atmosphere or particles). Motion is
- * SVG-native — SMIL for ambient flow, particles and the core's breathing,
- * CSS transitions for the entrance — so nothing is driven per frame by
- * React, and everything ambient is omitted entirely under reduced motion.
+ * Wide and shallow by design: the coordinate space spreads the nodes across
+ * the width and keeps them inside the middle ~70% of the height, so the
+ * artwork sits inside the section's bounded stage instead of stretching the
+ * row (the SVG fills its stage and scales with `preserveAspectRatio`).
+ *
+ * Motion is SVG-native — SMIL for the atmospheric drift, the flow pulses,
+ * the particles and the core's breathing, CSS transitions for the entrance —
+ * so nothing is driven per frame by React, and every ambient piece is omitted
+ * entirely under reduced motion.
  *
  * The visual is decorative: it is aria-hidden and the section carries the
  * five pillars as real text, so nothing here is the only route to the
@@ -124,12 +134,13 @@ export default function EcosystemGraphic({
   });
 
   return (
-    <div ref={ref} className={cn('w-full', className)}>
+    <div ref={ref} className={cn('w-full h-full', className)}>
       <svg
         viewBox={`0 0 ${v.w} ${v.h}`}
         fill='none'
+        preserveAspectRatio='xMidYMid meet'
         aria-hidden='true'
-        className='w-full h-auto'
+        className='w-full h-full'
       >
         <defs>
           <radialGradient id={`ec-core-${variant}`} cx='50%' cy='50%' r='50%'>
@@ -139,53 +150,28 @@ export default function EcosystemGraphic({
           </radialGradient>
         </defs>
 
-        {/* 1 · Atmosphere — slow drifting orbits behind everything */}
+        {/* 1 · Atmosphere — one restrained guide arc, never a large orbit.
+            The dash drifts slowly along its own path so the arc stays calm
+            and its silhouette never moves. */}
         {v.atmosphere && (
-          <g style={fade(ENTER.atmosphere)}>
-            <ellipse
-              cx={core.x}
-              cy={core.y}
-              rx={330}
-              ry={252}
-              stroke='var(--ec-border)'
-              strokeWidth='1'
-              strokeDasharray='2 10'
-              transform={`rotate(-12 ${core.x} ${core.y})`}
-            >
-              {!reducedMotion && (
-                <animateTransform
-                  attributeName='transform'
-                  type='rotate'
-                  from={`-12 ${core.x} ${core.y}`}
-                  to={`348 ${core.x} ${core.y}`}
-                  dur='150s'
-                  repeatCount='indefinite'
-                />
-              )}
-            </ellipse>
-            <ellipse
-              cx={core.x}
-              cy={core.y}
-              rx={268}
-              ry={206}
-              stroke='var(--ec-teal)'
-              strokeOpacity='0.14'
-              strokeWidth='1'
-              strokeDasharray='2 14'
-              transform={`rotate(18 ${core.x} ${core.y})`}
-            >
-              {!reducedMotion && (
-                <animateTransform
-                  attributeName='transform'
-                  type='rotate'
-                  from={`18 ${core.x} ${core.y}`}
-                  to={`-342 ${core.x} ${core.y}`}
-                  dur='200s'
-                  repeatCount='indefinite'
-                />
-              )}
-            </ellipse>
-          </g>
+          <path
+            d={`M ${r1(core.x - 329)} ${r1(core.y + 54)} A 350 158 0 0 0 ${r1(core.x + 329)} ${r1(core.y + 54)}`}
+            stroke='var(--ec-border)'
+            strokeWidth='1'
+            strokeDasharray='2 10'
+            opacity={revealed ? 0.55 : 0}
+            style={{ transition: `opacity ${enterMs}ms ${ease}`, transitionDelay: `${ENTER.atmosphere}ms` }}
+          >
+            {!reducedMotion && (
+              <animate
+                attributeName='stroke-dashoffset'
+                from='0'
+                to='-12'
+                dur='40s'
+                repeatCount='indefinite'
+              />
+            )}
+          </path>
         )}
 
         {/* 3 · Structural connections + 4 · travelling flow */}
@@ -262,11 +248,11 @@ export default function EcosystemGraphic({
           />
           <text
             x={core.x}
-            y={core.y + v.coreR + 26}
+            y={core.y + v.coreR + 24}
             textAnchor='middle'
             fontFamily='var(--font-manrope)'
             fontWeight='600'
-            fontSize={variant === 'full' ? 12 : 15}
+            fontSize={v.coreLabelSize}
             letterSpacing='0.08em'
             fill='var(--ec-slate)'
           >
